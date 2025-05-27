@@ -1,0 +1,28 @@
+{
+  "Home": {
+    "Welcome": "مرحباً",
+    "Dashboard": "لوحة التحكم",
+    "Privacy": "الخصوصية"
+  },
+  "Navigation": {
+    "Home": "الرئيسية",
+    "Privacy": "الخصوصية",
+    "Login": "تسجيل الدخول",
+    "Register": "تسجيل جديد",
+    "Logout": "تسجيل الخروج"
+  },
+  "Language": {
+    "English": "الإنجليزية",
+    "Arabic": "العربية"
+  },
+  "Common": {
+    "Save": "حفظ",
+    "Cancel": "إلغاء",
+    "Edit": "تعديل",
+    "Delete": "حذف",
+    "Create": "إنشاء",
+    "Details": "تفاصيل",
+    "Back": "رجوع",
+    "Search": "بحث"
+  }
+}

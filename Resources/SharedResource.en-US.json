@@ -1,0 +1,28 @@
+{
+  "Home": {
+    "Welcome": "Welcome",
+    "Dashboard": "Dashboard",
+    "Privacy": "Privacy"
+  },
+  "Navigation": {
+    "Home": "Home",
+    "Privacy": "Privacy",
+    "Login": "Login",
+    "Register": "Register",
+    "Logout": "Logout"
+  },
+  "Language": {
+    "English": "English",
+    "Arabic": "Arabic"
+  },
+  "Common": {
+    "Save": "Save",
+    "Cancel": "Cancel",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "Create": "Create",
+    "Details": "Details",
+    "Back": "Back",
+    "Search": "Search"
+  }
+}
