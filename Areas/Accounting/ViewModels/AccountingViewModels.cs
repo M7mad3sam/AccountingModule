@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
@@ -111,9 +112,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public Guid? CostCenterId { get; set; }
         
         public int Level { get; set; }
-        
+        [ValidateNever]
         public IEnumerable<CostCenter> CostCenters { get; set; }
-        
+        [ValidateNever]
         public IEnumerable<SelectListItem> Levels { get; set; }
     }
 }

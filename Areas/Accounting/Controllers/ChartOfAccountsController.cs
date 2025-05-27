@@ -45,6 +45,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             return View(account);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Create()
         {
             var viewModel = new AccountViewModel

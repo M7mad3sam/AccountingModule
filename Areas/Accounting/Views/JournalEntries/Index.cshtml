@@ -1,5 +1,4 @@
-@using AspNetCoreMvcTemplate.Areas.Accounting.Models
-@model IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.Models.JournalEntry>
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.JournalEntryListViewModel
 
 @{
     ViewData["Title"] = "Journal Entries";
@@ -29,7 +28,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var entry in Model)
+                    @foreach (var entry in Model.JournalEntries)
                     {
                         <tr>
                             <td>@entry.Number</td>

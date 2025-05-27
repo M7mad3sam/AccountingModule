@@ -16,13 +16,16 @@
     <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.rtl.min.css" id="rtl-style" disabled />
     <!-- Custom site styles -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <link rel="stylesheet" href="~/lib/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
 </head>
 @{
     // Build your base class(es)
     var bodyClass = "hold-transition sidebar-closed sidebar-collapse";
 
     // Append "sidebar-mini" if user is authenticated
-    if (User.Identity.IsAuthenticated)
+    if (User.Identity!.IsAuthenticated)
     {
         bodyClass = "hold-transition sidebar-mini";
     }
@@ -210,6 +213,10 @@
     <script src="~/lib/adminlte/js/adminlte.min.js"></script>
     <!-- Custom site scripts -->
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="~/lib/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/lib/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/select2/js/select2.full.min.js"></script>
 
     <script>
         // Language switch functionality
