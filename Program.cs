@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using AspNetCoreMvcTemplate.Resources;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using AspNetCoreMvcTemplate.Areas.Accounting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,9 @@ builder.Services.AddAppLocalization();
 builder.Services.AddControllersWithViews()
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
+
+// Add Accounting Module services
+builder.Services.AddAccountingModule();
 
 var app = builder.Build();
 
@@ -52,6 +56,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+// Add area route
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",

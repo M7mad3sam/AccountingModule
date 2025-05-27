@@ -1,0 +1,70 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.Services.TrialBalanceReport
+
+@{
+    ViewData["Title"] = "Trial Balance Report";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Trial Balance Report</h3>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h4>As of: @Model.AsOfDate.ToString("d")</h4>
+                @if (Model.CostCenter != null)
+                {
+                    <h5>Cost Center: @Model.CostCenter.NameEn</h5>
+                }
+                @if (Model.Level > 0)
+                {
+                    <h5>Account Level: @Model.Level</h5>
+                }
+            </div>
+            <div class="col-md-6 text-right">
+                <a asp-action="ExportTrialBalanceToExcel" asp-route-asOfDate="@Model.AsOfDate" asp-route-costCenterId="@Model.CostCenter?.Id" asp-route-level="@Model.Level" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </a>
+                <a asp-action="ExportTrialBalanceToPdf" asp-route-asOfDate="@Model.AsOfDate" asp-route-costCenterId="@Model.CostCenter?.Id" asp-route-level="@Model.Level" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> Export to PDF
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Account Code</th>
+                        <th>Account Name</th>
+                        <th>Level</th>
+                        <th class="text-right">Debit</th>
+                        <th class="text-right">Credit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.AccountCode</td>
+                            <td>@item.AccountName</td>
+                            <td>@item.Level</td>
+                            <td class="text-right">@item.DebitBalance.ToString("N4")</td>
+                            <td class="text-right">@item.CreditBalance.ToString("N4")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3">Total</th>
+                        <th class="text-right">@Model.TotalDebit.ToString("N4")</th>
+                        <th class="text-right">@Model.TotalCredit.ToString("N4")</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <a asp-action="TrialBalance" class="btn btn-primary">Back to Filter</a>
+    </div>
+</div>
