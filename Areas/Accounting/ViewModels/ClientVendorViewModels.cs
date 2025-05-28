@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
-
 namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 {
     public class ClientViewModel
@@ -85,6 +84,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Display(Name = "Name (Arabic)")]
         public string NameAr { get; set; }
         
+        [Required]
+        [Display(Name = "Vendor Type")]
+        public VendorType Type { get; set; }
+        
         [StringLength(15)]
         [Display(Name = "Tax Registration Number")]
         public string TaxRegistrationNumber { get; set; }
@@ -133,23 +136,48 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         
         [Display(Name = "IBAN")]
         public string IBAN { get; set; }
+        
+        [Required]
+        [Display(Name = "Account")]
+        public Guid AccountId { get; set; }
+        
+        public IEnumerable<SelectListItem> AvailableVendorTypes { get; set; }
+        public IEnumerable<SelectListItem> AvailableAccounts { get; set; }
     }
     
     public class ClientListViewModel
     {
-        public IEnumerable<Client> Clients { get; set; }
+        public Guid Id { get; set; }
+        public string Code { get; set; }
+        public string NameEn { get; set; }
+        public string NameAr { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public ClientType ClientType { get; set; }
+        public bool IsActive { get; set; }
+        
+        // Search properties
         public string SearchTerm { get; set; }
-        public ClientType? ClientType { get; set; }
-        public bool? IsActive { get; set; }
+        public ClientType? SearchClientType { get; set; }
+        public bool? SearchIsActive { get; set; }
         public IEnumerable<SelectListItem> ClientTypes { get; set; }
     }
     
     public class VendorListViewModel
     {
-        public IEnumerable<Vendor> Vendors { get; set; }
+        public Guid Id { get; set; }
+        public string Code { get; set; }
+        public string NameEn { get; set; }
+        public string NameAr { get; set; }
+        public VendorType Type { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public bool IsActive { get; set; }
+        
+        // Search properties
         public string SearchTerm { get; set; }
         public string VendorType { get; set; }
-        public bool? IsActive { get; set; }
+        public bool? SearchIsActive { get; set; }
         public bool? SubjectToWithholdingTax { get; set; }
         public IEnumerable<SelectListItem> VendorTypes { get; set; }
     }
