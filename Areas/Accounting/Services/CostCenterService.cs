@@ -18,6 +18,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task DeleteCostCenterAsync(Guid id);
         Task<bool> IsCostCenterCodeUniqueAsync(string code, Guid? id = null);
         Task<bool> CanDeleteCostCenterAsync(Guid id);
+        Task<IEnumerable<CostCenter>> GetCostCentersAsync(bool? isActive = null);
     }
 
     public class CostCenterService : ICostCenterService
@@ -98,6 +99,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             // Check if cost center has children
             var costCenter = await _costCenterRepository.FindAsync(cc => cc.Id == id, cc => cc.Children);
             return costCenter?.Children == null || !costCenter.Children.Any();
+        }
+
+        public async Task<IEnumerable<CostCenter>> GetCostCentersAsync(bool? isActive = null)
+        {
+            if (isActive.HasValue)
+            {
+                return await _costCenterRepository.FindAllAsync(cc => cc.IsActive == isActive.Value);
+            }
+            return await _costCenterRepository.GetAllAsync();
         }
     }
 }

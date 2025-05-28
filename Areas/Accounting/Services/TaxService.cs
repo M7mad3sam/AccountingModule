@@ -18,6 +18,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task AddTaxRateAsync(TaxRate taxRate);
         Task UpdateTaxRateAsync(TaxRate taxRate);
         Task DeleteTaxRateAsync(Guid id);
+        Task<IEnumerable<TaxRate>> GetTaxRatesAsync(bool? isActive = null);
         
         // Tax Calculation methods
         Task<TaxCalculationResult> CalculateTaxAsync(decimal amount, Guid taxRateId);
@@ -33,6 +34,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task DeleteWithholdingTaxAsync(Guid id);
         Task<decimal> CalculateWithholdingTaxAsync(decimal amount, Guid withholdingTaxId);
         Task<IEnumerable<WithholdingTax>> GetApplicableWithholdingTaxesAsync(Guid vendorId, decimal amount);
+        Task<IEnumerable<WithholdingTax>> GetWithholdingTaxesAsync(bool? isActive = null);
     }
 
     public class TaxService : ITaxService
@@ -101,6 +103,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 await _taxRateRepository.DeleteAsync(id);
                 await _auditService.LogActivityAsync("Tax", "Delete", $"Deleted tax rate: {taxRate.NameEn}");
             }
+        }
+
+        public async Task<IEnumerable<TaxRate>> GetTaxRatesAsync(bool? isActive = null)
+        {
+            if (isActive.HasValue)
+            {
+                return await _taxRateRepository.FindAllAsync(t => t.IsActive == isActive.Value);
+            }
+            return await _taxRateRepository.GetAllAsync();
         }
 
         #endregion
@@ -260,6 +271,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 // Check if amount is above minimum threshold
                 (!wt.MinimumThreshold.HasValue || amount >= wt.MinimumThreshold.Value)
             );
+        }
+
+        public async Task<IEnumerable<WithholdingTax>> GetWithholdingTaxesAsync(bool? isActive = null)
+        {
+            if (isActive.HasValue)
+            {
+                return await _withholdingTaxRepository.FindAllAsync(t => t.IsActive == isActive.Value);
+            }
+            return await _withholdingTaxRepository.GetAllAsync();
         }
 
         #endregion

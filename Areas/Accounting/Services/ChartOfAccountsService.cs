@@ -22,6 +22,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task<IEnumerable<AccountCostCenter>> GetAccountCostCentersAsync(Guid accountId);
         Task AddAccountCostCenterAsync(Guid accountId, Guid costCenterId);
         Task RemoveAccountCostCenterAsync(Guid accountId, Guid costCenterId);
+        Task<IEnumerable<Account>> GetAccountsAsync(bool? isActive = null);
     }
 
     public class ChartOfAccountsService : IChartOfAccountsService
@@ -160,6 +161,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 _accountCostCenterRepository.Delete(accountCostCenter);
                 await _accountCostCenterRepository.SaveAsync();
             }
+        }
+
+        public async Task<IEnumerable<Account>> GetAccountsAsync(bool? isActive = null)
+        {
+            if (isActive.HasValue)
+            {
+                return await _accountRepository.FindAllAsync(a => a.IsActive == isActive.Value);
+            }
+            return await _accountRepository.GetAllAsync();
         }
     }
 }

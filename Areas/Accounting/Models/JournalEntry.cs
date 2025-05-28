@@ -79,10 +79,29 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         [Required]
         public DateTime CreatedAt { get; set; }
         
+        // Renamed to match service usage
+        public DateTime CreatedDate { get => CreatedAt; set => CreatedAt = value; }
+        
+        public string ModifiedById { get; set; }
+        public ApplicationUser ModifiedBy { get; set; }
+        
+        public DateTime? ModifiedDate { get; set; }
+        
         public string ApprovedById { get; set; }
         public ApplicationUser ApprovedBy { get; set; }
         
         public DateTime? ApprovedAt { get; set; }
+        
+        // Renamed to match service usage
+        public DateTime? ApprovedDate { get => ApprovedAt; set => ApprovedAt = value; }
+        
+        [StringLength(500)]
+        public string ApprovalNotes { get; set; }
+        
+        public string PostedById { get; set; }
+        public ApplicationUser PostedBy { get; set; }
+        
+        public DateTime? PostedDate { get; set; }
         
         public string RejectionReason { get; set; }
         

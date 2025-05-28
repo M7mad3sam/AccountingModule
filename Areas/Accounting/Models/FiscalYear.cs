@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using AspNetCoreMvcTemplate.Models;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
 {
@@ -25,6 +26,17 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public bool IsClosed { get; set; }
         
         public bool IsActive { get; set; } = true;
+        
+        public string CreatedById { get; set; }
+        public ApplicationUser CreatedBy { get; set; }
+        
+        [Required]
+        public DateTime CreatedDate { get; set; }
+        
+        public string ModifiedById { get; set; }
+        public ApplicationUser ModifiedBy { get; set; }
+        
+        public DateTime? ModifiedDate { get; set; }
         
         public ICollection<FiscalPeriod> FiscalPeriods { get; set; }
     }
