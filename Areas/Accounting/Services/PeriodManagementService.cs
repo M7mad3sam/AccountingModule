@@ -498,16 +498,16 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             
             foreach (var account in revenueAccounts)
             {
-                var balance = await _generalLedgerService.GetAccountBalanceAsync(
+                var balance = await _generalLedgerService.GetAccountBalancesAsync(
                     account.Id, previousFiscalYear.StartDate, previousFiscalYear.EndDate);
-                totalRevenue += balance;
+                totalRevenue += balance.ClosingBalance;
             }
             
             foreach (var account in expenseAccounts)
             {
-                var balance = await _generalLedgerService.GetAccountBalanceAsync(
+                var balance = await _generalLedgerService.GetAccountBalancesAsync(
                     account.Id, previousFiscalYear.StartDate, previousFiscalYear.EndDate);
-                totalExpenses += balance;
+                totalExpenses += balance.ClosingBalance;
             }
             
             decimal netIncome = totalRevenue - totalExpenses;
@@ -534,9 +534,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             // Add balance sheet account balances
             foreach (var account in balanceSheetAccounts.Where(a => !a.IsRetainedEarnings))
             {
-                var balance = await _generalLedgerService.GetAccountBalanceAsync(
-                    account.Id, null, previousFiscalYear.EndDate);
-                
+                var accountBalance = await _generalLedgerService.GetAccountBalancesAsync(
+                    account.Id, previousFiscalYear.StartDate, previousFiscalYear.EndDate);
+                var balance = accountBalance.ClosingBalance;
                 if (balance != 0)
                 {
                     var line = new JournalEntryLine
@@ -554,9 +554,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             }
 
             // Add retained earnings + net income
-            var retainedEarningsBalance = await _generalLedgerService.GetAccountBalanceAsync(
-                retainedEarnings.Id, null, previousFiscalYear.EndDate);
-            
+            var accountRetainedEarningsBalance = await _generalLedgerService.GetAccountBalancesAsync(
+                retainedEarnings.Id, previousFiscalYear.StartDate, previousFiscalYear.EndDate);
+            var retainedEarningsBalance = accountRetainedEarningsBalance.ClosingBalance;
             var totalRetainedEarnings = retainedEarningsBalance + netIncome;
             
             if (totalRetainedEarnings != 0)
