@@ -267,7 +267,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             return activeWithholdingTaxes.Where(wt => 
                 // Check if the vendor type is applicable
                 (string.IsNullOrEmpty(wt.ApplicableVendorTypes) || 
-                 wt.ApplicableVendorTypes.Split(',').Contains(vendor.Type)) &&
+                 wt.ApplicableVendorTypes.Split(',').Any(vt => vt == vendor.Type.ToString())) &&
                 // Check if amount is above minimum threshold
                 (!wt.MinimumThreshold.HasValue || amount >= wt.MinimumThreshold.Value)
             );
