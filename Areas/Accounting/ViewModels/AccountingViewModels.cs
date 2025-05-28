@@ -4,9 +4,55 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 {
     // Keeping the more complete version from JournalEntryViewModels.cs
     // and removing the duplicate definitions from AccountingViewModels.cs
+
+    public class AccountViewModel
+    {
+        public Guid Id { get; set; }
+
+        public string Code { get; set; }
+
+        public string NameEn { get; set; }
+
+        public string NameAr { get; set; }
+
+        public AccountType Type { get; set; }
+
+        public Guid? ParentId { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public IEnumerable<SelectListItem> AccountTypes { get; set; }
+
+        public IEnumerable<SelectListItem> ParentAccounts { get; set; }
+    }
+
+    public class AccountCostCentersViewModel
+    {
+        public Guid AccountId { get; set; }
+
+        public string AccountName { get; set; }
+
+        public IEnumerable<AccountCostCenter> AccountCostCenters { get; set; }
+
+        public IEnumerable<CostCenter> AvailableCostCenters { get; set; }
+    }
+
+    public class TrialBalanceFilterViewModel
+    {
+        public DateTime AsOfDate { get; set; }
+
+        public Guid? CostCenterId { get; set; }
+
+        public int Level { get; set; }
+        [ValidateNever]
+        public IEnumerable<CostCenter> CostCenters { get; set; }
+        [ValidateNever]
+        public IEnumerable<SelectListItem> Levels { get; set; }
+    }
 }
