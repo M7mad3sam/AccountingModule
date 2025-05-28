@@ -32,6 +32,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         
         public int Level { get; set; }
         
+        public bool IsRetainedEarnings { get; set; }
+        
         public ICollection<AccountCostCenter> AccountCostCenters { get; set; }
         public ICollection<JournalEntryLine> JournalEntryLines { get; set; }
     }

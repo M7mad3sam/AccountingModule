@@ -58,7 +58,16 @@
             </div>
             
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="FiscalPeriodId" class="control-label"></label>
+                        <select asp-for="FiscalPeriodId" asp-items="Model.AvailableFiscalPeriods" class="form-control select2" required>
+                            <option value="">-- Select Fiscal Period --</option>
+                        </select>
+                        <span asp-validation-for="FiscalPeriodId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
                     <div class="form-group">
                         <label asp-for="ClientId" class="control-label"></label>
                         <select asp-for="ClientId" asp-items="Model.AvailableClients" class="form-control select2">
@@ -66,7 +75,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label asp-for="VendorId" class="control-label"></label>
                         <select asp-for="VendorId" asp-items="Model.AvailableVendors" class="form-control select2">
@@ -74,24 +83,24 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label asp-for="Currency" class="control-label"></label>
                         <input asp-for="Currency" class="form-control" />
                         <span asp-validation-for="Currency" class="text-danger"></span>
                     </div>
                 </div>
-                <div class="col-md-2">
+            </div>
+            
+            <div class="row">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label asp-for="ExchangeRate" class="control-label"></label>
                         <input asp-for="ExchangeRate" class="form-control" />
                         <span asp-validation-for="ExchangeRate" class="text-danger"></span>
                     </div>
                 </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-9">
                     <div class="form-group">
                         <label asp-for="SourceDocument" class="control-label"></label>
                         <input asp-for="SourceDocument" class="form-control" />
@@ -135,37 +144,37 @@
                                 {
                                     <tr class="journal-line-row">
                                         <td>
-                                            <input type="hidden" name="Lines[@i].Id" value="@Model.Lines[i].Id" />
-                                            <select name="Lines[@i].AccountId" class="form-control select2 account-select" required>
+                                            <input type="hidden" name="Lines[i].Id" value="@Model.Lines[i].Id" />
+                                            <select name="Lines[i].AccountId" class="form-control select2 account-select" required>
                                                 <option value="">-- Select Account --</option>
-                                                @foreach (var item in Model.Lines[i].AvailableAccounts)
+                                                @foreach (var item in Model.AvailableAccounts)
                                                 {
                                                     <option value="@item.Value" @(item.Value == Model.Lines[i].AccountId.ToString() ? "selected" : "")>@item.Text</option>
                                                 }
                                             </select>
                                         </td>
                                         <td>
-                                            <select name="Lines[@i].CostCenterId" class="form-control select2 cost-center-select">
+                                            <select name="Lines[i].CostCenterId" class="form-control select2 cost-center-select">
                                                 <option value="">-- Select Cost Center --</option>
-                                                @foreach (var item in Model.Lines[i].AvailableCostCenters)
+                                                @foreach (var item in Model.AvailableCostCenters)
                                                 {
                                                     <option value="@item.Value" @(item.Value == Model.Lines[i].CostCenterId?.ToString() ? "selected" : "")>@item.Text</option>
                                                 }
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="text" name="Lines[@i].Description" class="form-control" value="@Model.Lines[i].Description" />
+                                            <input type="text" name="Lines[i].Description" class="form-control" value="@Model.Lines[i].Description" />
                                         </td>
                                         <td>
-                                            <input type="number" name="Lines[@i].Debit" class="form-control debit-input" value="@Model.Lines[i].Debit" min="0" step="0.01" />
+                                            <input type="number" name="Lines[i].Debit" class="form-control debit-input" value="@Model.Lines[i].Debit" min="0" step="0.01" />
                                         </td>
                                         <td>
-                                            <input type="number" name="Lines[@i].Credit" class="form-control credit-input" value="@Model.Lines[i].Credit" min="0" step="0.01" />
+                                            <input type="number" name="Lines[i].Credit" class="form-control credit-input" value="@Model.Lines[i].Credit" min="0" step="0.01" />
                                         </td>
                                         <td>
-                                            <select name="Lines[@i].TaxRateId" class="form-control select2 tax-rate-select">
+                                            <select name="Lines[i].TaxRateId" class="form-control select2 tax-rate-select">
                                                 <option value="">-- Select Tax Rate --</option>
-                                                @foreach (var item in Model.Lines[i].AvailableTaxRates)
+                                                @foreach (var item in Model.AvailableTaxRates)
                                                 {
                                                     <option value="@item.Value" @(item.Value == Model.Lines[i].TaxRateId?.ToString() ? "selected" : "")>@item.Text</option>
                                                 }
@@ -253,37 +262,37 @@
     <script id="line-template" type="text/template">
         <tr class="journal-line-row">
             <td>
-                <input type="hidden" name="Lines[{index}].Id" value="00000000-0000-0000-0000-000000000000" />
-                <select name="Lines[{index}].AccountId" class="form-control select2 account-select" required>
+                <input type="hidden" name="Lines[INDEX].Id" value="00000000-0000-0000-0000-000000000000" />
+                <select name="Lines[INDEX].AccountId" class="form-control select2 account-select" required>
                     <option value="">-- Select Account --</option>
-                    @foreach (var item in ViewBag.Accounts)
+                    @foreach (var item in Model.AvailableAccounts)
                     {
                         <option value="@item.Value">@item.Text</option>
                     }
                 </select>
             </td>
             <td>
-                <select name="Lines[{index}].CostCenterId" class="form-control select2 cost-center-select">
+                <select name="Lines[INDEX].CostCenterId" class="form-control select2 cost-center-select">
                     <option value="">-- Select Cost Center --</option>
-                    @foreach (var item in ViewBag.CostCenters)
+                    @foreach (var item in Model.AvailableCostCenters)
                     {
                         <option value="@item.Value">@item.Text</option>
                     }
                 </select>
             </td>
             <td>
-                <input type="text" name="Lines[{index}].Description" class="form-control" />
+                <input type="text" name="Lines[INDEX].Description" class="form-control" />
             </td>
             <td>
-                <input type="number" name="Lines[{index}].Debit" class="form-control debit-input" value="0.00" min="0" step="0.01" />
+                <input type="number" name="Lines[INDEX].Debit" class="form-control debit-input" value="0.00" min="0" step="0.01" />
             </td>
             <td>
-                <input type="number" name="Lines[{index}].Credit" class="form-control credit-input" value="0.00" min="0" step="0.01" />
+                <input type="number" name="Lines[INDEX].Credit" class="form-control credit-input" value="0.00" min="0" step="0.01" />
             </td>
             <td>
-                <select name="Lines[{index}].TaxRateId" class="form-control select2 tax-rate-select">
+                <select name="Lines[INDEX].TaxRateId" class="form-control select2 tax-rate-select">
                     <option value="">-- Select Tax Rate --</option>
-                    @foreach (var item in ViewBag.TaxRates)
+                    @foreach (var item in Model.AvailableTaxRates)
                     {
                         <option value="@item.Value">@item.Text</option>
                     }
@@ -317,8 +326,7 @@
             $('#add-line').click(function() {
                 var template = $('#line-template').html();
                 var index = $('.journal-line-row').length;
-                template = template.replace(/{index}/g, index);
-                
+                template = template.replace(/INDEX/g, index);
                 $('#journal-lines-body').append(template);
                 
                 // Initialize Select2 for new row
@@ -326,36 +334,37 @@
                     theme: 'bootstrap4'
                 });
                 
-                // Attach event handlers
-                attachEventHandlers();
-                
-                // Update totals
+                // Bind events for new row
+                bindLineEvents();
                 updateTotals();
             });
             
-            // Remove line
-            function attachEventHandlers() {
+            // Bind events to line rows
+            function bindLineEvents() {
+                // Remove line
                 $('.remove-line').off('click').on('click', function() {
                     $(this).closest('tr').remove();
                     updateTotals();
                     renumberLines();
                 });
                 
-                $('.debit-input, .credit-input').off('input').on('input', function() {
-                    var row = $(this).closest('tr');
-                    var debitInput = row.find('.debit-input');
-                    var creditInput = row.find('.credit-input');
-                    
-                    // If entering debit, clear credit
-                    if ($(this).hasClass('debit-input') && parseFloat($(this).val()) > 0) {
-                        creditInput.val('0.00');
+                // Update totals when inputs change
+                $('.debit-input, .credit-input').off('change keyup').on('change keyup', function() {
+                    updateTotals();
+                });
+                
+                // Ensure only debit or credit is entered
+                $('.debit-input').off('change keyup').on('change keyup', function() {
+                    if (parseFloat($(this).val()) > 0) {
+                        $(this).closest('tr').find('.credit-input').val('0.00');
                     }
-                    
-                    // If entering credit, clear debit
-                    if ($(this).hasClass('credit-input') && parseFloat($(this).val()) > 0) {
-                        debitInput.val('0.00');
+                    updateTotals();
+                });
+                
+                $('.credit-input').off('change keyup').on('change keyup', function() {
+                    if (parseFloat($(this).val()) > 0) {
+                        $(this).closest('tr').find('.debit-input').val('0.00');
                     }
-                    
                     updateTotals();
                 });
             }
@@ -404,9 +413,8 @@
                 }
             }
             
-            // Initial setup
-            attachEventHandlers();
-            updateTotals();
+            // Initial binding
+            bindLineEvents();
             
             // Add initial line if none exist
             if ($('.journal-line-row').length === 0) {

@@ -11,13 +11,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
     public interface IClientVendorService
     {
         // Client methods
-        Task<IEnumerable<Client>> GetClientsAsync(string searchTerm = null, string clientType = null, bool? isActive = null);
+        Task<IEnumerable<Client>> GetClientsAsync(string searchTerm = null, ClientType? clientType = null, bool? isActive = null);
         Task<Client> GetClientByIdAsync(Guid id);
         Task<Client> GetClientByCodeAsync(string code);
         Task AddClientAsync(Client client);
         Task UpdateClientAsync(Client client);
         Task DeleteClientAsync(Guid id);
-        Task<IEnumerable<string>> GetClientTypesAsync();
+        Task<IEnumerable<ClientType>> GetClientTypesAsync();
         
         // Vendor methods
         Task<IEnumerable<Vendor>> GetVendorsAsync(string searchTerm = null, string vendorType = null, bool? isActive = null, bool? subjectToWithholdingTax = null);
@@ -50,7 +50,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         #region Client Methods
 
-        public async Task<IEnumerable<Client>> GetClientsAsync(string searchTerm = null, string clientType = null, bool? isActive = null)
+        public async Task<IEnumerable<Client>> GetClientsAsync(string searchTerm = null, ClientType? clientType = null, bool? isActive = null)
         {
             var specification = new Specification<Client>(c => true);
 
@@ -61,12 +61,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                     c.Code.ToLower().Contains(searchTerm) || 
                     c.NameEn.ToLower().Contains(searchTerm) || 
                     c.NameAr.ToLower().Contains(searchTerm) ||
-                    c.TaxRegistrationNumber.ToLower().Contains(searchTerm));
+                    (c.TaxRegistrationNumber != null && c.TaxRegistrationNumber.ToLower().Contains(searchTerm)));
             }
 
-            if (!string.IsNullOrWhiteSpace(clientType))
+            if (clientType.HasValue)
             {
-                specification = specification.And(c => c.ClientType == clientType);
+                specification = specification.And(c => c.ClientType == clientType.Value);
             }
 
             if (isActive.HasValue)
@@ -133,14 +133,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             await _auditService.LogActivityAsync("Client", "Delete", $"Deleted client: {client.NameEn}");
         }
 
-        public async Task<IEnumerable<string>> GetClientTypesAsync()
+        public async Task<IEnumerable<ClientType>> GetClientTypesAsync()
         {
-            var clients = await _clientRepository.GetAllAsync();
-            return clients
-                .Where(c => !string.IsNullOrEmpty(c.ClientType))
-                .Select(c => c.ClientType)
-                .Distinct()
-                .OrderBy(t => t);
+            return Enum.GetValues(typeof(ClientType)).Cast<ClientType>();
         }
 
         #endregion
@@ -158,7 +153,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                     v.Code.ToLower().Contains(searchTerm) || 
                     v.NameEn.ToLower().Contains(searchTerm) || 
                     v.NameAr.ToLower().Contains(searchTerm) ||
-                    v.TaxRegistrationNumber.ToLower().Contains(searchTerm));
+                    (v.TaxRegistrationNumber != null && v.TaxRegistrationNumber.ToLower().Contains(searchTerm)));
             }
 
             if (!string.IsNullOrWhiteSpace(vendorType))

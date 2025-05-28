@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
+using System.Linq;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 {
@@ -72,10 +73,18 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Display(Name = "Notes")]
         public string Notes { get; set; }
         
+        [Display(Name = "Fiscal Period")]
+        public Guid FiscalPeriodId { get; set; }
+        
         public List<JournalEntryLineViewModel> Lines { get; set; } = new List<JournalEntryLineViewModel>();
         
         public IEnumerable<SelectListItem> AvailableClients { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> AvailableVendors { get; set; } = new List<SelectListItem>();
+        public IEnumerable<SelectListItem> AvailableAccounts { get; set; } = new List<SelectListItem>();
+        public IEnumerable<SelectListItem> AvailableCostCenters { get; set; } = new List<SelectListItem>();
+        public IEnumerable<SelectListItem> AvailableTaxRates { get; set; } = new List<SelectListItem>();
+        public IEnumerable<SelectListItem> AvailableWithholdingTaxes { get; set; } = new List<SelectListItem>();
+        public IEnumerable<SelectListItem> AvailableFiscalPeriods { get; set; } = new List<SelectListItem>();
         
         [Display(Name = "Total Debit")]
         public decimal TotalDebit => Lines.Sum(l => l.Debit);

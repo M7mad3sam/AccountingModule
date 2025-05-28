@@ -38,6 +38,11 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         
         public DateTime? ModifiedDate { get; set; }
         
+        public string ClosedById { get; set; }
+        public ApplicationUser ClosedBy { get; set; }
+        
+        public DateTime? ClosedDate { get; set; }
+        
         public ICollection<FiscalPeriod> FiscalPeriods { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using System.Linq;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
@@ -23,6 +24,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         
         // Fiscal Period methods
         Task<IEnumerable<FiscalPeriod>> GetFiscalPeriodsAsync(Guid? fiscalYearId = null, bool? isActive = null, bool? isClosed = null);
+        Task<IEnumerable<FiscalPeriod>> GetOpenFiscalPeriodsAsync(Guid? fiscalYearId = null);
         Task<FiscalPeriod> GetFiscalPeriodByIdAsync(Guid id);
         Task<FiscalPeriod> GetFiscalPeriodByDateAsync(DateTime date);
         Task AddFiscalPeriodAsync(FiscalPeriod fiscalPeriod);
@@ -181,6 +183,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             }
 
             return await _fiscalPeriodRepository.FindAllAsync(specification);
+        }
+
+        public async Task<IEnumerable<FiscalPeriod>> GetOpenFiscalPeriodsAsync(Guid? fiscalYearId = null)
+        {
+            // Get open fiscal periods (not closed)
+            return await GetFiscalPeriodsAsync(fiscalYearId, true, false);
         }
 
         public async Task<FiscalPeriod> GetFiscalPeriodByIdAsync(Guid id)
@@ -381,29 +389,18 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             if (!nextFiscalYear.Any())
             {
                 result.IsValid = false;
-                result.Messages.Add("Next fiscal year not found. You must create the next fiscal year before closing this one.");
+                result.Messages.Add("Next fiscal year not found. You must create the next fiscal year before closing the current one");
             }
 
-            // Check if there are any pending journal entries
-            var pendingEntries = await _journalEntryRepository.FindAllAsync(
-                je => je.PostingDate >= fiscalYear.StartDate && 
-                      je.PostingDate <= fiscalYear.EndDate &&
-                      (je.Status == JournalEntryStatus.Draft || je.Status == JournalEntryStatus.PendingApproval));
+            // Check if there are any unposted journal entries
+            var unpostedEntries = await _journalEntryRepository.FindAllAsync(
+                je => je.FiscalPeriod.FiscalYearId == fiscalYearId && 
+                      je.Status != JournalEntryStatus.Posted);
             
-            if (pendingEntries.Any())
+            if (unpostedEntries.Any())
             {
                 result.IsValid = false;
-                result.Messages.Add($"There are {pendingEntries.Count()} pending journal entries that must be processed first");
-            }
-
-            // Check if retained earnings account exists
-            var retainedEarningsAccounts = await _accountRepository.FindAllAsync(
-                a => a.Type == AccountType.Equity && a.IsRetainedEarnings);
-            
-            if (!retainedEarningsAccounts.Any())
-            {
-                result.IsValid = false;
-                result.Messages.Add("Retained earnings account not found. You must create a retained earnings account before closing the fiscal year.");
+                result.Messages.Add($"There are {unpostedEntries.Count()} unposted journal entries that must be posted or deleted");
             }
 
             return result;
@@ -415,20 +412,26 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             var validationResult = await ValidateYearEndClosingAsync(fiscalYearId);
             if (!validationResult.IsValid)
             {
-                throw new InvalidOperationException($"Cannot perform year-end closing: {string.Join(", ", validationResult.Messages)}");
+                throw new InvalidOperationException(
+                    $"Cannot perform year-end closing: {string.Join(", ", validationResult.Messages)}");
             }
 
             var fiscalYear = await _fiscalYearRepository.GetByIdAsync(fiscalYearId);
             
-            // Get next fiscal year
+            // Find next fiscal year
             var nextFiscalYears = await _fiscalYearRepository.FindAllAsync(
                 fy => fy.StartDate == fiscalYear.EndDate.AddDays(1));
-            var nextFiscalYear = nextFiscalYears.First();
+            var nextFiscalYear = nextFiscalYears.FirstOrDefault();
+            
+            if (nextFiscalYear == null)
+            {
+                throw new InvalidOperationException("Next fiscal year not found");
+            }
 
             // Generate opening balances for next fiscal year
             await GenerateOpeningBalancesAsync(nextFiscalYear.Id);
 
-            // Mark fiscal year as closed
+            // Close fiscal year
             fiscalYear.IsClosed = true;
             
             // Set closed by
@@ -439,7 +442,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             fiscalYear.ModifiedDate = DateTime.Now;
 
             await _fiscalYearRepository.UpdateAsync(fiscalYear);
-            await _auditService.LogActivityAsync("FiscalYear", "Close", $"Performed year-end closing for fiscal year: {fiscalYear.Name}");
+            await _auditService.LogActivityAsync("FiscalYear", "Close", $"Closed fiscal year: {fiscalYear.Name}");
         }
 
         public async Task GenerateOpeningBalancesAsync(Guid fiscalYearId)
@@ -451,121 +454,132 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             }
 
             // Find previous fiscal year
-            var prevYears = await _fiscalYearRepository.FindAllAsync(
+            var previousFiscalYears = await _fiscalYearRepository.FindAllAsync(
                 fy => fy.EndDate.AddDays(1) == fiscalYear.StartDate);
+            var previousFiscalYear = previousFiscalYears.FirstOrDefault();
             
-            if (!prevYears.Any())
+            if (previousFiscalYear == null)
             {
                 throw new InvalidOperationException("Previous fiscal year not found");
             }
 
-            var prevYear = prevYears.First();
-
-            // Check if previous fiscal year is closed
-            if (!prevYear.IsClosed)
+            // Get first period of new fiscal year
+            var firstPeriod = await _fiscalPeriodRepository.FindAllAsync(
+                fp => fp.FiscalYearId == fiscalYearId);
+            var openingPeriod = firstPeriod.OrderBy(fp => fp.StartDate).FirstOrDefault();
+            
+            if (openingPeriod == null)
             {
-                throw new InvalidOperationException("Previous fiscal year must be closed before generating opening balances");
+                throw new InvalidOperationException("No periods found in the fiscal year");
             }
 
-            // Get balance sheet accounts (Assets, Liabilities, Equity)
+            // Get all balance sheet accounts (Assets, Liabilities, Equity)
             var balanceSheetAccounts = await _accountRepository.FindAllAsync(
-                a => a.Type == AccountType.Asset || a.Type == AccountType.Liability || a.Type == AccountType.Equity);
+                a => a.Type == AccountType.Asset || 
+                     a.Type == AccountType.Liability || 
+                     a.Type == AccountType.Equity);
+
+            // Get retained earnings account
+            var retainedEarningsAccount = await _accountRepository.FindAllAsync(
+                a => a.IsRetainedEarnings);
+            var retainedEarnings = retainedEarningsAccount.FirstOrDefault();
+            
+            if (retainedEarnings == null)
+            {
+                throw new InvalidOperationException("Retained earnings account not found");
+            }
+
+            // Calculate net income/loss for previous fiscal year
+            var revenueAccounts = await _accountRepository.FindAllAsync(a => a.Type == AccountType.Revenue);
+            var expenseAccounts = await _accountRepository.FindAllAsync(a => a.Type == AccountType.Expense);
+            
+            decimal totalRevenue = 0;
+            decimal totalExpenses = 0;
+            
+            foreach (var account in revenueAccounts)
+            {
+                var balance = await _generalLedgerService.GetAccountBalanceAsync(
+                    account.Id, previousFiscalYear.StartDate, previousFiscalYear.EndDate);
+                totalRevenue += balance;
+            }
+            
+            foreach (var account in expenseAccounts)
+            {
+                var balance = await _generalLedgerService.GetAccountBalanceAsync(
+                    account.Id, previousFiscalYear.StartDate, previousFiscalYear.EndDate);
+                totalExpenses += balance;
+            }
+            
+            decimal netIncome = totalRevenue - totalExpenses;
 
             // Create opening balance journal entry
             var journalEntry = new JournalEntry
             {
-                EntryDate = fiscalYear.StartDate,
+                Number = $"OB-{fiscalYear.Code}",
+                Date = fiscalYear.StartDate,
+                EntryDate = DateTime.Now,
                 PostingDate = fiscalYear.StartDate,
-                Reference = $"OB-{fiscalYear.Code}",
-                Description = $"Opening Balance for {fiscalYear.Name}",
+                Description = $"Opening balances for fiscal year {fiscalYear.Name}",
+                Reference = $"Year-end closing {previousFiscalYear.Name}",
                 Status = JournalEntryStatus.Posted,
-                Currency = "EGP",
-                ExchangeRate = 1,
-                IsRecurring = false,
+                FiscalPeriodId = openingPeriod.Id,
                 IsSystemGenerated = true,
-                SourceDocument = "Year-End Closing",
+                CreatedById = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier),
+                CreatedAt = DateTime.Now,
+                PostedById = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier),
+                PostedDate = DateTime.Now,
                 Lines = new List<JournalEntryLine>()
             };
 
-            // Set created by
-            var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            journalEntry.CreatedById = userId;
-            journalEntry.CreatedDate = DateTime.Now;
-            journalEntry.PostedById = userId;
-            journalEntry.PostedDate = DateTime.Now;
-
-            // Add journal entry lines for each balance sheet account with non-zero balance
-            foreach (var account in balanceSheetAccounts)
+            // Add balance sheet account balances
+            foreach (var account in balanceSheetAccounts.Where(a => !a.IsRetainedEarnings))
             {
-                var balance = await _generalLedgerService.GetAccountBalanceAsync(account.Id, prevYear.EndDate);
+                var balance = await _generalLedgerService.GetAccountBalanceAsync(
+                    account.Id, null, previousFiscalYear.EndDate);
                 
-                if (Math.Abs(balance) > 0.01m)
+                if (balance != 0)
                 {
                     var line = new JournalEntryLine
                     {
                         AccountId = account.Id,
-                        Description = $"Opening Balance for {account.NameEn}"
+                        Description = $"Opening balance for {account.Code} - {account.NameEn}",
+                        DebitAmount = balance > 0 && account.Type == AccountType.Asset ? balance : 
+                                     balance < 0 && (account.Type == AccountType.Liability || account.Type == AccountType.Equity) ? Math.Abs(balance) : 0,
+                        CreditAmount = balance < 0 && account.Type == AccountType.Asset ? Math.Abs(balance) : 
+                                      balance > 0 && (account.Type == AccountType.Liability || account.Type == AccountType.Equity) ? balance : 0
                     };
-
-                    // Determine debit or credit based on account type and balance
-                    if ((account.Type == AccountType.Asset && balance > 0) ||
-                        (account.Type != AccountType.Asset && balance < 0))
-                    {
-                        line.Debit = Math.Abs(balance);
-                        line.Credit = 0;
-                    }
-                    else
-                    {
-                        line.Debit = 0;
-                        line.Credit = Math.Abs(balance);
-                    }
-
+                    
                     journalEntry.Lines.Add(line);
                 }
             }
 
-            // Ensure the journal entry is balanced
-            var totalDebit = journalEntry.Lines.Sum(l => l.Debit);
-            var totalCredit = journalEntry.Lines.Sum(l => l.Credit);
-            var difference = totalDebit - totalCredit;
-
-            if (Math.Abs(difference) > 0.01m)
+            // Add retained earnings + net income
+            var retainedEarningsBalance = await _generalLedgerService.GetAccountBalanceAsync(
+                retainedEarnings.Id, null, previousFiscalYear.EndDate);
+            
+            var totalRetainedEarnings = retainedEarningsBalance + netIncome;
+            
+            if (totalRetainedEarnings != 0)
             {
-                // Find retained earnings account
-                var retainedEarningsAccounts = await _accountRepository.FindAllAsync(
-                    a => a.Type == AccountType.Equity && a.IsRetainedEarnings);
-                
-                if (!retainedEarningsAccounts.Any())
+                var line = new JournalEntryLine
                 {
-                    throw new InvalidOperationException("Retained earnings account not found");
-                }
-
-                var retainedEarningsAccount = retainedEarningsAccounts.First();
-
-                // Add balancing entry to retained earnings
-                var balancingLine = new JournalEntryLine
-                {
-                    AccountId = retainedEarningsAccount.Id,
-                    Description = "Retained Earnings"
+                    AccountId = retainedEarnings.Id,
+                    Description = $"Retained earnings including net income/loss of {netIncome:C}",
+                    DebitAmount = totalRetainedEarnings < 0 ? Math.Abs(totalRetainedEarnings) : 0,
+                    CreditAmount = totalRetainedEarnings > 0 ? totalRetainedEarnings : 0
                 };
-
-                if (difference > 0)
-                {
-                    balancingLine.Debit = 0;
-                    balancingLine.Credit = difference;
-                }
-                else
-                {
-                    balancingLine.Debit = Math.Abs(difference);
-                    balancingLine.Credit = 0;
-                }
-
-                journalEntry.Lines.Add(balancingLine);
+                
+                journalEntry.Lines.Add(line);
             }
 
-            // Save opening balance journal entry
+            // Calculate totals
+            journalEntry.TotalDebit = journalEntry.Lines.Sum(l => l.DebitAmount);
+            journalEntry.TotalCredit = journalEntry.Lines.Sum(l => l.CreditAmount);
+
+            // Save journal entry
             await _journalEntryRepository.AddAsync(journalEntry);
-            await _auditService.LogActivityAsync("FiscalYear", "OpeningBalance", $"Generated opening balances for fiscal year: {fiscalYear.Name}");
+            await _auditService.LogActivityAsync("JournalEntry", "Create", 
+                $"Created opening balance journal entry for fiscal year {fiscalYear.Name}");
         }
 
         #endregion
@@ -574,32 +588,45 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         private async Task ValidateFiscalYearAsync(FiscalYear fiscalYear, bool isUpdate = false)
         {
-            // Check if code is unique
-            var existingFiscalYear = await GetFiscalYearByCodeAsync(fiscalYear.Code);
-            if (existingFiscalYear != null && (!isUpdate || existingFiscalYear.Id != fiscalYear.Id))
-            {
-                throw new InvalidOperationException($"A fiscal year with code '{fiscalYear.Code}' already exists");
-            }
-
             // Check if dates are valid
             if (fiscalYear.StartDate >= fiscalYear.EndDate)
             {
-                throw new InvalidOperationException("Start date must be before end date");
+                throw new ArgumentException("Start date must be before end date");
+            }
+
+            // Check if code is unique
+            var existingByCode = await _fiscalYearRepository.FindAllAsync(fy => fy.Code == fiscalYear.Code);
+            if (existingByCode.Any(fy => !isUpdate || fy.Id != fiscalYear.Id))
+            {
+                throw new ArgumentException($"Fiscal year with code {fiscalYear.Code} already exists");
             }
 
             // Check if dates overlap with existing fiscal years
-            var overlappingFiscalYears = await _fiscalYearRepository.FindAllAsync(
-                fy => (fy.StartDate <= fiscalYear.EndDate && fy.EndDate >= fiscalYear.StartDate) &&
-                      (!isUpdate || fy.Id != fiscalYear.Id));
-            
-            if (overlappingFiscalYears.Any())
+            var existingFiscalYears = await _fiscalYearRepository.FindAllAsync(fy => true);
+            foreach (var existing in existingFiscalYears)
             {
-                throw new InvalidOperationException("Fiscal year dates overlap with existing fiscal years");
+                if (isUpdate && existing.Id == fiscalYear.Id)
+                {
+                    continue;
+                }
+
+                if ((fiscalYear.StartDate >= existing.StartDate && fiscalYear.StartDate <= existing.EndDate) ||
+                    (fiscalYear.EndDate >= existing.StartDate && fiscalYear.EndDate <= existing.EndDate) ||
+                    (fiscalYear.StartDate <= existing.StartDate && fiscalYear.EndDate >= existing.EndDate))
+                {
+                    throw new ArgumentException($"Fiscal year dates overlap with existing fiscal year {existing.Name}");
+                }
             }
         }
 
         private async Task ValidateFiscalPeriodAsync(FiscalPeriod fiscalPeriod, bool isUpdate = false)
         {
+            // Check if dates are valid
+            if (fiscalPeriod.StartDate >= fiscalPeriod.EndDate)
+            {
+                throw new ArgumentException("Start date must be before end date");
+            }
+
             // Check if fiscal year exists
             var fiscalYear = await _fiscalYearRepository.GetByIdAsync(fiscalPeriod.FiscalYearId);
             if (fiscalYear == null)
@@ -607,27 +634,36 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 throw new ArgumentException("Fiscal year not found");
             }
 
-            // Check if dates are valid
-            if (fiscalPeriod.StartDate >= fiscalPeriod.EndDate)
-            {
-                throw new InvalidOperationException("Start date must be before end date");
-            }
-
             // Check if dates are within fiscal year
             if (fiscalPeriod.StartDate < fiscalYear.StartDate || fiscalPeriod.EndDate > fiscalYear.EndDate)
             {
-                throw new InvalidOperationException("Fiscal period dates must be within fiscal year dates");
+                throw new ArgumentException("Fiscal period dates must be within fiscal year dates");
             }
 
-            // Check if dates overlap with existing fiscal periods
-            var overlappingFiscalPeriods = await _fiscalPeriodRepository.FindAllAsync(
-                fp => fp.FiscalYearId == fiscalPeriod.FiscalYearId &&
-                      (fp.StartDate <= fiscalPeriod.EndDate && fp.EndDate >= fiscalPeriod.StartDate) &&
-                      (!isUpdate || fp.Id != fiscalPeriod.Id));
-            
-            if (overlappingFiscalPeriods.Any())
+            // Check if code is unique within fiscal year
+            var existingByCode = await _fiscalPeriodRepository.FindAllAsync(
+                fp => fp.Code == fiscalPeriod.Code && fp.FiscalYearId == fiscalPeriod.FiscalYearId);
+            if (existingByCode.Any(fp => !isUpdate || fp.Id != fiscalPeriod.Id))
             {
-                throw new InvalidOperationException("Fiscal period dates overlap with existing fiscal periods");
+                throw new ArgumentException($"Fiscal period with code {fiscalPeriod.Code} already exists in this fiscal year");
+            }
+
+            // Check if dates overlap with existing fiscal periods in the same fiscal year
+            var existingFiscalPeriods = await _fiscalPeriodRepository.FindAllAsync(
+                fp => fp.FiscalYearId == fiscalPeriod.FiscalYearId);
+            foreach (var existing in existingFiscalPeriods)
+            {
+                if (isUpdate && existing.Id == fiscalPeriod.Id)
+                {
+                    continue;
+                }
+
+                if ((fiscalPeriod.StartDate >= existing.StartDate && fiscalPeriod.StartDate <= existing.EndDate) ||
+                    (fiscalPeriod.EndDate >= existing.StartDate && fiscalPeriod.EndDate <= existing.EndDate) ||
+                    (fiscalPeriod.StartDate <= existing.StartDate && fiscalPeriod.EndDate >= existing.EndDate))
+                {
+                    throw new ArgumentException($"Fiscal period dates overlap with existing fiscal period {existing.Name}");
+                }
             }
         }
 
@@ -641,11 +677,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
             while (currentDate <= endDate)
             {
-                var periodEndDate = new DateTime(
-                    currentDate.Year, 
-                    currentDate.Month, 
-                    DateTime.DaysInMonth(currentDate.Year, currentDate.Month));
-                
+                var periodEndDate = new DateTime(currentDate.Year, currentDate.Month, DateTime.DaysInMonth(currentDate.Year, currentDate.Month));
                 if (periodEndDate > endDate)
                 {
                     periodEndDate = endDate;
@@ -654,14 +686,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 var fiscalPeriod = new FiscalPeriod
                 {
                     FiscalYearId = fiscalYear.Id,
-                    Name = $"Period {periodNumber}",
                     Code = $"{fiscalYear.Code}-{periodNumber:D2}",
+                    Name = $"{currentDate:MMM yyyy}",
                     StartDate = currentDate,
                     EndDate = periodEndDate,
                     IsActive = true,
                     IsClosed = false,
                     CreatedById = fiscalYear.CreatedById,
-                    CreatedDate = fiscalYear.CreatedDate
+                    CreatedDate = DateTime.Now
                 };
 
                 await _fiscalPeriodRepository.AddAsync(fiscalPeriod);
