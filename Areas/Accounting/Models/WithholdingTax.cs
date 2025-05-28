@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
 {
-    public class TaxRate
+    public class WithholdingTax
     {
         public Guid Id { get; set; }
         
@@ -26,8 +26,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         [Required]
         public decimal Rate { get; set; }
         
-        [Required]
-        public TaxType Type { get; set; }
+        public string ApplicableVendorTypes { get; set; }
+        
+        public decimal? MinimumThreshold { get; set; }
         
         [Required]
         public DateTime EffectiveFrom { get; set; }
@@ -37,11 +38,5 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public bool IsActive { get; set; } = true;
         
         public ICollection<JournalEntryLine> JournalEntryLines { get; set; }
-    }
-
-    public enum TaxType
-    {
-        VAT = 1,
-        Withholding = 2
     }
 }

@@ -1,0 +1,53 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.CashFlowFilterViewModel
+
+@{
+    ViewData["Title"] = "Cash Flow Statement";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Cash Flow Statement</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="CashFlow" method="post">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="FromDate" class="control-label"></label>
+                        <input asp-for="FromDate" class="form-control" />
+                        <span asp-validation-for="FromDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="ToDate" class="control-label"></label>
+                        <input asp-for="ToDate" class="form-control" />
+                        <span asp-validation-for="ToDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="CostCenterId" class="control-label"></label>
+                        <select asp-for="CostCenterId" class="form-control select2" asp-items="@(new SelectList(Model.CostCenters, "Id", "NameEn"))">
+                            <option value="">-- All Cost Centers --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Generate Report</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(function () {
+            $('.select2').select2();
+        });
+    </script>
+}

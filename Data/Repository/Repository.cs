@@ -27,11 +27,13 @@ namespace AspNetCoreMvcTemplate.Data.Repository
         // Update methods
         void Update(T entity);
         void UpdateRange(IEnumerable<T> entities);
+        Task UpdateAsync(T entity);
         
         // Delete methods
         void Delete(T entity);
         void Delete(Guid id);
         void DeleteRange(IEnumerable<T> entities);
+        Task DeleteAsync(Guid id);
 
         // Transaction management
         Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync();
@@ -169,6 +171,12 @@ namespace AspNetCoreMvcTemplate.Data.Repository
                 Update(entity);
             }
         }
+        
+        public async Task UpdateAsync(T entity)
+        {
+            Update(entity);
+            await SaveAsync();
+        }
 
         public void Delete(T entity)
         {
@@ -186,6 +194,12 @@ namespace AspNetCoreMvcTemplate.Data.Repository
             {
                 Delete(entity);
             }
+        }
+        
+        public async Task DeleteAsync(Guid id)
+        {
+            Delete(id);
+            await SaveAsync();
         }
 
         public void DeleteRange(IEnumerable<T> entities)

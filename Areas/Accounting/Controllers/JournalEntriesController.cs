@@ -2,313 +2,625 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Localization;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using AspNetCoreMvcTemplate.Areas.Accounting.Services;
 using AspNetCoreMvcTemplate.Areas.Accounting.ViewModels;
 using System.Linq;
-using Microsoft.AspNetCore.Identity;
-using AspNetCoreMvcTemplate.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
 {
     [Area("Accounting")]
-    [Authorize(Roles = "Admin,Accountant,Manager")]
+    [Authorize(Roles = "Admin,Accountant")]
     public class JournalEntriesController : Controller
     {
         private readonly IGeneralLedgerService _generalLedgerService;
         private readonly IChartOfAccountsService _chartOfAccountsService;
         private readonly ICostCenterService _costCenterService;
-        private readonly IPeriodManagementService _periodManagementService;
+        private readonly IClientVendorService _clientVendorService;
         private readonly ITaxService _taxService;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPeriodManagementService _periodManagementService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IStringLocalizer<JournalEntriesController> _localizer;
 
         public JournalEntriesController(
             IGeneralLedgerService generalLedgerService,
             IChartOfAccountsService chartOfAccountsService,
             ICostCenterService costCenterService,
-            IPeriodManagementService periodManagementService,
+            IClientVendorService clientVendorService,
             ITaxService taxService,
-            UserManager<ApplicationUser> userManager,
+            IPeriodManagementService periodManagementService,
+            IWebHostEnvironment webHostEnvironment,
             IStringLocalizer<JournalEntriesController> localizer)
         {
             _generalLedgerService = generalLedgerService;
             _chartOfAccountsService = chartOfAccountsService;
             _costCenterService = costCenterService;
-            _periodManagementService = periodManagementService;
+            _clientVendorService = clientVendorService;
             _taxService = taxService;
-            _userManager = userManager;
+            _periodManagementService = periodManagementService;
+            _webHostEnvironment = webHostEnvironment;
             _localizer = localizer;
         }
 
-        public async Task<IActionResult> Index(DateTime? fromDate = null, DateTime? toDate = null, JournalEntryStatus? status = null, int page = 1)
+        [HttpGet]
+        public async Task<IActionResult> Index(
+            string searchTerm = null, 
+            JournalEntryStatus? status = null, 
+            DateTime? fromDate = null, 
+            DateTime? toDate = null, 
+            Guid? clientId = null, 
+            Guid? vendorId = null, 
+            bool? isRecurring = null, 
+            bool? isSystemGenerated = null)
         {
-            var pageSize = 50;
-            var result = await _generalLedgerService.GetJournalEntriesAsync(fromDate, toDate, status, page, pageSize);
+            var journalEntries = await _generalLedgerService.GetJournalEntriesAsync(
+                searchTerm, status, fromDate, toDate, clientId, vendorId, isRecurring, isSystemGenerated);
+            
+            var clients = await _clientVendorService.GetClientsAsync(isActive: true);
+            var vendors = await _clientVendorService.GetVendorsAsync(isActive: true);
             
             var viewModel = new JournalEntryListViewModel
             {
-                JournalEntries = result.Items,
+                JournalEntries = journalEntries,
+                SearchTerm = searchTerm,
+                Status = status,
                 FromDate = fromDate,
                 ToDate = toDate,
-                Status = status,
-                CurrentPage = page,
-                TotalPages = result.TotalPages,
-                TotalCount = result.TotalCount,
-                StatusList = GetJournalEntryStatusSelectList()
+                ClientId = clientId,
+                VendorId = vendorId,
+                IsRecurring = isRecurring,
+                IsSystemGenerated = isSystemGenerated,
+                AvailableClients = clients.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.NameEn }),
+                AvailableVendors = vendors.Select(v => new SelectListItem { Value = v.Id.ToString(), Text = v.NameEn }),
+                AvailableStatuses = Enum.GetValues(typeof(JournalEntryStatus))
+                    .Cast<JournalEntryStatus>()
+                    .Select(s => new SelectListItem { Value = ((int)s).ToString(), Text = s.ToString() })
             };
             
             return View(viewModel);
         }
 
-        public async Task<IActionResult> Details(Guid id)
-        {
-            var journalEntry = await _generalLedgerService.GetJournalEntryWithLinesAsync(id);
-            if (journalEntry == null)
-                return NotFound();
-
-            return View(journalEntry);
-        }
-
+        [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var currentPeriod = await _periodManagementService.GetCurrentFiscalPeriodAsync();
-            if (currentPeriod == null)
+            var viewModel = await PrepareJournalEntryViewModel(new JournalEntryViewModel
             {
-                TempData["Error"] = _localizer["No active fiscal period found"];
-                return RedirectToAction(nameof(Index));
-            }
-
-            var viewModel = new JournalEntryViewModel
-            {
-                Date = DateTime.Today,
-                FiscalPeriodId = currentPeriod.Id,
-                FiscalPeriods = await GetFiscalPeriodSelectListAsync(),
+                EntryDate = DateTime.Today,
+                PostingDate = DateTime.Today,
+                Status = JournalEntryStatus.Draft,
+                Currency = "EGP",
+                ExchangeRate = 1,
                 Lines = new List<JournalEntryLineViewModel>
                 {
-                    new JournalEntryLineViewModel
-                    {
-                        Accounts = await GetAccountSelectListAsync(),
-                        CostCenters = await GetCostCenterSelectListAsync(),
-                        TaxRates = await GetTaxRateSelectListAsync()
-                    }
+                    new JournalEntryLineViewModel()
                 }
-            };
+            });
             
             return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(JournalEntryViewModel viewModel)
+        public async Task<IActionResult> Create(JournalEntryViewModel viewModel, IFormFile attachment)
         {
             if (ModelState.IsValid)
             {
-                // Validate that debit equals credit
+                // Validate journal entry
                 if (!viewModel.IsBalanced)
                 {
-                    ModelState.AddModelError("", _localizer["Total debit must equal total credit"]);
-                    viewModel.FiscalPeriods = await GetFiscalPeriodSelectListAsync();
-                    
-                    foreach (var line in viewModel.Lines)
-                    {
-                        line.Accounts = await GetAccountSelectListAsync();
-                        line.CostCenters = await GetCostCenterSelectListAsync();
-                        line.TaxRates = await GetTaxRateSelectListAsync();
-                    }
-                    
+                    ModelState.AddModelError("", _localizer["Journal entry must be balanced (total debits must equal total credits)."]);
+                    viewModel = await PrepareJournalEntryViewModel(viewModel);
                     return View(viewModel);
                 }
-
+                
+                // Check if posting date is in a closed period
+                var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(viewModel.PostingDate);
+                if (isPeriodClosed)
+                {
+                    ModelState.AddModelError("PostingDate", _localizer["Cannot post to a closed period."]);
+                    viewModel = await PrepareJournalEntryViewModel(viewModel);
+                    return View(viewModel);
+                }
+                
+                // Handle attachment upload
+                string attachmentUrl = null;
+                if (attachment != null && attachment.Length > 0)
+                {
+                    attachmentUrl = await SaveAttachmentAsync(attachment);
+                }
+                
+                // Create journal entry
                 var journalEntry = new JournalEntry
                 {
-                    Date = viewModel.Date,
-                    Description = viewModel.Description,
+                    EntryDate = viewModel.EntryDate,
+                    PostingDate = viewModel.PostingDate,
                     Reference = viewModel.Reference,
-                    FiscalPeriodId = viewModel.FiscalPeriodId,
-                    CreatedById = _userManager.GetUserId(User),
-                    CreatedAt = DateTime.UtcNow,
-                    IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
-                    Lines = viewModel.Lines.Select(l => new JournalEntryLine
-                    {
-                        AccountId = l.AccountId,
-                        CostCenterId = l.CostCenterId,
-                        Description = l.Description,
-                        DebitAmount = l.DebitAmount,
-                        CreditAmount = l.CreditAmount,
-                        TaxRateId = l.TaxRateId,
-                        TaxAmount = l.TaxAmount
-                    }).ToList()
+                    Description = viewModel.Description,
+                    Status = viewModel.Status,
+                    ClientId = viewModel.ClientId,
+                    VendorId = viewModel.VendorId,
+                    Currency = viewModel.Currency,
+                    ExchangeRate = viewModel.ExchangeRate,
+                    IsRecurring = viewModel.IsRecurring,
+                    RecurrencePattern = viewModel.RecurrencePattern,
+                    NextRecurrenceDate = viewModel.NextRecurrenceDate,
+                    EndRecurrenceDate = viewModel.EndRecurrenceDate,
+                    IsSystemGenerated = false,
+                    SourceDocument = viewModel.SourceDocument,
+                    AttachmentUrl = attachmentUrl,
+                    Notes = viewModel.Notes,
+                    Lines = new List<JournalEntryLine>()
                 };
-
-                try
+                
+                // Add journal entry lines
+                foreach (var lineViewModel in viewModel.Lines.Where(l => l.AccountId != Guid.Empty && (l.Debit > 0 || l.Credit > 0)))
                 {
-                    await _generalLedgerService.CreateJournalEntryAsync(journalEntry);
-                    return RedirectToAction(nameof(Details), new { id = journalEntry.Id });
+                    journalEntry.Lines.Add(new JournalEntryLine
+                    {
+                        AccountId = lineViewModel.AccountId,
+                        CostCenterId = lineViewModel.CostCenterId,
+                        Description = lineViewModel.Description,
+                        Debit = lineViewModel.Debit,
+                        Credit = lineViewModel.Credit,
+                        TaxRateId = lineViewModel.TaxRateId,
+                        TaxAmount = lineViewModel.TaxAmount,
+                        WithholdingTaxId = lineViewModel.WithholdingTaxId,
+                        WithholdingTaxAmount = lineViewModel.WithholdingTaxAmount
+                    });
                 }
-                catch (InvalidOperationException ex)
+                
+                // Save journal entry
+                await _generalLedgerService.AddJournalEntryAsync(journalEntry);
+                
+                // If status is Posted, post the journal entry
+                if (journalEntry.Status == JournalEntryStatus.Posted)
                 {
-                    ModelState.AddModelError("", ex.Message);
+                    await _generalLedgerService.PostJournalEntryAsync(journalEntry.Id);
                 }
+                
+                TempData["SuccessMessage"] = _localizer["Journal entry created successfully."];
+                return RedirectToAction(nameof(Index));
             }
-
-            viewModel.FiscalPeriods = await GetFiscalPeriodSelectListAsync();
             
-            foreach (var line in viewModel.Lines)
+            viewModel = await PrepareJournalEntryViewModel(viewModel);
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+            if (journalEntry == null)
             {
-                line.Accounts = await GetAccountSelectListAsync();
-                line.CostCenters = await GetCostCenterSelectListAsync();
-                line.TaxRates = await GetTaxRateSelectListAsync();
+                return NotFound();
             }
             
+            // Check if journal entry can be edited
+            if (journalEntry.Status == JournalEntryStatus.Posted)
+            {
+                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be edited."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            var viewModel = new JournalEntryViewModel
+            {
+                Id = journalEntry.Id,
+                EntryDate = journalEntry.EntryDate,
+                PostingDate = journalEntry.PostingDate,
+                Reference = journalEntry.Reference,
+                Description = journalEntry.Description,
+                Status = journalEntry.Status,
+                ClientId = journalEntry.ClientId,
+                VendorId = journalEntry.VendorId,
+                Currency = journalEntry.Currency,
+                ExchangeRate = journalEntry.ExchangeRate,
+                IsRecurring = journalEntry.IsRecurring,
+                RecurrencePattern = journalEntry.RecurrencePattern,
+                NextRecurrenceDate = journalEntry.NextRecurrenceDate,
+                EndRecurrenceDate = journalEntry.EndRecurrenceDate,
+                IsSystemGenerated = journalEntry.IsSystemGenerated,
+                SourceDocument = journalEntry.SourceDocument,
+                AttachmentUrl = journalEntry.AttachmentUrl,
+                Notes = journalEntry.Notes,
+                Lines = journalEntry.Lines.Select(l => new JournalEntryLineViewModel
+                {
+                    Id = l.Id,
+                    AccountId = l.AccountId,
+                    CostCenterId = l.CostCenterId,
+                    Description = l.Description,
+                    Debit = l.Debit,
+                    Credit = l.Credit,
+                    TaxRateId = l.TaxRateId,
+                    TaxAmount = l.TaxAmount,
+                    WithholdingTaxId = l.WithholdingTaxId,
+                    WithholdingTaxAmount = l.WithholdingTaxAmount
+                }).ToList()
+            };
+            
+            viewModel = await PrepareJournalEntryViewModel(viewModel);
             return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> Approve(Guid id)
+        public async Task<IActionResult> Edit(Guid id, JournalEntryViewModel viewModel, IFormFile attachment)
         {
-            try
+            if (id != viewModel.Id)
             {
-                var userId = _userManager.GetUserId(User);
-                await _generalLedgerService.ApproveJournalEntryAsync(id, userId);
-                TempData["Success"] = _localizer["Journal entry approved successfully"];
-            }
-            catch (InvalidOperationException ex)
-            {
-                TempData["Error"] = ex.Message;
+                return NotFound();
             }
             
+            if (ModelState.IsValid)
+            {
+                var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+                if (journalEntry == null)
+                {
+                    return NotFound();
+                }
+                
+                // Check if journal entry can be edited
+                if (journalEntry.Status == JournalEntryStatus.Posted)
+                {
+                    TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be edited."];
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+                
+                // Validate journal entry
+                if (!viewModel.IsBalanced)
+                {
+                    ModelState.AddModelError("", _localizer["Journal entry must be balanced (total debits must equal total credits)."]);
+                    viewModel = await PrepareJournalEntryViewModel(viewModel);
+                    return View(viewModel);
+                }
+                
+                // Check if posting date is in a closed period
+                var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(viewModel.PostingDate);
+                if (isPeriodClosed)
+                {
+                    ModelState.AddModelError("PostingDate", _localizer["Cannot post to a closed period."]);
+                    viewModel = await PrepareJournalEntryViewModel(viewModel);
+                    return View(viewModel);
+                }
+                
+                // Handle attachment upload
+                string attachmentUrl = journalEntry.AttachmentUrl;
+                if (attachment != null && attachment.Length > 0)
+                {
+                    // Delete old attachment if exists
+                    if (!string.IsNullOrEmpty(attachmentUrl))
+                    {
+                        DeleteAttachment(attachmentUrl);
+                    }
+                    
+                    attachmentUrl = await SaveAttachmentAsync(attachment);
+                }
+                
+                // Update journal entry
+                journalEntry.EntryDate = viewModel.EntryDate;
+                journalEntry.PostingDate = viewModel.PostingDate;
+                journalEntry.Reference = viewModel.Reference;
+                journalEntry.Description = viewModel.Description;
+                journalEntry.Status = viewModel.Status;
+                journalEntry.ClientId = viewModel.ClientId;
+                journalEntry.VendorId = viewModel.VendorId;
+                journalEntry.Currency = viewModel.Currency;
+                journalEntry.ExchangeRate = viewModel.ExchangeRate;
+                journalEntry.IsRecurring = viewModel.IsRecurring;
+                journalEntry.RecurrencePattern = viewModel.RecurrencePattern;
+                journalEntry.NextRecurrenceDate = viewModel.NextRecurrenceDate;
+                journalEntry.EndRecurrenceDate = viewModel.EndRecurrenceDate;
+                journalEntry.SourceDocument = viewModel.SourceDocument;
+                journalEntry.AttachmentUrl = attachmentUrl;
+                journalEntry.Notes = viewModel.Notes;
+                
+                // Update journal entry lines
+                journalEntry.Lines.Clear();
+                foreach (var lineViewModel in viewModel.Lines.Where(l => l.AccountId != Guid.Empty && (l.Debit > 0 || l.Credit > 0)))
+                {
+                    journalEntry.Lines.Add(new JournalEntryLine
+                    {
+                        AccountId = lineViewModel.AccountId,
+                        CostCenterId = lineViewModel.CostCenterId,
+                        Description = lineViewModel.Description,
+                        Debit = lineViewModel.Debit,
+                        Credit = lineViewModel.Credit,
+                        TaxRateId = lineViewModel.TaxRateId,
+                        TaxAmount = lineViewModel.TaxAmount,
+                        WithholdingTaxId = lineViewModel.WithholdingTaxId,
+                        WithholdingTaxAmount = lineViewModel.WithholdingTaxAmount
+                    });
+                }
+                
+                // Save journal entry
+                await _generalLedgerService.UpdateJournalEntryAsync(journalEntry);
+                
+                // If status is Posted, post the journal entry
+                if (journalEntry.Status == JournalEntryStatus.Posted)
+                {
+                    await _generalLedgerService.PostJournalEntryAsync(journalEntry.Id);
+                }
+                
+                TempData["SuccessMessage"] = _localizer["Journal entry updated successfully."];
+                return RedirectToAction(nameof(Index));
+            }
+            
+            viewModel = await PrepareJournalEntryViewModel(viewModel);
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+            if (journalEntry == null)
+            {
+                return NotFound();
+            }
+            
+            return View(journalEntry);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+            if (journalEntry == null)
+            {
+                return NotFound();
+            }
+            
+            // Check if journal entry can be deleted
+            if (journalEntry.Status == JournalEntryStatus.Posted)
+            {
+                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be deleted."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            return View(journalEntry);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+            if (journalEntry == null)
+            {
+                return NotFound();
+            }
+            
+            // Check if journal entry can be deleted
+            if (journalEntry.Status == JournalEntryStatus.Posted)
+            {
+                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be deleted."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Delete attachment if exists
+            if (!string.IsNullOrEmpty(journalEntry.AttachmentUrl))
+            {
+                DeleteAttachment(journalEntry.AttachmentUrl);
+            }
+            
+            await _generalLedgerService.DeleteJournalEntryAsync(id);
+            TempData["SuccessMessage"] = _localizer["Journal entry deleted successfully."];
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Accountant")]
+        public async Task<IActionResult> SubmitForApproval(Guid id)
+        {
+            var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+            if (journalEntry == null)
+            {
+                return NotFound();
+            }
+            
+            // Check if journal entry can be submitted for approval
+            if (journalEntry.Status != JournalEntryStatus.Draft)
+            {
+                TempData["ErrorMessage"] = _localizer["Only draft journal entries can be submitted for approval."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Submit for approval
+            journalEntry.Status = JournalEntryStatus.Pending;
+            await _generalLedgerService.UpdateJournalEntryAsync(journalEntry);
+            
+            TempData["SuccessMessage"] = _localizer["Journal entry submitted for approval."];
             return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Manager")]
-        public async Task<IActionResult> Reject(Guid id, string reason)
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Approve(Guid id)
         {
-            try
+            var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+            if (journalEntry == null)
             {
-                var userId = _userManager.GetUserId(User);
-                await _generalLedgerService.RejectJournalEntryAsync(id, userId, reason);
-                TempData["Success"] = _localizer["Journal entry rejected successfully"];
-            }
-            catch (InvalidOperationException ex)
-            {
-                TempData["Error"] = ex.Message;
+                return NotFound();
             }
             
+            // Check if journal entry can be approved
+            if (journalEntry.Status != JournalEntryStatus.Pending)
+            {
+                TempData["ErrorMessage"] = _localizer["Only pending journal entries can be approved."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Approve journal entry
+            await _generalLedgerService.ApproveJournalEntryAsync(id);
+            
+            TempData["SuccessMessage"] = _localizer["Journal entry approved."];
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> AddLine(int index)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> Reject(Guid id, string rejectionReason)
         {
-            var viewModel = new JournalEntryLineViewModel
+            var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+            if (journalEntry == null)
             {
-                Accounts = await GetAccountSelectListAsync(),
-                CostCenters = await GetCostCenterSelectListAsync(),
-                TaxRates = await GetTaxRateSelectListAsync()
-            };
-            
-            ViewBag.Index = index;
-            return PartialView("_JournalEntryLinePartial", viewModel);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> CalculateTax(Guid taxRateId, decimal amount)
-        {
-            var taxRate = await _taxService.GetTaxRateByIdAsync(taxRateId);
-            if (taxRate == null)
-                return Json(0);
-                
-            if (taxRate.Type == TaxType.VAT)
-            {
-                var tax = await _taxService.CalculateVatAsync(amount, taxRateId);
-                return Json(tax);
-            }
-            else
-            {
-                var tax = await _taxService.CalculateWithholdingTaxAsync(amount, taxRateId);
-                return Json(tax);
-            }
-        }
-
-        private IEnumerable<SelectListItem> GetJournalEntryStatusSelectList()
-        {
-            return Enum.GetValues(typeof(JournalEntryStatus))
-                .Cast<JournalEntryStatus>()
-                .Select(s => new SelectListItem
-                {
-                    Value = ((int)s).ToString(),
-                    Text = s.ToString()
-                });
-        }
-
-        private async Task<IEnumerable<SelectListItem>> GetFiscalPeriodSelectListAsync()
-        {
-            var periods = await _periodManagementService.GetAllFiscalYearsAsync();
-            var selectList = new List<SelectListItem>();
-            
-            foreach (var year in periods)
-            {
-                var yearPeriods = await _periodManagementService.GetFiscalPeriodsForYearAsync(year.Id);
-                var yearGroup = new SelectListGroup { Name = year.Name };
-                
-                foreach (var period in yearPeriods.Where(p => !p.IsLocked && !p.IsClosed))
-                {
-                    selectList.Add(new SelectListItem
-                    {
-                        Value = period.Id.ToString(),
-                        Text = period.Name,
-                        Group = yearGroup
-                    });
-                }
+                return NotFound();
             }
             
-            return selectList;
+            // Check if journal entry can be rejected
+            if (journalEntry.Status != JournalEntryStatus.Pending)
+            {
+                TempData["ErrorMessage"] = _localizer["Only pending journal entries can be rejected."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Validate rejection reason
+            if (string.IsNullOrWhiteSpace(rejectionReason))
+            {
+                TempData["ErrorMessage"] = _localizer["Rejection reason is required."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Reject journal entry
+            await _generalLedgerService.RejectJournalEntryAsync(id, rejectionReason);
+            
+            TempData["SuccessMessage"] = _localizer["Journal entry rejected."];
+            return RedirectToAction(nameof(Details), new { id });
         }
 
-        private async Task<IEnumerable<SelectListItem>> GetAccountSelectListAsync()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Accountant")]
+        public async Task<IActionResult> Post(Guid id)
         {
-            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
-            return accounts
-                .Where(a => a.IsActive)
-                .OrderBy(a => a.Code)
-                .Select(a => new SelectListItem
-                {
-                    Value = a.Id.ToString(),
-                    Text = $"{a.Code} - {a.NameEn}"
-                });
+            var journalEntry = await _generalLedgerService.GetJournalEntryByIdAsync(id);
+            if (journalEntry == null)
+            {
+                return NotFound();
+            }
+            
+            // Check if journal entry can be posted
+            if (journalEntry.Status != JournalEntryStatus.Approved)
+            {
+                TempData["ErrorMessage"] = _localizer["Only approved journal entries can be posted."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Check if posting date is in a closed period
+            var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(journalEntry.PostingDate);
+            if (isPeriodClosed)
+            {
+                TempData["ErrorMessage"] = _localizer["Cannot post to a closed period."];
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            
+            // Post journal entry
+            await _generalLedgerService.PostJournalEntryAsync(id);
+            
+            TempData["SuccessMessage"] = _localizer["Journal entry posted."];
+            return RedirectToAction(nameof(Details), new { id });
         }
 
-        private async Task<IEnumerable<SelectListItem>> GetCostCenterSelectListAsync()
+        private async Task<JournalEntryViewModel> PrepareJournalEntryViewModel(JournalEntryViewModel viewModel)
         {
-            var costCenters = await _costCenterService.GetAllCostCentersAsync();
-            return costCenters
-                .Where(cc => cc.IsActive)
-                .OrderBy(cc => cc.Code)
-                .Select(cc => new SelectListItem
-                {
-                    Value = cc.Id.ToString(),
-                    Text = $"{cc.Code} - {cc.NameEn}"
-                });
+            // Get accounts
+            var accounts = await _chartOfAccountsService.GetAccountsAsync(isActive: true);
+            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.NameEn}"
+            });
+            
+            // Get cost centers
+            var costCenters = await _costCenterService.GetCostCentersAsync(isActive: true);
+            viewModel.AvailableCostCenters = costCenters.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code} - {c.NameEn}"
+            });
+            
+            // Get clients
+            var clients = await _clientVendorService.GetClientsAsync(isActive: true);
+            viewModel.AvailableClients = clients.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code} - {c.NameEn}"
+            });
+            
+            // Get vendors
+            var vendors = await _clientVendorService.GetVendorsAsync(isActive: true);
+            viewModel.AvailableVendors = vendors.Select(v => new SelectListItem
+            {
+                Value = v.Id.ToString(),
+                Text = $"{v.Code} - {v.NameEn}"
+            });
+            
+            // Get tax rates
+            var taxRates = await _taxService.GetTaxRatesAsync(isActive: true);
+            viewModel.AvailableTaxRates = taxRates.Select(t => new SelectListItem
+            {
+                Value = t.Id.ToString(),
+                Text = $"{t.Code} - {t.NameEn} ({t.Rate}%)"
+            });
+            
+            // Get withholding taxes
+            var withholdingTaxes = await _taxService.GetWithholdingTaxesAsync(isActive: true);
+            viewModel.AvailableWithholdingTaxes = withholdingTaxes.Select(t => new SelectListItem
+            {
+                Value = t.Id.ToString(),
+                Text = $"{t.Code} - {t.NameEn} ({t.Rate}%)"
+            });
+            
+            // Get fiscal periods
+            var fiscalPeriods = await _periodManagementService.GetOpenFiscalPeriodsAsync();
+            viewModel.AvailableFiscalPeriods = fiscalPeriods.Select(p => new SelectListItem
+            {
+                Value = p.Id.ToString(),
+                Text = $"{p.Name} ({p.StartDate:d} - {p.EndDate:d})"
+            });
+            
+            return viewModel;
         }
 
-        private async Task<IEnumerable<SelectListItem>> GetTaxRateSelectListAsync()
+        private async Task<string> SaveAttachmentAsync(IFormFile file)
         {
-            var taxRates = await _taxService.GetAllTaxRatesAsync();
-            return taxRates
-                .OrderBy(tr => tr.Code)
-                .Select(tr => new SelectListItem
-                {
-                    Value = tr.Id.ToString(),
-                    Text = $"{tr.Code} - {tr.NameEn} ({tr.Rate}%)"
-                });
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "journal-entries");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+            
+            var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+            
+            return $"/uploads/journal-entries/{uniqueFileName}";
+        }
+
+        private void DeleteAttachment(string attachmentUrl)
+        {
+            if (string.IsNullOrEmpty(attachmentUrl))
+            {
+                return;
+            }
+            
+            var filePath = Path.Combine(_webHostEnvironment.WebRootPath, attachmentUrl.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
         }
     }
 }

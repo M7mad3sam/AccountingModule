@@ -1,0 +1,100 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.Services.IncomeStatementReport
+
+@{
+    ViewData["Title"] = "Income Statement Report";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Income Statement</h3>
+        <div class="card-tools">
+            <a asp-action="ExportToPdf" asp-route-reportType="incomestatement" 
+               asp-route-fromDate="@Model.FromDate.ToString("yyyy-MM-dd")" 
+               asp-route-toDate="@Model.ToDate.ToString("yyyy-MM-dd")" 
+               asp-route-costCenterId="@(Model.CostCenter?.Id)" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-file-pdf"></i> Export to PDF
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="text-center mb-4">
+            <h4>Income Statement</h4>
+            <p>For the period from @Model.FromDate.ToString("MMMM dd, yyyy") to @Model.ToDate.ToString("MMMM dd, yyyy")</p>
+            @if (Model.CostCenter != null)
+            {
+                <p>Cost Center: @Model.CostCenter.NameEn</p>
+            }
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Revenue</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Revenue)
+                        {
+                            <tr>
+                                <td style="padding-left: @(item.Level * 20)px;">@item.Description</td>
+                                <td class="text-right">@item.Amount.ToString("#,##0.0000")</td>
+                            </tr>
+                        }
+                        <tr class="font-weight-bold bg-light">
+                            <td>Total Revenue</td>
+                            <td class="text-right">@Model.TotalRevenue.ToString("#,##0.0000")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Expenses</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Expenses)
+                        {
+                            <tr>
+                                <td style="padding-left: @(item.Level * 20)px;">@item.Description</td>
+                                <td class="text-right">@item.Amount.ToString("#,##0.0000")</td>
+                            </tr>
+                        }
+                        <tr class="font-weight-bold bg-light">
+                            <td>Total Expenses</td>
+                            <td class="text-right">@Model.TotalExpenses.ToString("#,##0.0000")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <tbody>
+                        <tr class="font-weight-bold bg-secondary text-white">
+                            <td>Net Income</td>
+                            <td class="text-right">@Model.NetIncome.ToString("#,##0.0000")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

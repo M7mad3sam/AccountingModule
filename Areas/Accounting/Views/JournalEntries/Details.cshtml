@@ -1,0 +1,207 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.Models.JournalEntry
+
+@{
+    ViewData["Title"] = "Journal Entry Details";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Journal Entry Details</h3>
+        <div class="card-tools">
+            <a asp-action="Index" class="btn btn-sm btn-default">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="control-label">Entry Date</label>
+                    <input type="text" value="@Model.EntryDate.ToShortDateString()" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="control-label">Posting Date</label>
+                    <input type="text" value="@Model.PostingDate.ToShortDateString()" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="control-label">Reference</label>
+                    <input type="text" value="@Model.Reference" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="control-label">Status</label>
+                    <input type="text" value="@Model.Status" class="form-control" readonly />
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label class="control-label">Description</label>
+                    <input type="text" value="@Model.Description" class="form-control" readonly />
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label">Client</label>
+                    <input type="text" value="@(Model.Client?.NameEn ?? "N/A")" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label">Vendor</label>
+                    <input type="text" value="@(Model.Vendor?.NameEn ?? "N/A")" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label class="control-label">Currency</label>
+                    <input type="text" value="@Model.Currency" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label class="control-label">Exchange Rate</label>
+                    <input type="text" value="@Model.ExchangeRate.ToString("N2")" class="form-control" readonly />
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label class="control-label">Source Document</label>
+                    <input type="text" value="@(Model.SourceDocument ?? "N/A")" class="form-control" readonly />
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label class="control-label">Notes</label>
+                    <textarea class="form-control" rows="3" readonly>@(Model.Notes ?? "N/A")</textarea>
+                </div>
+            </div>
+        </div>
+        
+        <hr />
+        
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Journal Entry Lines</h4>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Cost Center</th>
+                                <th>Description</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Tax Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.Lines)
+                            {
+                                <tr>
+                                    <td>@line.Account.Code - @line.Account.NameEn</td>
+                                    <td>@(line.CostCenter?.NameEn ?? "N/A")</td>
+                                    <td>@(line.Description ?? "N/A")</td>
+                                    <td>@line.Debit.ToString("N2")</td>
+                                    <td>@line.Credit.ToString("N2")</td>
+                                    <td>@(line.TaxRate?.NameEn ?? "N/A")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-right">Total:</th>
+                                <th>@Model.Lines.Sum(l => l.Debit).ToString("N2")</th>
+                                <th>@Model.Lines.Sum(l => l.Credit).ToString("N2")</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        @if (Model.IsRecurring)
+        {
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Recurrence Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label">Recurrence Pattern</label>
+                                        <input type="text" value="@Model.RecurrencePattern" class="form-control" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label">Next Recurrence Date</label>
+                                        <input type="text" value="@(Model.NextRecurrenceDate?.ToShortDateString() ?? "N/A")" class="form-control" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label">End Recurrence Date</label>
+                                        <input type="text" value="@(Model.EndRecurrenceDate?.ToShortDateString() ?? "N/A")" class="form-control" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="card-footer">
+        @if (Model.Status == AspNetCoreMvcTemplate.Areas.Accounting.Models.JournalEntryStatus.Draft)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        }
+        else if (Model.Status == AspNetCoreMvcTemplate.Areas.Accounting.Models.JournalEntryStatus.PendingApproval && 
+                (User.IsInRole("Admin") || User.IsInRole("Manager")))
+        {
+            <form asp-action="Approve" method="post" style="display: inline;">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check"></i> Approve
+                </button>
+            </form>
+            <form asp-action="Reject" method="post" style="display: inline;">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+            </form>
+        }
+        <a asp-action="Index" class="btn btn-default float-right">
+            <i class="fas fa-list"></i> Back to List
+        </a>
+    </div>
+</div>

@@ -13,6 +13,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task LogAuditAsync(string entityName, string entityId, string action, string oldValues, string newValues, string userId, string ipAddress);
         Task<IEnumerable<AuditLog>> GetAuditLogsAsync(string entityName = null, string entityId = null, string userId = null, DateTime? fromDate = null, DateTime? toDate = null, int pageIndex = 1, int pageSize = 50);
         Task<byte[]> ExportAuditLogsToCsvAsync(IEnumerable<AuditLog> logs);
+        Task LogActivityAsync(string entityName, string action, string description);
     }
 
     public class AuditService : IAuditService
@@ -40,6 +41,27 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 UserId = userId,
                 Timestamp = DateTime.UtcNow,
                 IpAddress = ipAddress ?? _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString()
+            };
+
+            await _auditLogRepository.AddAsync(auditLog);
+            await _auditLogRepository.SaveAsync();
+        }
+
+        public async Task LogActivityAsync(string entityName, string action, string description)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            
+            var auditLog = new AuditLog
+            {
+                EntityName = entityName,
+                EntityId = string.Empty,
+                Action = action,
+                OldValues = string.Empty,
+                NewValues = description,
+                UserId = userId,
+                Timestamp = DateTime.UtcNow,
+                IpAddress = ipAddress
             };
 
             await _auditLogRepository.AddAsync(auditLog);

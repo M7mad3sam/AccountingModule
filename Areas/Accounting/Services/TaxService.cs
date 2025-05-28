@@ -2,44 +2,72 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
-using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 using AspNetCoreMvcTemplate.Data.Repository;
 using System.Linq;
-using System.IO;
-using System.Xml.Serialization;
-using System.Text;
+using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
     public interface ITaxService
     {
-        Task<TaxRate> GetTaxRateByIdAsync(Guid id);
+        // Tax Rate methods
         Task<IEnumerable<TaxRate>> GetAllTaxRatesAsync();
-        Task<TaxRate> CreateTaxRateAsync(TaxRate taxRate);
+        Task<IEnumerable<TaxRate>> GetActiveTaxRatesAsync();
+        Task<TaxRate> GetTaxRateByIdAsync(Guid id);
+        Task<TaxRate> GetTaxRateByCodeAsync(string code);
+        Task AddTaxRateAsync(TaxRate taxRate);
         Task UpdateTaxRateAsync(TaxRate taxRate);
         Task DeleteTaxRateAsync(Guid id);
-        Task<decimal> CalculateVatAsync(decimal amount, Guid taxRateId);
-        Task<decimal> CalculateWithholdingTaxAsync(decimal amount, Guid taxRateId);
-        Task<VatReport> GenerateVatReportAsync(DateTime fromDate, DateTime toDate);
-        Task<WithholdingTaxReport> GenerateWithholdingTaxReportAsync(DateTime fromDate, DateTime toDate);
-        Task<byte[]> ExportVatReportToXmlAsync(VatReport report);
-        Task<byte[]> ExportVatReportToCsvAsync(VatReport report);
+        
+        // Tax Calculation methods
+        Task<TaxCalculationResult> CalculateTaxAsync(decimal amount, Guid taxRateId);
+        Task<TaxCalculationResult> CalculateVatAsync(decimal amount, Guid taxRateId, bool inclusive = false);
+        
+        // Withholding Tax methods
+        Task<IEnumerable<WithholdingTax>> GetAllWithholdingTaxesAsync();
+        Task<IEnumerable<WithholdingTax>> GetActiveWithholdingTaxesAsync();
+        Task<WithholdingTax> GetWithholdingTaxByIdAsync(Guid id);
+        Task<WithholdingTax> GetWithholdingTaxByCodeAsync(string code);
+        Task AddWithholdingTaxAsync(WithholdingTax withholdingTax);
+        Task UpdateWithholdingTaxAsync(WithholdingTax withholdingTax);
+        Task DeleteWithholdingTaxAsync(Guid id);
+        Task<decimal> CalculateWithholdingTaxAsync(decimal amount, Guid withholdingTaxId);
+        Task<IEnumerable<WithholdingTax>> GetApplicableWithholdingTaxesAsync(Guid vendorId, decimal amount);
     }
 
     public class TaxService : ITaxService
     {
         private readonly IRepository<TaxRate> _taxRateRepository;
-        private readonly IRepository<JournalEntry> _journalEntryRepository;
-        private readonly IRepository<JournalEntryLine> _journalEntryLineRepository;
+        private readonly IRepository<WithholdingTax> _withholdingTaxRepository;
+        private readonly IRepository<Vendor> _vendorRepository;
+        private readonly IAuditService _auditService;
 
         public TaxService(
             IRepository<TaxRate> taxRateRepository,
-            IRepository<JournalEntry> journalEntryRepository,
-            IRepository<JournalEntryLine> journalEntryLineRepository)
+            IRepository<WithholdingTax> withholdingTaxRepository,
+            IRepository<Vendor> vendorRepository,
+            IAuditService auditService)
         {
             _taxRateRepository = taxRateRepository;
-            _journalEntryRepository = journalEntryRepository;
-            _journalEntryLineRepository = journalEntryLineRepository;
+            _withholdingTaxRepository = withholdingTaxRepository;
+            _vendorRepository = vendorRepository;
+            _auditService = auditService;
+        }
+
+        #region Tax Rate Methods
+
+        public async Task<IEnumerable<TaxRate>> GetAllTaxRatesAsync()
+        {
+            return await _taxRateRepository.GetAllAsync();
+        }
+
+        public async Task<IEnumerable<TaxRate>> GetActiveTaxRatesAsync()
+        {
+            var today = DateTime.Today;
+            return await _taxRateRepository.FindAllAsync(
+                t => t.IsActive && 
+                     t.EffectiveFrom <= today && 
+                     (!t.EffectiveTo.HasValue || t.EffectiveTo.Value >= today));
         }
 
         public async Task<TaxRate> GetTaxRateByIdAsync(Guid id)
@@ -47,228 +75,206 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             return await _taxRateRepository.GetByIdAsync(id);
         }
 
-        public async Task<IEnumerable<TaxRate>> GetAllTaxRatesAsync()
+        public async Task<TaxRate> GetTaxRateByCodeAsync(string code)
         {
-            var spec = new ActiveTaxRatesSpecification();
-            return await _taxRateRepository.FindAllAsync(spec.Criteria);
+            var taxRates = await _taxRateRepository.FindAllAsync(t => t.Code == code);
+            return taxRates.FirstOrDefault();
         }
 
-        public async Task<TaxRate> CreateTaxRateAsync(TaxRate taxRate)
+        public async Task AddTaxRateAsync(TaxRate taxRate)
         {
             await _taxRateRepository.AddAsync(taxRate);
-            await _taxRateRepository.SaveAsync();
-            return taxRate;
+            await _auditService.LogActivityAsync("Tax", "Create", $"Created tax rate: {taxRate.NameEn}");
         }
 
         public async Task UpdateTaxRateAsync(TaxRate taxRate)
         {
-            _taxRateRepository.Update(taxRate);
-            await _taxRateRepository.SaveAsync();
+            await _taxRateRepository.UpdateAsync(taxRate);
+            await _auditService.LogActivityAsync("Tax", "Update", $"Updated tax rate: {taxRate.NameEn}");
         }
 
         public async Task DeleteTaxRateAsync(Guid id)
         {
-            // Check if tax rate is used in journal entry lines
-            var isUsed = await _journalEntryLineRepository.ExistsAsync(jel => jel.TaxRateId == id);
-            if (isUsed)
+            var taxRate = await _taxRateRepository.GetByIdAsync(id);
+            if (taxRate != null)
             {
-                // Instead of deleting, mark as inactive
-                var taxRate = await _taxRateRepository.GetByIdAsync(id);
-                if (taxRate != null)
-                {
-                    taxRate.IsActive = false;
-                    _taxRateRepository.Update(taxRate);
-                    await _taxRateRepository.SaveAsync();
-                }
+                await _taxRateRepository.DeleteAsync(id);
+                await _auditService.LogActivityAsync("Tax", "Delete", $"Deleted tax rate: {taxRate.NameEn}");
+            }
+        }
+
+        #endregion
+
+        #region Tax Calculation Methods
+
+        public async Task<TaxCalculationResult> CalculateTaxAsync(decimal amount, Guid taxRateId)
+        {
+            var taxRate = await _taxRateRepository.GetByIdAsync(taxRateId);
+            if (taxRate == null)
+            {
+                throw new ArgumentException("Invalid tax rate ID", nameof(taxRateId));
+            }
+
+            var taxAmount = Math.Round(amount * (taxRate.Rate / 100), 2);
+            var amountAfterTax = amount + taxAmount;
+
+            return new TaxCalculationResult
+            {
+                AmountBeforeTax = amount,
+                TaxRate = taxRate.Rate,
+                TaxAmount = taxAmount,
+                AmountAfterTax = amountAfterTax,
+                TaxRateId = taxRate.Id,
+                TaxRateName = taxRate.NameEn,
+                TaxRateCode = taxRate.Code,
+                TaxType = taxRate.Type
+            };
+        }
+
+        public async Task<TaxCalculationResult> CalculateVatAsync(decimal amount, Guid taxRateId, bool inclusive = false)
+        {
+            var taxRate = await _taxRateRepository.GetByIdAsync(taxRateId);
+            if (taxRate == null)
+            {
+                throw new ArgumentException("Invalid tax rate ID", nameof(taxRateId));
+            }
+
+            if (taxRate.Type != TaxType.VAT)
+            {
+                throw new ArgumentException("Tax rate is not of VAT type", nameof(taxRateId));
+            }
+
+            decimal amountBeforeTax, taxAmount, amountAfterTax;
+
+            if (inclusive)
+            {
+                // If the amount is tax inclusive, we need to extract the tax
+                amountAfterTax = amount;
+                taxAmount = Math.Round(amount - (amount / (1 + (taxRate.Rate / 100))), 2);
+                amountBeforeTax = amount - taxAmount;
             }
             else
             {
-                var taxRate = await _taxRateRepository.GetByIdAsync(id);
-                if (taxRate != null)
-                {
-                    _taxRateRepository.Delete(taxRate);
-                    await _taxRateRepository.SaveAsync();
-                }
+                // If the amount is tax exclusive, we add the tax
+                amountBeforeTax = amount;
+                taxAmount = Math.Round(amount * (taxRate.Rate / 100), 2);
+                amountAfterTax = amount + taxAmount;
+            }
+
+            return new TaxCalculationResult
+            {
+                AmountBeforeTax = amountBeforeTax,
+                TaxRate = taxRate.Rate,
+                TaxAmount = taxAmount,
+                AmountAfterTax = amountAfterTax,
+                TaxRateId = taxRate.Id,
+                TaxRateName = taxRate.NameEn,
+                TaxRateCode = taxRate.Code,
+                TaxType = taxRate.Type,
+                IsInclusive = inclusive
+            };
+        }
+
+        #endregion
+
+        #region Withholding Tax Methods
+
+        public async Task<IEnumerable<WithholdingTax>> GetAllWithholdingTaxesAsync()
+        {
+            return await _withholdingTaxRepository.GetAllAsync();
+        }
+
+        public async Task<IEnumerable<WithholdingTax>> GetActiveWithholdingTaxesAsync()
+        {
+            var today = DateTime.Today;
+            return await _withholdingTaxRepository.FindAllAsync(
+                t => t.IsActive && 
+                     t.EffectiveFrom <= today && 
+                     (!t.EffectiveTo.HasValue || t.EffectiveTo.Value >= today));
+        }
+
+        public async Task<WithholdingTax> GetWithholdingTaxByIdAsync(Guid id)
+        {
+            return await _withholdingTaxRepository.GetByIdAsync(id);
+        }
+
+        public async Task<WithholdingTax> GetWithholdingTaxByCodeAsync(string code)
+        {
+            var withholdingTaxes = await _withholdingTaxRepository.FindAllAsync(t => t.Code == code);
+            return withholdingTaxes.FirstOrDefault();
+        }
+
+        public async Task AddWithholdingTaxAsync(WithholdingTax withholdingTax)
+        {
+            await _withholdingTaxRepository.AddAsync(withholdingTax);
+            await _auditService.LogActivityAsync("Tax", "Create", $"Created withholding tax: {withholdingTax.NameEn}");
+        }
+
+        public async Task UpdateWithholdingTaxAsync(WithholdingTax withholdingTax)
+        {
+            await _withholdingTaxRepository.UpdateAsync(withholdingTax);
+            await _auditService.LogActivityAsync("Tax", "Update", $"Updated withholding tax: {withholdingTax.NameEn}");
+        }
+
+        public async Task DeleteWithholdingTaxAsync(Guid id)
+        {
+            var withholdingTax = await _withholdingTaxRepository.GetByIdAsync(id);
+            if (withholdingTax != null)
+            {
+                await _withholdingTaxRepository.DeleteAsync(id);
+                await _auditService.LogActivityAsync("Tax", "Delete", $"Deleted withholding tax: {withholdingTax.NameEn}");
             }
         }
 
-        public async Task<decimal> CalculateVatAsync(decimal amount, Guid taxRateId)
+        public async Task<decimal> CalculateWithholdingTaxAsync(decimal amount, Guid withholdingTaxId)
         {
-            var taxRate = await _taxRateRepository.GetByIdAsync(taxRateId);
-            if (taxRate == null || taxRate.Type != TaxType.VAT)
+            var withholdingTax = await _withholdingTaxRepository.GetByIdAsync(withholdingTaxId);
+            if (withholdingTax == null)
+            {
+                throw new ArgumentException("Invalid withholding tax ID", nameof(withholdingTaxId));
+            }
+
+            // Check if amount is below minimum threshold
+            if (withholdingTax.MinimumThreshold.HasValue && amount < withholdingTax.MinimumThreshold.Value)
             {
                 return 0;
             }
 
-            return Math.Round(amount * (taxRate.Rate / 100), 4);
+            return Math.Round(amount * (withholdingTax.Rate / 100), 2);
         }
 
-        public async Task<decimal> CalculateWithholdingTaxAsync(decimal amount, Guid taxRateId)
+        public async Task<IEnumerable<WithholdingTax>> GetApplicableWithholdingTaxesAsync(Guid vendorId, decimal amount)
         {
-            var taxRate = await _taxRateRepository.GetByIdAsync(taxRateId);
-            if (taxRate == null || taxRate.Type != TaxType.Withholding)
+            var vendor = await _vendorRepository.GetByIdAsync(vendorId);
+            if (vendor == null)
             {
-                return 0;
+                throw new ArgumentException("Invalid vendor ID", nameof(vendorId));
             }
 
-            return Math.Round(amount * (taxRate.Rate / 100), 4);
-        }
-
-        public async Task<VatReport> GenerateVatReportAsync(DateTime fromDate, DateTime toDate)
-        {
-            // Get all approved journal entries in the date range
-            var journalEntries = await _journalEntryRepository.FindAllAsync(
-                je => je.Status == JournalEntryStatus.Approved && 
-                      je.Date >= fromDate && 
-                      je.Date <= toDate);
-
-            // Get all journal entry lines with VAT tax rates
-            var journalEntryIds = journalEntries.Select(je => je.Id).ToList();
-            var journalEntryLines = await _journalEntryLineRepository.FindAllAsync(
-                jel => journalEntryIds.Contains(jel.JournalEntryId) && 
-                       jel.TaxRateId.HasValue,
-                jel => jel.TaxRate,
-                jel => jel.JournalEntry,
-                jel => jel.Account);
-
-            // Filter for VAT tax rates
-            var vatLines = journalEntryLines.Where(jel => jel.TaxRate?.Type == TaxType.VAT).ToList();
-
-            // Group by tax rate
-            var vatReportItems = vatLines
-                .GroupBy(jel => jel.TaxRate)
-                .Select(g => new VatReportItem
-                {
-                    TaxRateId = g.Key.Id,
-                    TaxRateCode = g.Key.Code,
-                    TaxRateName = g.Key.NameEn,
-                    TaxRatePercentage = g.Key.Rate,
-                    TaxableAmount = g.Sum(jel => jel.DebitAmount > 0 ? jel.DebitAmount : jel.CreditAmount),
-                    TaxAmount = g.Sum(jel => jel.TaxAmount ?? 0)
-                })
-                .ToList();
-
-            return new VatReport
-            {
-                FromDate = fromDate,
-                ToDate = toDate,
-                GeneratedAt = DateTime.UtcNow,
-                Items = vatReportItems,
-                TotalTaxableAmount = vatReportItems.Sum(item => item.TaxableAmount),
-                TotalTaxAmount = vatReportItems.Sum(item => item.TaxAmount)
-            };
-        }
-
-        public async Task<WithholdingTaxReport> GenerateWithholdingTaxReportAsync(DateTime fromDate, DateTime toDate)
-        {
-            // Get all approved journal entries in the date range
-            var journalEntries = await _journalEntryRepository.FindAllAsync(
-                je => je.Status == JournalEntryStatus.Approved && 
-                      je.Date >= fromDate && 
-                      je.Date <= toDate);
-
-            // Get all journal entry lines with withholding tax rates
-            var journalEntryIds = journalEntries.Select(je => je.Id).ToList();
-            var journalEntryLines = await _journalEntryLineRepository.FindAllAsync(
-                jel => journalEntryIds.Contains(jel.JournalEntryId) && 
-                       jel.TaxRateId.HasValue,
-                jel => jel.TaxRate,
-                jel => jel.JournalEntry,
-                jel => jel.Account);
-
-            // Filter for withholding tax rates
-            var withholdingLines = journalEntryLines.Where(jel => jel.TaxRate?.Type == TaxType.Withholding).ToList();
-
-            // Group by tax rate
-            var withholdingReportItems = withholdingLines
-                .GroupBy(jel => jel.TaxRate)
-                .Select(g => new WithholdingTaxReportItem
-                {
-                    TaxRateId = g.Key.Id,
-                    TaxRateCode = g.Key.Code,
-                    TaxRateName = g.Key.NameEn,
-                    TaxRatePercentage = g.Key.Rate,
-                    TaxableAmount = g.Sum(jel => jel.DebitAmount > 0 ? jel.DebitAmount : jel.CreditAmount),
-                    TaxAmount = g.Sum(jel => jel.TaxAmount ?? 0)
-                })
-                .ToList();
-
-            return new WithholdingTaxReport
-            {
-                FromDate = fromDate,
-                ToDate = toDate,
-                GeneratedAt = DateTime.UtcNow,
-                Items = withholdingReportItems,
-                TotalTaxableAmount = withholdingReportItems.Sum(item => item.TaxableAmount),
-                TotalTaxAmount = withholdingReportItems.Sum(item => item.TaxAmount)
-            };
-        }
-
-        public async Task<byte[]> ExportVatReportToXmlAsync(VatReport report)
-        {
-            var serializer = new XmlSerializer(typeof(VatReport));
-            using var memoryStream = new MemoryStream();
-            serializer.Serialize(memoryStream, report);
-            return memoryStream.ToArray();
-        }
-
-        public async Task<byte[]> ExportVatReportToCsvAsync(VatReport report)
-        {
-            var csv = new StringBuilder();
+            var activeWithholdingTaxes = await GetActiveWithholdingTaxesAsync();
             
-            // Add header
-            csv.AppendLine("Tax Rate Code,Tax Rate Name,Tax Rate Percentage,Taxable Amount,Tax Amount");
-            
-            // Add items
-            foreach (var item in report.Items)
-            {
-                csv.AppendLine($"{item.TaxRateCode},{item.TaxRateName},{item.TaxRatePercentage},{item.TaxableAmount},{item.TaxAmount}");
-            }
-            
-            // Add totals
-            csv.AppendLine($"Total,,{report.TotalTaxableAmount},{report.TotalTaxAmount}");
-            
-            return Encoding.UTF8.GetBytes(csv.ToString());
+            return activeWithholdingTaxes.Where(wt => 
+                // Check if the vendor type is applicable
+                (string.IsNullOrEmpty(wt.ApplicableVendorTypes) || 
+                 wt.ApplicableVendorTypes.Split(',').Contains(vendor.Type)) &&
+                // Check if amount is above minimum threshold
+                (!wt.MinimumThreshold.HasValue || amount >= wt.MinimumThreshold.Value)
+            );
         }
+
+        #endregion
     }
 
-    public class VatReport
+    public class TaxCalculationResult
     {
-        public DateTime FromDate { get; set; }
-        public DateTime ToDate { get; set; }
-        public DateTime GeneratedAt { get; set; }
-        public List<VatReportItem> Items { get; set; } = new List<VatReportItem>();
-        public decimal TotalTaxableAmount { get; set; }
-        public decimal TotalTaxAmount { get; set; }
-    }
-
-    public class VatReportItem
-    {
-        public Guid TaxRateId { get; set; }
-        public string TaxRateCode { get; set; }
-        public string TaxRateName { get; set; }
-        public decimal TaxRatePercentage { get; set; }
-        public decimal TaxableAmount { get; set; }
+        public decimal AmountBeforeTax { get; set; }
+        public decimal TaxRate { get; set; }
         public decimal TaxAmount { get; set; }
-    }
-
-    public class WithholdingTaxReport
-    {
-        public DateTime FromDate { get; set; }
-        public DateTime ToDate { get; set; }
-        public DateTime GeneratedAt { get; set; }
-        public List<WithholdingTaxReportItem> Items { get; set; } = new List<WithholdingTaxReportItem>();
-        public decimal TotalTaxableAmount { get; set; }
-        public decimal TotalTaxAmount { get; set; }
-    }
-
-    public class WithholdingTaxReportItem
-    {
+        public decimal AmountAfterTax { get; set; }
         public Guid TaxRateId { get; set; }
-        public string TaxRateCode { get; set; }
         public string TaxRateName { get; set; }
-        public decimal TaxRatePercentage { get; set; }
-        public decimal TaxableAmount { get; set; }
-        public decimal TaxAmount { get; set; }
+        public string TaxRateCode { get; set; }
+        public TaxType TaxType { get; set; }
+        public bool IsInclusive { get; set; }
     }
 }

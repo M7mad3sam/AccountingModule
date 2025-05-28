@@ -17,6 +17,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public DateTime Date { get; set; }
         
         [Required]
+        [DataType(DataType.Date)]
+        public DateTime EntryDate { get; set; }
+        
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime PostingDate { get; set; }
+        
+        [Required]
         [StringLength(500)]
         public string Description { get; set; }
         
@@ -31,6 +39,35 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         
         [Required]
         public decimal TotalCredit { get; set; }
+        
+        public Guid? ClientId { get; set; }
+        public Client Client { get; set; }
+        
+        public Guid? VendorId { get; set; }
+        public Vendor Vendor { get; set; }
+        
+        [StringLength(10)]
+        public string Currency { get; set; } = "EGP";
+        
+        [Range(0.01, 1000)]
+        public decimal ExchangeRate { get; set; } = 1;
+        
+        public bool IsRecurring { get; set; }
+        
+        public string RecurrencePattern { get; set; }
+        
+        public DateTime? NextRecurrenceDate { get; set; }
+        
+        public DateTime? EndRecurrenceDate { get; set; }
+        
+        public bool IsSystemGenerated { get; set; }
+        
+        public string SourceDocument { get; set; }
+        
+        public string AttachmentUrl { get; set; }
+        
+        [StringLength(500)]
+        public string Notes { get; set; }
         
         [Required]
         public Guid FiscalPeriodId { get; set; }
@@ -59,7 +96,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
     {
         Draft = 1,
         Pending = 2,
+        PendingApproval = 2, // Alias for Pending to maintain compatibility
         Approved = 3,
-        Rejected = 4
+        Rejected = 4,
+        Posted = 5
     }
 }

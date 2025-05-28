@@ -1,0 +1,104 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.YearEndClosingViewModel
+
+@{
+    ViewData["Title"] = "Year-End Closing Validation";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Year-End Closing Validation - @Model.FiscalYearName (@Model.FiscalYearCode)</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="PeriodManagement" asp-action="FiscalYears">Fiscal Years</a></li>
+                    <li class="breadcrumb-item active">Year-End Closing Validation</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Validation Results</h3>
+            </div>
+            <div class="card-body">
+                @if (Model.ValidationResult != null)
+                {
+                    @if (Model.ValidationResult.IsValid)
+                    {
+                        <div class="alert alert-success">
+                            <h5><i class="icon fas fa-check"></i> Ready for Year-End Closing</h5>
+                            <p>All validation checks have passed. You can proceed with the year-end closing process.</p>
+                        </div>
+                        
+                        <form asp-action="Execute" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <input type="hidden" asp-for="FiscalYearId" />
+                            <input type="hidden" asp-for="FiscalYearName" />
+                            <input type="hidden" asp-for="FiscalYearCode" />
+                            
+                            <div class="alert alert-warning">
+                                <h5><i class="icon fas fa-exclamation-triangle"></i> Warning!</h5>
+                                <p>You are about to perform year-end closing for fiscal year <strong>@Model.FiscalYearName (@Model.FiscalYearCode)</strong>.</p>
+                                <p>This process will:</p>
+                                <ul>
+                                    <li>Close all periods in the fiscal year</li>
+                                    <li>Generate opening balances for the next fiscal year</li>
+                                    <li>Close the fiscal year</li>
+                                </ul>
+                                <p>This action cannot be undone. Please make sure all periods are closed and all journal entries are posted before proceeding.</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input asp-for="ConfirmClosing" type="checkbox" class="custom-control-input" />
+                                    <label asp-for="ConfirmClosing" class="custom-control-label">I confirm that I want to perform year-end closing for this fiscal year</label>
+                                    <span asp-validation-for="ConfirmClosing" class="text-danger"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-warning">Perform Year-End Closing</button>
+                                <a asp-controller="PeriodManagement" asp-action="FiscalYears" class="btn btn-default float-right">Cancel</a>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            <h5><i class="icon fas fa-ban"></i> Not Ready for Year-End Closing</h5>
+                            <p>The following issues must be resolved before you can proceed with the year-end closing process:</p>
+                            <ul>
+                                @foreach (var message in Model.ValidationResult.Messages)
+                                {
+                                    <li>@message</li>
+                                }
+                            </ul>
+                        </div>
+                        
+                        <div class="form-group">
+                            <a asp-controller="PeriodManagement" asp-action="FiscalYears" class="btn btn-primary">Return to Fiscal Years</a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <h5><i class="icon fas fa-info"></i> Validation Not Performed</h5>
+                        <p>Validation has not been performed for this fiscal year.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

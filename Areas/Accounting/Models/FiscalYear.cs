@@ -9,6 +9,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public Guid Id { get; set; }
         
         [Required]
+        [StringLength(20)]
+        public string Code { get; set; }
+        
+        [Required]
         [StringLength(50)]
         public string Name { get; set; }
         
@@ -19,6 +23,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public DateTime EndDate { get; set; }
         
         public bool IsClosed { get; set; }
+        
+        public bool IsActive { get; set; } = true;
         
         public ICollection<FiscalPeriod> FiscalPeriods { get; set; }
     }

@@ -28,9 +28,27 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         [Required]
         public decimal CreditAmount { get; set; }
         
+        // Alias properties to match controller references
+        public decimal Debit 
+        { 
+            get { return DebitAmount; } 
+            set { DebitAmount = value; } 
+        }
+        
+        public decimal Credit 
+        { 
+            get { return CreditAmount; } 
+            set { CreditAmount = value; } 
+        }
+        
         public Guid? TaxRateId { get; set; }
         public TaxRate TaxRate { get; set; }
         
         public decimal? TaxAmount { get; set; }
+        
+        public Guid? WithholdingTaxId { get; set; }
+        public WithholdingTax WithholdingTax { get; set; }
+        
+        public decimal? WithholdingTaxAmount { get; set; }
     }
 }

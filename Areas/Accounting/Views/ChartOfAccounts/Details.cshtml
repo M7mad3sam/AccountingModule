@@ -1,0 +1,103 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.Models.Account
+
+@{
+    ViewData["Title"] = "Account Details";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Account Details</h3>
+        <div class="card-tools">
+            <a asp-action="Index" class="btn btn-sm btn-default">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Code</label>
+                    <input type="text" value="@Model.Code" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Type</label>
+                    <input type="text" value="@Model.Type" class="form-control" readonly />
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Name (English)</label>
+                    <input type="text" value="@Model.NameEn" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Name (Arabic)</label>
+                    <input type="text" value="@Model.NameAr" class="form-control" readonly />
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Parent Account</label>
+                    <input type="text" value="@(Model.Parent?.NameEn ?? "None")" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Status</label>
+                    <input type="text" value="@(Model.IsActive ? "Active" : "Inactive")" class="form-control" readonly />
+                </div>
+            </div>
+        </div>
+        
+        @if (Model.Children != null && Model.Children.Any())
+        {
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4>Child Accounts</h4>
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var child in Model.Children)
+                            {
+                                <tr>
+                                    <td>@child.Code</td>
+                                    <td>@child.NameEn</td>
+                                    <td>@child.Type</td>
+                                    <td>@(child.IsActive ? "Active" : "Inactive")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="card-footer">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+        </a>
+        <a asp-action="Index" class="btn btn-default float-right">
+            <i class="fas fa-list"></i> Back to List
+        </a>
+    </div>
+</div>

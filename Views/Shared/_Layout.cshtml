@@ -128,30 +128,103 @@
                                     <ul class="nav nav-treeview">
                                         @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager"))
                                         {
-                                            <li class="nav-item">
-                                                <a asp-area="Accounting" asp-controller="ChartOfAccounts" asp-action="Index" class="nav-link">
+                                            <li class="nav-item has-treeview">
+                                                <a href="#" class="nav-link">
                                                     <i class="far fa-circle nav-icon"></i>
-                                                    <p>Chart of Accounts</p>
+                                                    <p>
+                                                        Chart of Accounts
+                                                        <i class="right fas fa-angle-left"></i>
+                                                    </p>
                                                 </a>
+                                                <ul class="nav nav-treeview">
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="ChartOfAccounts" asp-action="Index" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>View Accounts</p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="ChartOfAccounts" asp-action="Create" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>Create Account</p>
+                                                        </a>
+                                                    </li>
+                                                </ul>
                                             </li>
                                         }
 
                                         @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager"))
                                         {
-                                            <li class="nav-item">
-                                                <a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Index" class="nav-link">
+                                            <li class="nav-item has-treeview">
+                                                <a href="#" class="nav-link">
                                                     <i class="far fa-circle nav-icon"></i>
-                                                    <p>Journal Entries</p>
+                                                    <p>
+                                                        Journal Entries
+                                                        <i class="right fas fa-angle-left"></i>
+                                                    </p>
                                                 </a>
+                                                <ul class="nav nav-treeview">
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Index" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>View Entries</p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Create" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>Create Entry</p>
+                                                        </a>
+                                                    </li>
+                                                </ul>
                                             </li>
                                         }
 
                                         @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager") || User.IsInRole("Auditor"))
                                         {
-                                            <li class="nav-item">
-                                                <a asp-area="Accounting" asp-controller="Reports" asp-action="TrialBalance" class="nav-link">
+                                            <li class="nav-item has-treeview">
+                                                <a href="#" class="nav-link">
                                                     <i class="far fa-circle nav-icon"></i>
-                                                    <p>Trial Balance</p>
+                                                    <p>
+                                                        Financial Reports
+                                                        <i class="right fas fa-angle-left"></i>
+                                                    </p>
+                                                </a>
+                                                <ul class="nav nav-treeview">
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="Reports" asp-action="TrialBalance" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>Trial Balance</p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="Reports" asp-action="BalanceSheet" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>Balance Sheet</p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="Reports" asp-action="IncomeStatement" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>Income Statement</p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="Reports" asp-action="CashFlow" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>Cash Flow</p>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        }
+                                        
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager"))
+                                        {
+                                            <li class="nav-item">
+                                                <a asp-area="Accounting" asp-controller="PeriodManagement" asp-action="FiscalYears" class="nav-link">
+                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <p>Period Management</p>
                                                 </a>
                                             </li>
                                         }

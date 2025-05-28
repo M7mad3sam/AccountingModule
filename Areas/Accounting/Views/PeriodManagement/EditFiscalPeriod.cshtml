@@ -1,0 +1,82 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.FiscalPeriodViewModel
+
+@{
+    ViewData["Title"] = "Edit Fiscal Period";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Edit Fiscal Period - @Model.FiscalYearName</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="PeriodManagement" asp-action="FiscalYears">Fiscal Years</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="PeriodManagement" asp-action="FiscalPeriods" asp-route-fiscalYearId="@Model.FiscalYearId">Fiscal Periods</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Edit Fiscal Period</h3>
+            </div>
+            <form asp-action="EditFiscalPeriod" method="post">
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="FiscalYearId" />
+                    <input type="hidden" asp-for="FiscalYearName" />
+                    <input type="hidden" asp-for="IsClosed" />
+                    <div class="form-group">
+                        <label asp-for="Name">Name</label>
+                        <input asp-for="Name" class="form-control" placeholder="Enter fiscal period name" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Code">Code</label>
+                        <input asp-for="Code" class="form-control" placeholder="Enter fiscal period code" />
+                        <span asp-validation-for="Code" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="StartDate">Start Date</label>
+                        <input asp-for="StartDate" type="date" class="form-control" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EndDate">End Date</label>
+                        <input asp-for="EndDate" type="date" class="form-control" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input asp-for="IsActive" type="checkbox" class="custom-control-input" />
+                            <label asp-for="IsActive" class="custom-control-label">Is Active</label>
+                        </div>
+                    </div>
+                    @if (Model.IsClosed)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="icon fas fa-exclamation-triangle"></i> This period is closed. Some fields cannot be modified.
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a asp-action="FiscalPeriods" asp-route-fiscalYearId="@Model.FiscalYearId" class="btn btn-default float-right">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

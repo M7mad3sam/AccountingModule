@@ -1,0 +1,46 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.BalanceSheetFilterViewModel
+
+@{
+    ViewData["Title"] = "Balance Sheet";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Balance Sheet</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="BalanceSheet" method="post">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AsOfDate" class="control-label"></label>
+                        <input asp-for="AsOfDate" class="form-control" />
+                        <span asp-validation-for="AsOfDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="CostCenterId" class="control-label"></label>
+                        <select asp-for="CostCenterId" class="form-control select2" asp-items="@(new SelectList(Model.CostCenters, "Id", "NameEn"))">
+                            <option value="">-- All Cost Centers --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Generate Report</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(function () {
+            $('.select2').select2();
+        });
+    </script>
+}

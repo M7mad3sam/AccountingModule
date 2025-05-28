@@ -9,6 +9,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public Guid Id { get; set; }
         
         [Required]
+        [StringLength(20)]
+        public string Code { get; set; }
+        
+        [Required]
         [StringLength(50)]
         public string Name { get; set; }
         
@@ -21,6 +25,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public bool IsLocked { get; set; }
         
         public bool IsClosed { get; set; }
+        
+        public bool IsActive { get; set; } = true;
         
         public Guid FiscalYearId { get; set; }
         public FiscalYear FiscalYear { get; set; }

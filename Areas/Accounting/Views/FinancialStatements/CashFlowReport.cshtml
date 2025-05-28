@@ -1,0 +1,129 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.Services.CashFlowReport
+
+@{
+    ViewData["Title"] = "Cash Flow Statement Report";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Cash Flow Statement</h3>
+        <div class="card-tools">
+            <a asp-action="ExportToPdf" asp-route-reportType="cashflow" 
+               asp-route-fromDate="@Model.FromDate.ToString("yyyy-MM-dd")" 
+               asp-route-toDate="@Model.ToDate.ToString("yyyy-MM-dd")" 
+               asp-route-costCenterId="@(Model.CostCenter?.Id)" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-file-pdf"></i> Export to PDF
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="text-center mb-4">
+            <h4>Cash Flow Statement</h4>
+            <p>For the period from @Model.FromDate.ToString("MMMM dd, yyyy") to @Model.ToDate.ToString("MMMM dd, yyyy")</p>
+            @if (Model.CostCenter != null)
+            {
+                <p>Cost Center: @Model.CostCenter.NameEn</p>
+            }
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Operating Activities</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OperatingActivities)
+                        {
+                            <tr>
+                                <td>@item.Description</td>
+                                <td class="text-right">@item.Amount.ToString("#,##0.0000")</td>
+                            </tr>
+                        }
+                        <tr class="font-weight-bold bg-light">
+                            <td>Net Cash from Operating Activities</td>
+                            <td class="text-right">@Model.NetOperatingCashFlow.ToString("#,##0.0000")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Investing Activities</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.InvestingActivities)
+                        {
+                            <tr>
+                                <td>@item.Description</td>
+                                <td class="text-right">@item.Amount.ToString("#,##0.0000")</td>
+                            </tr>
+                        }
+                        <tr class="font-weight-bold bg-light">
+                            <td>Net Cash from Investing Activities</td>
+                            <td class="text-right">@Model.NetInvestingCashFlow.ToString("#,##0.0000")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Financing Activities</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.FinancingActivities)
+                        {
+                            <tr>
+                                <td>@item.Description</td>
+                                <td class="text-right">@item.Amount.ToString("#,##0.0000")</td>
+                            </tr>
+                        }
+                        <tr class="font-weight-bold bg-light">
+                            <td>Net Cash from Financing Activities</td>
+                            <td class="text-right">@Model.NetFinancingCashFlow.ToString("#,##0.0000")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <tbody>
+                        <tr class="font-weight-bold bg-secondary text-white">
+                            <td>Net Increase (Decrease) in Cash</td>
+                            <td class="text-right">@Model.NetCashFlow.ToString("#,##0.0000")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

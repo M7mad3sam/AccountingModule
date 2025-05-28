@@ -1,0 +1,115 @@
+@model IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.Models.FiscalYear>
+
+@{
+    ViewData["Title"] = "Fiscal Years";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Fiscal Years</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item active">Fiscal Years</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-check"></i> Success!</h5>
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Fiscal Years</h3>
+                <div class="card-tools">
+                    <a asp-action="CreateFiscalYear" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Create New
+                    </a>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fiscalYear in Model)
+                        {
+                            <tr>
+                                <td>@fiscalYear.Code</td>
+                                <td>@fiscalYear.Name</td>
+                                <td>@fiscalYear.StartDate.ToString("yyyy-MM-dd")</td>
+                                <td>@fiscalYear.EndDate.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    @if (fiscalYear.IsClosed)
+                                    {
+                                        <span class="badge badge-danger">Closed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-success">Open</span>
+                                    }
+                                    @if (!fiscalYear.IsActive)
+                                    {
+                                        <span class="badge badge-warning">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="EditFiscalYear" asp-route-id="@fiscalYear.Id" class="btn btn-info btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="FiscalPeriods" asp-route-fiscalYearId="@fiscalYear.Id" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-calendar"></i>
+                                        </a>
+                                        @if (!fiscalYear.IsClosed)
+                                        {
+                                            <a asp-action="YearEndClosing" asp-route-id="@fiscalYear.Id" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-lock"></i>
+                                            </a>
+                                        }
+                                        <form asp-action="DeleteFiscalYear" method="post" style="display: inline;">
+                                            <input type="hidden" name="id" value="@fiscalYear.Id" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this fiscal year?');">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

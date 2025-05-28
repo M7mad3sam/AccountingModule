@@ -1,0 +1,417 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.JournalEntryViewModel
+
+@{
+    ViewData["Title"] = "Create Journal Entry";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Create New Journal Entry</h3>
+        <div class="card-tools">
+            <a asp-action="Index" class="btn btn-sm btn-default">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+    <form asp-action="Create" method="post">
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="EntryDate" class="control-label"></label>
+                        <input asp-for="EntryDate" class="form-control" type="date" />
+                        <span asp-validation-for="EntryDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="PostingDate" class="control-label"></label>
+                        <input asp-for="PostingDate" class="form-control" type="date" />
+                        <span asp-validation-for="PostingDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="Reference" class="control-label"></label>
+                        <input asp-for="Reference" class="form-control" />
+                        <span asp-validation-for="Reference" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label asp-for="Status" class="control-label"></label>
+                        <input asp-for="Status" class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="Description" class="control-label"></label>
+                        <input asp-for="Description" class="form-control" />
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="ClientId" class="control-label"></label>
+                        <select asp-for="ClientId" asp-items="Model.AvailableClients" class="form-control select2">
+                            <option value="">-- Select Client --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="VendorId" class="control-label"></label>
+                        <select asp-for="VendorId" asp-items="Model.AvailableVendors" class="form-control select2">
+                            <option value="">-- Select Vendor --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label asp-for="Currency" class="control-label"></label>
+                        <input asp-for="Currency" class="form-control" />
+                        <span asp-validation-for="Currency" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label asp-for="ExchangeRate" class="control-label"></label>
+                        <input asp-for="ExchangeRate" class="form-control" />
+                        <span asp-validation-for="ExchangeRate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="SourceDocument" class="control-label"></label>
+                        <input asp-for="SourceDocument" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="Notes" class="control-label"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <hr />
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <h4>Journal Entry Lines</h4>
+                    <button type="button" id="add-line" class="btn btn-sm btn-success mb-3">
+                        <i class="fas fa-plus"></i> Add Line
+                    </button>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="journal-lines-table">
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Cost Center</th>
+                                    <th>Description</th>
+                                    <th>Debit</th>
+                                    <th>Credit</th>
+                                    <th>Tax Rate</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="journal-lines-body">
+                                @for (int i = 0; i < Model.Lines.Count; i++)
+                                {
+                                    <tr class="journal-line-row">
+                                        <td>
+                                            <input type="hidden" name="Lines[@i].Id" value="@Model.Lines[i].Id" />
+                                            <select name="Lines[@i].AccountId" class="form-control select2 account-select" required>
+                                                <option value="">-- Select Account --</option>
+                                                @foreach (var item in Model.Lines[i].AvailableAccounts)
+                                                {
+                                                    <option value="@item.Value" @(item.Value == Model.Lines[i].AccountId.ToString() ? "selected" : "")>@item.Text</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="Lines[@i].CostCenterId" class="form-control select2 cost-center-select">
+                                                <option value="">-- Select Cost Center --</option>
+                                                @foreach (var item in Model.Lines[i].AvailableCostCenters)
+                                                {
+                                                    <option value="@item.Value" @(item.Value == Model.Lines[i].CostCenterId?.ToString() ? "selected" : "")>@item.Text</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="Lines[@i].Description" class="form-control" value="@Model.Lines[i].Description" />
+                                        </td>
+                                        <td>
+                                            <input type="number" name="Lines[@i].Debit" class="form-control debit-input" value="@Model.Lines[i].Debit" min="0" step="0.01" />
+                                        </td>
+                                        <td>
+                                            <input type="number" name="Lines[@i].Credit" class="form-control credit-input" value="@Model.Lines[i].Credit" min="0" step="0.01" />
+                                        </td>
+                                        <td>
+                                            <select name="Lines[@i].TaxRateId" class="form-control select2 tax-rate-select">
+                                                <option value="">-- Select Tax Rate --</option>
+                                                @foreach (var item in Model.Lines[i].AvailableTaxRates)
+                                                {
+                                                    <option value="@item.Value" @(item.Value == Model.Lines[i].TaxRateId?.ToString() ? "selected" : "")>@item.Text</option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger remove-line">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-right">Total:</th>
+                                    <th id="total-debit">@Model.TotalDebit.ToString("N2")</th>
+                                    <th id="total-credit">@Model.TotalCredit.ToString("N2")</th>
+                                    <th colspan="2"></th>
+                                </tr>
+                                <tr>
+                                    <th colspan="3" class="text-right">Difference:</th>
+                                    <th colspan="2" id="difference" class="@(Model.IsBalanced ? "text-success" : "text-danger")">
+                                        @((Model.TotalDebit - Model.TotalCredit).ToString("N2"))
+                                    </th>
+                                    <th colspan="2"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="custom-control custom-checkbox">
+                        <input asp-for="IsRecurring" class="custom-control-input" id="is-recurring" />
+                        <label asp-for="IsRecurring" class="custom-control-label">Set as Recurring Journal Entry</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="recurring-options" class="row mt-3" style="display: none;">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="RecurrencePattern" class="control-label">Recurrence Pattern</label>
+                        <select asp-for="RecurrencePattern" class="form-control">
+                            <option value="">-- Select Pattern --</option>
+                            <option value="daily:1">Daily</option>
+                            <option value="weekly:1">Weekly</option>
+                            <option value="monthly:1">Monthly</option>
+                            <option value="quarterly:1">Quarterly</option>
+                            <option value="yearly:1">Yearly</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="NextRecurrenceDate" class="control-label">Next Recurrence Date</label>
+                        <input asp-for="NextRecurrenceDate" class="form-control" type="date" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="EndRecurrenceDate" class="control-label">End Recurrence Date</label>
+                        <input asp-for="EndRecurrenceDate" class="form-control" type="date" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary" id="save-button" disabled>
+                <i class="fas fa-save"></i> Create
+            </button>
+            <a asp-action="Index" class="btn btn-default float-right">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script id="line-template" type="text/template">
+        <tr class="journal-line-row">
+            <td>
+                <input type="hidden" name="Lines[{index}].Id" value="00000000-0000-0000-0000-000000000000" />
+                <select name="Lines[{index}].AccountId" class="form-control select2 account-select" required>
+                    <option value="">-- Select Account --</option>
+                    @foreach (var item in ViewBag.Accounts)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </td>
+            <td>
+                <select name="Lines[{index}].CostCenterId" class="form-control select2 cost-center-select">
+                    <option value="">-- Select Cost Center --</option>
+                    @foreach (var item in ViewBag.CostCenters)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </td>
+            <td>
+                <input type="text" name="Lines[{index}].Description" class="form-control" />
+            </td>
+            <td>
+                <input type="number" name="Lines[{index}].Debit" class="form-control debit-input" value="0.00" min="0" step="0.01" />
+            </td>
+            <td>
+                <input type="number" name="Lines[{index}].Credit" class="form-control credit-input" value="0.00" min="0" step="0.01" />
+            </td>
+            <td>
+                <select name="Lines[{index}].TaxRateId" class="form-control select2 tax-rate-select">
+                    <option value="">-- Select Tax Rate --</option>
+                    @foreach (var item in ViewBag.TaxRates)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </td>
+            <td>
+                <button type="button" class="btn btn-sm btn-danger remove-line">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    </script>
+    
+    <script>
+        $(function () {
+            // Initialize Select2
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+            
+            // Toggle recurring options
+            $('#is-recurring').change(function() {
+                if($(this).is(':checked')) {
+                    $('#recurring-options').show();
+                } else {
+                    $('#recurring-options').hide();
+                }
+            });
+            
+            // Add new line
+            $('#add-line').click(function() {
+                var template = $('#line-template').html();
+                var index = $('.journal-line-row').length;
+                template = template.replace(/{index}/g, index);
+                
+                $('#journal-lines-body').append(template);
+                
+                // Initialize Select2 for new row
+                $('.journal-line-row:last-child .select2').select2({
+                    theme: 'bootstrap4'
+                });
+                
+                // Attach event handlers
+                attachEventHandlers();
+                
+                // Update totals
+                updateTotals();
+            });
+            
+            // Remove line
+            function attachEventHandlers() {
+                $('.remove-line').off('click').on('click', function() {
+                    $(this).closest('tr').remove();
+                    updateTotals();
+                    renumberLines();
+                });
+                
+                $('.debit-input, .credit-input').off('input').on('input', function() {
+                    var row = $(this).closest('tr');
+                    var debitInput = row.find('.debit-input');
+                    var creditInput = row.find('.credit-input');
+                    
+                    // If entering debit, clear credit
+                    if ($(this).hasClass('debit-input') && parseFloat($(this).val()) > 0) {
+                        creditInput.val('0.00');
+                    }
+                    
+                    // If entering credit, clear debit
+                    if ($(this).hasClass('credit-input') && parseFloat($(this).val()) > 0) {
+                        debitInput.val('0.00');
+                    }
+                    
+                    updateTotals();
+                });
+            }
+            
+            // Renumber lines after removal
+            function renumberLines() {
+                $('.journal-line-row').each(function(index) {
+                    var row = $(this);
+                    row.find('input, select').each(function() {
+                        var name = $(this).attr('name');
+                        if (name) {
+                            var newName = name.replace(/Lines\[\d+\]/, 'Lines[' + index + ']');
+                            $(this).attr('name', newName);
+                        }
+                    });
+                });
+            }
+            
+            // Update totals
+            function updateTotals() {
+                var totalDebit = 0;
+                var totalCredit = 0;
+                
+                $('.debit-input').each(function() {
+                    var value = parseFloat($(this).val()) || 0;
+                    totalDebit += value;
+                });
+                
+                $('.credit-input').each(function() {
+                    var value = parseFloat($(this).val()) || 0;
+                    totalCredit += value;
+                });
+                
+                $('#total-debit').text(totalDebit.toFixed(2));
+                $('#total-credit').text(totalCredit.toFixed(2));
+                
+                var difference = totalDebit - totalCredit;
+                $('#difference').text(difference.toFixed(2));
+                
+                if (Math.abs(difference) < 0.01) {
+                    $('#difference').removeClass('text-danger').addClass('text-success');
+                    $('#save-button').prop('disabled', false);
+                } else {
+                    $('#difference').removeClass('text-success').addClass('text-danger');
+                    $('#save-button').prop('disabled', true);
+                }
+            }
+            
+            // Initial setup
+            attachEventHandlers();
+            updateTotals();
+            
+            // Add initial line if none exist
+            if ($('.journal-line-row').length === 0) {
+                $('#add-line').click();
+            }
+        });
+    </script>
+}

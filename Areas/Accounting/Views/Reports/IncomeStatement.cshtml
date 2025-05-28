@@ -1,0 +1,116 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.TrialBalanceFilterViewModel
+
+@{
+    ViewData["Title"] = "Income Statement";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Income Statement</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="IncomeStatement" method="get" id="filter-form">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="AsOfDate" class="control-label">As of Date</label>
+                        <input asp-for="AsOfDate" class="form-control" type="date" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="CostCenterId" class="control-label">Cost Center</label>
+                        <select asp-for="CostCenterId" asp-items="@(new SelectList(Model.CostCenters, "Id", "NameEn"))" class="form-control select2">
+                            <option value="">-- All Cost Centers --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Apply Filter
+                            </button>
+                            <a asp-action="IncomeStatementReport" asp-route-asOfDate="@Model.AsOfDate.ToString("yyyy-MM-dd")" 
+                               asp-route-costCenterId="@Model.CostCenterId" class="btn btn-info" target="_blank">
+                                <i class="fas fa-print"></i> Print Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        
+        <hr />
+        
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Account</th>
+                        <th>Description</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Revenue Section -->
+                    <tr class="bg-light">
+                        <th colspan="3">Revenue</th>
+                    </tr>
+                    @if (ViewBag.RevenueAccounts != null)
+                    {
+                        foreach (var account in ViewBag.RevenueAccounts)
+                        {
+                            <tr>
+                                <td>@account.Code</td>
+                                <td>@account.NameEn</td>
+                                <td class="text-right">@account.Balance.ToString("N2")</td>
+                            </tr>
+                        }
+                    }
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">Total Revenue</td>
+                        <td class="text-right">@ViewBag.TotalRevenue.ToString("N2")</td>
+                    </tr>
+                    
+                    <!-- Expenses Section -->
+                    <tr class="bg-light">
+                        <th colspan="3">Expenses</th>
+                    </tr>
+                    @if (ViewBag.ExpenseAccounts != null)
+                    {
+                        foreach (var account in ViewBag.ExpenseAccounts)
+                        {
+                            <tr>
+                                <td>@account.Code</td>
+                                <td>@account.NameEn</td>
+                                <td class="text-right">@account.Balance.ToString("N2")</td>
+                            </tr>
+                        }
+                    }
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">Total Expenses</td>
+                        <td class="text-right">@ViewBag.TotalExpenses.ToString("N2")</td>
+                    </tr>
+                    
+                    <!-- Net Income/Loss -->
+                    <tr class="font-weight-bold bg-info">
+                        <td colspan="2" class="text-right">Net Income (Loss)</td>
+                        <td class="text-right">@ViewBag.NetIncome.ToString("N2")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+        });
+    </script>
+}

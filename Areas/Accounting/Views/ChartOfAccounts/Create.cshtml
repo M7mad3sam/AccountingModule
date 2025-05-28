@@ -1,0 +1,97 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.AccountViewModel
+
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Create New Account</h3>
+        <div class="card-tools">
+            <a asp-action="Index" class="btn btn-sm btn-default">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+    <form asp-action="Create" method="post">
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Code" class="control-label"></label>
+                        <input asp-for="Code" class="form-control" />
+                        <span asp-validation-for="Code" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Type" class="control-label"></label>
+                        <select asp-for="Type" asp-items="Model.AccountTypes" class="form-control select2">
+                            <option value="">-- Select Account Type --</option>
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="NameEn" class="control-label">Name (English)</label>
+                        <input asp-for="NameEn" class="form-control" />
+                        <span asp-validation-for="NameEn" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="NameAr" class="control-label">Name (Arabic)</label>
+                        <input asp-for="NameAr" class="form-control" />
+                        <span asp-validation-for="NameAr" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="ParentId" class="control-label">Parent Account</label>
+                        <select asp-for="ParentId" asp-items="Model.ParentAccounts" class="form-control select2">
+                            <option value="">-- No Parent --</option>
+                        </select>
+                        <span asp-validation-for="ParentId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox mt-4">
+                            <input asp-for="IsActive" class="custom-control-input" />
+                            <label asp-for="IsActive" class="custom-control-label">Active</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create
+            </button>
+            <a asp-action="Index" class="btn btn-default float-right">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(function () {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+        });
+    </script>
+}
