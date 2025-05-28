@@ -1,15 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
-using System.Linq;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 {
     public class JournalEntryViewModel
     {
         public Guid Id { get; set; }
+        
+        [Display(Name = "Entry Number")]
+        public string EntryNumber { get; set; }
+        
+        [Required]
+        [Display(Name = "Description")]
+        [StringLength(200)]
+        public string Description { get; set; }
         
         [Required]
         [Display(Name = "Entry Date")]
@@ -21,16 +29,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [DataType(DataType.Date)]
         public DateTime PostingDate { get; set; } = DateTime.Today;
         
-        [Required]
-        [StringLength(50)]
-        [Display(Name = "Reference")]
-        public string Reference { get; set; }
-        
-        [Required]
-        [StringLength(200)]
-        [Display(Name = "Description")]
-        public string Description { get; set; }
-        
         [Display(Name = "Status")]
         public JournalEntryStatus Status { get; set; } = JournalEntryStatus.Draft;
         
@@ -41,10 +39,11 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public Guid? VendorId { get; set; }
         
         [Display(Name = "Currency")]
-        public string Currency { get; set; } = "EGP";
+        [StringLength(3)]
+        public string Currency { get; set; } = "USD";
         
         [Display(Name = "Exchange Rate")]
-        [Range(0.01, 1000)]
+        [Range(0.01, 9999.99)]
         public decimal ExchangeRate { get; set; } = 1;
         
         [Display(Name = "Is Recurring")]
@@ -118,6 +117,23 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Display(Name = "Credit")]
         [Range(0, 9999999999.99)]
         public decimal Credit { get; set; }
+        
+        // Alias properties needed by views
+        [Display(Name = "Debit Amount")]
+        [Range(0, 9999999999.99)]
+        public decimal DebitAmount 
+        { 
+            get { return Debit; }
+            set { Debit = value; }
+        }
+        
+        [Display(Name = "Credit Amount")]
+        [Range(0, 9999999999.99)]
+        public decimal CreditAmount 
+        { 
+            get { return Credit; }
+            set { Credit = value; }
+        }
         
         [Display(Name = "Tax Rate")]
         public Guid? TaxRateId { get; set; }

@@ -156,6 +156,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public ClientType ClientType { get; set; }
         public bool IsActive { get; set; }
         
+        // Collection property needed by controllers/views
+        public IEnumerable<Client> Clients { get; set; }
+        
         // Search properties
         public string SearchTerm { get; set; }
         public ClientType? SearchClientType { get; set; }
@@ -173,6 +176,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public string Phone { get; set; }
         public string Email { get; set; }
         public bool IsActive { get; set; }
+        
+        // Collection property needed by controllers/views
+        public IEnumerable<Vendor> Vendors { get; set; }
         
         // Search properties
         public string SearchTerm { get; set; }
