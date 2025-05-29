@@ -27,8 +27,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 
         public bool IsActive { get; set; }
 
+        [ValidateNever]
         public IEnumerable<SelectListItem> AccountTypes { get; set; }
-
+        [ValidateNever]
         public IEnumerable<SelectListItem> ParentAccounts { get; set; }
     }
 
@@ -38,8 +39,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 
         public string AccountName { get; set; }
 
+        [ValidateNever]
         public IEnumerable<AccountCostCenter> AccountCostCenters { get; set; }
-
+        [ValidateNever]
         public IEnumerable<CostCenter> AvailableCostCenters { get; set; }
     }
 

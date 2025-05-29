@@ -119,6 +119,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             fiscalYear.CreatedById = userId;
             fiscalYear.CreatedDate = DateTime.Now;
+            fiscalYear.ModifiedById = userId;
+            fiscalYear.ModifiedDate = DateTime.Now;
 
             await _fiscalYearRepository.AddAsync(fiscalYear);
             await _auditService.LogActivityAsync("FiscalYear", "Create", $"Created fiscal year: {fiscalYear.Name}");
@@ -213,6 +215,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             fiscalPeriod.CreatedById = userId;
             fiscalPeriod.CreatedDate = DateTime.Now;
+            fiscalPeriod.ModifiedById = userId;
+            fiscalPeriod.ModifiedDate = DateTime.Now;
 
             await _fiscalPeriodRepository.AddAsync(fiscalPeriod);
             await _auditService.LogActivityAsync("FiscalPeriod", "Create", $"Created fiscal period: {fiscalPeriod.Name}");
@@ -694,7 +698,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                     IsActive = true,
                     IsClosed = false,
                     CreatedById = fiscalYear.CreatedById,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.Now,
+                    ModifiedById = fiscalYear.ModifiedById,
+                    ModifiedDate = DateTime.Now
                 };
 
                 await _fiscalPeriodRepository.AddAsync(fiscalPeriod);

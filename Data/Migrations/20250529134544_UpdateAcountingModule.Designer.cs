@@ -3,6 +3,7 @@ using System;
 using AspNetCoreMvcTemplate.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspNetCoreMvcTemplate.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250529134544_UpdateAcountingModule")]
+    partial class UpdateAcountingModule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -250,6 +253,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ClosedById")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ClosedDate")
@@ -317,6 +321,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ClosedById")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ClosedDate")
@@ -1046,7 +1051,9 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                 {
                     b.HasOne("AspNetCoreMvcTemplate.Models.ApplicationUser", "ClosedBy")
                         .WithMany()
-                        .HasForeignKey("ClosedById");
+                        .HasForeignKey("ClosedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("AspNetCoreMvcTemplate.Models.ApplicationUser", "CreatedBy")
                         .WithMany()
@@ -1079,7 +1086,9 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                 {
                     b.HasOne("AspNetCoreMvcTemplate.Models.ApplicationUser", "ClosedBy")
                         .WithMany()
-                        .HasForeignKey("ClosedById");
+                        .HasForeignKey("ClosedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("AspNetCoreMvcTemplate.Models.ApplicationUser", "CreatedBy")
                         .WithMany()
