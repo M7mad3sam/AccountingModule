@@ -40,8 +40,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 SubjectToWithholdingTax = subjectToWithholdingTax,
                 VendorTypes = vendorTypes.Select(vt => new SelectListItem
                 {
-                    Value = vt.Name,
-                    Text = vt.Name
+                    Value = vt,
+                    Text = vt
                 }).ToList()
             };
             
@@ -59,14 +59,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             
             viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
-                Value = vt.Name,
-                Text = vt.Name
+                Value = vt,
+                Text = vt
             }).ToList();
             
             viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.Name}"
+                Text = $"{a.Code} - {a}"
             }).ToList();
             
             return View(viewModel);
@@ -112,14 +112,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             
             viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
-                Value = vt.Name,
-                Text = vt.Name
+                Value = vt,
+                Text = vt
             }).ToList();
             
             viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.Name}"
+                Text = $"{a.Code} - {a}"
             }).ToList();
             
             return View(viewModel);
@@ -164,15 +164,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             
             viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
-                Value = vt.Name,
-                Text = vt.Name,
-                Selected = vt.Name == vendor.Type.ToString()
+                Value = vt,
+                Text = vt,
+                Selected = vt == vendor.Type.ToString()
             }).ToList();
             
             viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.Name}",
+                Text = $"{a.Code} - {a}",
                 Selected = a.Id == vendor.AccountId
             }).ToList();
             
@@ -228,15 +228,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             
             viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
-                Value = vt.Name,
-                Text = vt.Name,
-                Selected = vt.Name == viewModel.Type.ToString()
+                Value = vt,
+                Text = vt,
+                Selected = vt == viewModel.Type.ToString()
             }).ToList();
             
             viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.Name}",
+                Text = $"{a.Code} - {a.NameAr}",
                 Selected = a.Id == viewModel.AccountId
             }).ToList();
             
@@ -326,7 +326,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 return NotFound();
             }
             
-            await _clientVendorService.DeleteVendorAsync(vendor);
+            await _clientVendorService.DeleteVendorAsync(vendor.Id);
             
             return RedirectToAction(nameof(Index));
         }

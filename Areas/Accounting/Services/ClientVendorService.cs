@@ -259,7 +259,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         {
             // Get accounts that are typically associated with vendors (e.g., Accounts Payable)
             var specification = new Specification<Account>(a => 
-                a.AccountType == AccountType.Liability && 
+                a.Type == AccountType.Liability && 
                 a.IsActive == true);
                 
             return await _accountRepository.FindAllAsync(specification);

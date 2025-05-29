@@ -7,6 +7,7 @@ using System.Linq;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using AspNetCoreMvcTemplate.Models;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
@@ -55,9 +56,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         private readonly IRepository<CostCenter> _costCenterRepository;
         private readonly IRepository<FiscalPeriod> _fiscalPeriodRepository;
         private readonly IAuditService _auditService;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IPeriodManagementService _periodManagementService;
+        private readonly IPeriodValidator _periodValidator;
 
         public GeneralLedgerService(
             IRepository<JournalEntry> journalEntryRepository,
@@ -66,9 +67,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             IRepository<CostCenter> costCenterRepository,
             IRepository<FiscalPeriod> fiscalPeriodRepository,
             IAuditService auditService,
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             IHttpContextAccessor httpContextAccessor,
-            IPeriodManagementService periodManagementService)
+            IPeriodValidator periodValidator)
         {
             _journalEntryRepository = journalEntryRepository;
             _journalEntryLineRepository = journalEntryLineRepository;
@@ -78,7 +79,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             _auditService = auditService;
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
-            _periodManagementService = periodManagementService;
+            _periodValidator = periodValidator;
         }
 
         #region Journal Entry Methods
@@ -526,7 +527,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         public async Task<bool> IsPostingAllowedAsync(DateTime postingDate)
         {
             // Check if the fiscal period for the posting date is closed
-            var isClosed = await _periodManagementService.IsPeriodClosedAsync(postingDate);
+            var isClosed = await _periodValidator.IsPeriodClosedAsync(postingDate);
             
             // Posting is allowed if the period is not closed
             return !isClosed;

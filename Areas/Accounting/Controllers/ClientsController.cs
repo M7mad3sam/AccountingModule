@@ -281,7 +281,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 return NotFound();
             }
             
-            await _clientVendorService.DeleteClientAsync(client);
+            await _clientVendorService.DeleteClientAsync(client.Id);
             
             return RedirectToAction(nameof(Index));
         }

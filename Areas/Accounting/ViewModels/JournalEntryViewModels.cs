@@ -89,6 +89,11 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         
         [Display(Name = "Is Balanced")]
         public bool IsBalanced => Math.Abs(TotalDebit - TotalCredit) < 0.01m;
+
+        public string Currency { get; internal set; }
+        public decimal ExchangeRate { get; internal set; }
+        public string AttachmentUrl { get; internal set; }
+        public string Notes { get; internal set; }
     }
     
     public class JournalEntryLineViewModel

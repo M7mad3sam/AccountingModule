@@ -23,6 +23,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting
             services.AddScoped(typeof(IRepository<JournalEntry>), typeof(Repository<JournalEntry>));
             services.AddScoped(typeof(IRepository<JournalEntryLine>), typeof(Repository<JournalEntryLine>));
             services.AddScoped(typeof(IRepository<TaxRate>), typeof(Repository<TaxRate>));
+            services.AddScoped(typeof(IRepository<WithholdingTax>), typeof(Repository<WithholdingTax>));
             services.AddScoped(typeof(IRepository<Client>), typeof(Repository<Client>));
             services.AddScoped(typeof(IRepository<Vendor>), typeof(Repository<Vendor>));
             services.AddScoped(typeof(IRepository<AuditLog>), typeof(Repository<AuditLog>));
@@ -32,6 +33,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting
             services.AddScoped<ICostCenterService, CostCenterService>();
             services.AddScoped<IGeneralLedgerService, GeneralLedgerService>();
             services.AddScoped<IPeriodManagementService, PeriodManagementService>();
+            services.AddScoped<IPeriodValidator, PeriodManagementService>(); // Register IPeriodValidator with same implementation
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<IClientVendorService, ClientVendorService>();
             services.AddScoped<IAuditService, AuditService>();

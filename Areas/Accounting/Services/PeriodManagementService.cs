@@ -7,6 +7,7 @@ using System.Linq;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using AspNetCoreMvcTemplate.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
@@ -43,7 +44,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task<YearEndClosingValidationResult> ValidateYearEndClosingAsync(Guid fiscalYearId);
     }
 
-    public class PeriodManagementService : IPeriodManagementService
+    public class PeriodManagementService : IPeriodManagementService, IPeriodValidator
     {
         private readonly IRepository<FiscalYear> _fiscalYearRepository;
         private readonly IRepository<FiscalPeriod> _fiscalPeriodRepository;
@@ -52,7 +53,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         private readonly IRepository<JournalEntryLine> _journalEntryLineRepository;
         private readonly IGeneralLedgerService _generalLedgerService;
         private readonly IAuditService _auditService;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PeriodManagementService(
@@ -63,7 +64,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             IRepository<JournalEntryLine> journalEntryLineRepository,
             IGeneralLedgerService generalLedgerService,
             IAuditService auditService,
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             IHttpContextAccessor httpContextAccessor)
         {
             _fiscalYearRepository = fiscalYearRepository;
