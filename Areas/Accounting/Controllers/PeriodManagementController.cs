@@ -158,7 +158,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = ex.Message.ToString();
             }
 
             return RedirectToAction(nameof(FiscalYears));
@@ -361,7 +361,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = ex.Message.ToString();
             }
 
             return RedirectToAction(nameof(FiscalPeriods), new { fiscalYearId });
@@ -387,7 +387,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = ex.Message.ToString();
             }
 
             return RedirectToAction(nameof(FiscalPeriods), new { fiscalYearId });
@@ -413,7 +413,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = ex.Message.ToString();
             }
 
             return RedirectToAction(nameof(FiscalPeriods), new { fiscalYearId });

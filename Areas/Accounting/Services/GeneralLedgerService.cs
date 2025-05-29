@@ -144,7 +144,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<JournalEntry> GetJournalEntryByIdAsync(Guid id)
         {
-            return await _journalEntryRepository.GetByIdAsync(id);
+            return await _journalEntryRepository.GetByIdAsync(id, entry => entry.Lines);
         }
 
         public async Task<JournalEntry> GetJournalEntryByReferenceAsync(string reference)
@@ -175,9 +175,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             journalEntry.CreatedById = userId;
             journalEntry.CreatedDate = DateTime.Now;
+            journalEntry.ApprovedById = userId;
+            journalEntry.ModifiedDate = DateTime.Now;
 
             await _journalEntryRepository.AddAsync(journalEntry);
-            await _auditService.LogActivityAsync("JournalEntry", "Create", $"Created journal entry: {journalEntry.Reference}");
+            await _journalEntryRepository.SaveAsync();
+            //await _auditService.LogActivityAsync("JournalEntry", "Create", $"Created journal entry: {journalEntry.Reference}");
         }
 
         public async Task UpdateJournalEntryAsync(JournalEntry journalEntry)
@@ -204,6 +207,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             journalEntry.ModifiedDate = DateTime.Now;
 
             await _journalEntryRepository.UpdateAsync(journalEntry);
+            await _journalEntryRepository.SaveAsync();
             await _auditService.LogActivityAsync("JournalEntry", "Update", $"Updated journal entry: {journalEntry.Reference}");
         }
 
@@ -222,6 +226,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             }
 
             await _journalEntryRepository.DeleteAsync(id);
+            await _journalEntryRepository.SaveAsync();
             await _auditService.LogActivityAsync("JournalEntry", "Delete", $"Deleted journal entry: {journalEntry.Reference}");
         }
 
@@ -257,6 +262,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             journalEntry.ModifiedDate = DateTime.Now;
 
             await _journalEntryRepository.UpdateAsync(journalEntry);
+            await _journalEntryRepository.SaveAsync();
             await _auditService.LogActivityAsync("JournalEntry", "SubmitForApproval", $"Submitted journal entry for approval: {journalEntry.Reference}");
         }
 
@@ -290,6 +296,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             journalEntry.ApprovedDate = DateTime.Now;
 
             await _journalEntryRepository.UpdateAsync(journalEntry);
+            await _journalEntryRepository.SaveAsync();
             await _auditService.LogActivityAsync("JournalEntry", "Approve", $"Approved journal entry: {journalEntry.Reference}");
         }
 
@@ -317,6 +324,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             journalEntry.ApprovedDate = DateTime.Now;
 
             await _journalEntryRepository.UpdateAsync(journalEntry);
+            await _journalEntryRepository.SaveAsync();
             await _auditService.LogActivityAsync("JournalEntry", "Reject", $"Rejected journal entry: {journalEntry.Reference}");
         }
 
@@ -349,6 +357,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             journalEntry.PostedDate = DateTime.Now;
 
             await _journalEntryRepository.UpdateAsync(journalEntry);
+            await _journalEntryRepository.SaveAsync();
             await _auditService.LogActivityAsync("JournalEntry", "Post", $"Posted journal entry: {journalEntry.Reference}");
         }
 
@@ -417,6 +426,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 // Update next recurrence date
                 recurringEntry.NextRecurrenceDate = CalculateNextRecurrenceDate(recurringEntry.RecurrencePattern, today);
                 await _journalEntryRepository.UpdateAsync(recurringEntry);
+                await _journalEntryRepository.SaveAsync();
             }
         }
 

@@ -20,11 +20,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Display(Name = "Reference")]
         public string Reference { get; set; }
         
-        [Required]
         [StringLength(200)]
         [Display(Name = "Description")]
-        public string Description { get; set; }
-        
+        public string? Description { get; set; }
+
+        [Required]
+        public string Currency { get; set; }
+
         [Required]
         [Display(Name = "Entry Date")]
         [DataType(DataType.Date)]
@@ -51,7 +53,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public bool IsRecurring { get; set; }
         
         [Display(Name = "Recurrence Pattern")]
-        public string RecurrencePattern { get; set; }
+        public string? RecurrencePattern { get; set; }
         
         [Display(Name = "Next Recurrence Date")]
         [DataType(DataType.Date)]
@@ -65,7 +67,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public bool IsSystemGenerated { get; set; }
         
         [Display(Name = "Source Document")]
-        public string SourceDocument { get; set; }
+        public string? SourceDocument { get; set; }
         
         [Display(Name = "Source Document ID")]
         public Guid? SourceDocumentId { get; set; }
@@ -90,10 +92,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Display(Name = "Is Balanced")]
         public bool IsBalanced => Math.Abs(TotalDebit - TotalCredit) < 0.01m;
 
-        public string Currency { get; internal set; }
         public decimal ExchangeRate { get; internal set; }
-        public string AttachmentUrl { get; internal set; }
-        public string Notes { get; internal set; }
+        public string? AttachmentUrl { get; internal set; }
+        public string? Notes { get; internal set; }
     }
     
     public class JournalEntryLineViewModel
@@ -109,7 +110,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         
         [StringLength(200)]
         [Display(Name = "Description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         
         [Display(Name = "Debit")]
         [Range(0, 9999999999.99)]

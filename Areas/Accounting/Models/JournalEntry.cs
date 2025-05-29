@@ -24,9 +24,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         [DataType(DataType.Date)]
         public DateTime PostingDate { get; set; }
         
-        [Required]
         [StringLength(500)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         
         [StringLength(50)]
         public string Reference { get; set; }
@@ -54,7 +53,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         
         public bool IsRecurring { get; set; }
         
-        public string RecurrencePattern { get; set; }
+        public string? RecurrencePattern { get; set; }
         
         public DateTime? NextRecurrenceDate { get; set; }
         
@@ -62,12 +61,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         
         public bool IsSystemGenerated { get; set; }
         
-        public string SourceDocument { get; set; }
+        public string? SourceDocument { get; set; }
         
-        public string AttachmentUrl { get; set; }
+        public string? AttachmentUrl { get; set; }
         
         [StringLength(500)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
         
         [Required]
         public Guid FiscalPeriodId { get; set; }
@@ -87,7 +86,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         
         public DateTime? ModifiedDate { get; set; }
         
-        public string ApprovedById { get; set; }
+        public string? ApprovedById { get; set; }
         public ApplicationUser ApprovedBy { get; set; }
         
         public DateTime? ApprovedAt { get; set; }
@@ -96,16 +95,16 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public DateTime? ApprovedDate { get => ApprovedAt; set => ApprovedAt = value; }
         
         [StringLength(500)]
-        public string ApprovalNotes { get; set; }
+        public string? ApprovalNotes { get; set; }
         
-        public string PostedById { get; set; }
+        public string? PostedById { get; set; }
         public ApplicationUser PostedBy { get; set; }
         
         public DateTime? PostedDate { get; set; }
         
-        public string RejectionReason { get; set; }
+        public string? RejectionReason { get; set; }
         
-        public string IpAddress { get; set; }
+        public string? IpAddress { get; set; }
         
         public ICollection<JournalEntryLine> Lines { get; set; }
         public ICollection<AuditLog> AuditLogs { get; set; }

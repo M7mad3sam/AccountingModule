@@ -87,5 +87,108 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(je => je.FiscalPeriod)
             .WithMany(fp => fp.JournalEntries)
             .HasForeignKey(je => je.FiscalPeriodId);
+
+        // AuditLog relationships
+        modelBuilder.Entity<AuditLog>()
+            .HasOne(al => al.User)
+            .WithMany()
+            .HasForeignKey(al => al.UserId);
+
+        // Client relationships
+        modelBuilder.Entity<Client>()
+            .HasOne(c => c.Account)
+            .WithMany()
+            .HasForeignKey(c => c.AccountId);
+
+        // Vendor relationships
+        modelBuilder.Entity<Vendor>()
+            .HasOne(v => v.Account)
+            .WithMany()
+            .HasForeignKey(v => v.AccountId);
+
+        // FiscalPeriod relationships
+        modelBuilder.Entity<FiscalPeriod>()
+            .HasOne(fp => fp.CreatedBy)
+            .WithMany()
+            .HasForeignKey(fp => fp.CreatedById);
+
+        modelBuilder.Entity<FiscalPeriod>()
+            .HasOne(fp => fp.ModifiedBy)
+            .WithMany()
+            .HasForeignKey(fp => fp.ModifiedById)
+            .IsRequired(false);
+
+        modelBuilder.Entity<FiscalPeriod>()
+            .HasOne(fp => fp.ClosedBy)
+            .WithMany()
+            .HasForeignKey(fp => fp.ClosedById)
+            .IsRequired(false);
+
+        // FiscalYear relationships
+        modelBuilder.Entity<FiscalYear>()
+            .HasOne(fy => fy.CreatedBy)
+            .WithMany()
+            .HasForeignKey(fy => fy.CreatedById);
+
+        modelBuilder.Entity<FiscalYear>()
+            .HasOne(fy => fy.ModifiedBy)
+            .WithMany()
+            .HasForeignKey(fy => fy.ModifiedById)
+            .IsRequired(false);
+
+        modelBuilder.Entity<FiscalYear>()
+            .HasOne(fy => fy.ClosedBy)
+            .WithMany()
+            .HasForeignKey(fy => fy.ClosedById)
+            .IsRequired(false);
+
+        // JournalEntry relationships
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(je => je.Client)
+            .WithMany()
+            .HasForeignKey(je => je.ClientId)
+            .IsRequired(false);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(je => je.Vendor)
+            .WithMany()
+            .HasForeignKey(je => je.VendorId)
+            .IsRequired(false);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(je => je.CreatedBy)
+            .WithMany()
+            .HasForeignKey(je => je.CreatedById);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(je => je.ModifiedBy)
+            .WithMany()
+            .HasForeignKey(je => je.ModifiedById)
+            .IsRequired(false);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(je => je.ApprovedBy)
+            .WithMany()
+            .HasForeignKey(je => je.ApprovedById)
+            .IsRequired(false);
+
+        modelBuilder.Entity<JournalEntry>()
+            .HasOne(je => je.PostedBy)
+            .WithMany()
+            .HasForeignKey(je => je.PostedById)
+            .IsRequired(false);
+
+        // JournalEntryLine relationships
+        modelBuilder.Entity<JournalEntryLine>()
+            .HasOne(jel => jel.TaxRate)
+            .WithMany(tr => tr.JournalEntryLines)
+            .HasForeignKey(jel => jel.TaxRateId)
+            .IsRequired(false);
+
+        modelBuilder.Entity<JournalEntryLine>()
+            .HasOne(jel => jel.WithholdingTax)
+            .WithMany(wt => wt.JournalEntryLines)
+            .HasForeignKey(jel => jel.WithholdingTaxId)
+            .IsRequired(false);
     }
 }

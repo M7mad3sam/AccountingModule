@@ -107,7 +107,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(JournalEntryViewModel viewModel, IFormFile attachment)
+        public async Task<IActionResult> Create(JournalEntryViewModel viewModel, IFormFile? attachment)
         {
             if (ModelState.IsValid)
             {
@@ -138,6 +138,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 // Create journal entry
                 var journalEntry = new JournalEntry
                 {
+                    Number = viewModel.EntryNumber,
                     EntryDate = viewModel.EntryDate,
                     PostingDate = viewModel.PostingDate,
                     Reference = viewModel.Reference,
@@ -155,6 +156,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     SourceDocument = viewModel.SourceDocument,
                     AttachmentUrl = attachmentUrl,
                     Notes = viewModel.Notes,
+                    FiscalPeriodId = viewModel.FiscalPeriodId,
                     Lines = new List<JournalEntryLine>()
                 };
                 
@@ -184,7 +186,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     await _generalLedgerService.PostJournalEntryAsync(journalEntry.Id);
                 }
                 
-                TempData["SuccessMessage"] = _localizer["Journal entry created successfully."];
+                TempData["SuccessMessage"] = _localizer["Journal entry created successfully."].ToString();
                 return RedirectToAction(nameof(Index));
             }
             
@@ -204,7 +206,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // Check if journal entry can be edited
             if (journalEntry.Status == JournalEntryStatus.Posted)
             {
-                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be edited."];
+                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be edited."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
@@ -267,7 +269,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 // Check if journal entry can be edited
                 if (journalEntry.Status == JournalEntryStatus.Posted)
                 {
-                    TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be edited."];
+                    TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be edited."].ToString();
                     return RedirectToAction(nameof(Details), new { id });
                 }
                 
@@ -318,6 +320,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 journalEntry.SourceDocument = viewModel.SourceDocument;
                 journalEntry.AttachmentUrl = attachmentUrl;
                 journalEntry.Notes = viewModel.Notes;
+                journalEntry.FiscalPeriodId = viewModel.FiscalPeriodId;
                 
                 // Update journal entry lines
                 journalEntry.Lines.Clear();
@@ -346,7 +349,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     await _generalLedgerService.PostJournalEntryAsync(journalEntry.Id);
                 }
                 
-                TempData["SuccessMessage"] = _localizer["Journal entry updated successfully."];
+                TempData["SuccessMessage"] = _localizer["Journal entry updated successfully."].ToString();
                 return RedirectToAction(nameof(Index));
             }
             
@@ -378,7 +381,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // Check if journal entry can be deleted
             if (journalEntry.Status == JournalEntryStatus.Posted)
             {
-                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be deleted."];
+                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be deleted."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
@@ -398,7 +401,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // Check if journal entry can be deleted
             if (journalEntry.Status == JournalEntryStatus.Posted)
             {
-                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be deleted."];
+                TempData["ErrorMessage"] = _localizer["Posted journal entries cannot be deleted."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
@@ -409,7 +412,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             }
             
             await _generalLedgerService.DeleteJournalEntryAsync(id);
-            TempData["SuccessMessage"] = _localizer["Journal entry deleted successfully."];
+            TempData["SuccessMessage"] = _localizer["Journal entry deleted successfully."].ToString();
             return RedirectToAction(nameof(Index));
         }
 
@@ -427,7 +430,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // Check if journal entry can be submitted for approval
             if (journalEntry.Status != JournalEntryStatus.Draft)
             {
-                TempData["ErrorMessage"] = _localizer["Only draft journal entries can be submitted for approval."];
+                TempData["ErrorMessage"] = _localizer["Only draft journal entries can be submitted for approval."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
@@ -435,7 +438,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             journalEntry.Status = JournalEntryStatus.Pending;
             await _generalLedgerService.UpdateJournalEntryAsync(journalEntry);
             
-            TempData["SuccessMessage"] = _localizer["Journal entry submitted for approval."];
+            TempData["SuccessMessage"] = _localizer["Journal entry submitted for approval."].ToString();
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -453,14 +456,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // Check if journal entry can be approved
             if (journalEntry.Status != JournalEntryStatus.Pending)
             {
-                TempData["ErrorMessage"] = _localizer["Only pending journal entries can be approved."];
+                TempData["ErrorMessage"] = _localizer["Only pending journal entries can be approved."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
             // Approve journal entry
             await _generalLedgerService.ApproveJournalEntryAsync(id);
             
-            TempData["SuccessMessage"] = _localizer["Journal entry approved."];
+            TempData["SuccessMessage"] = _localizer["Journal entry approved."].ToString();
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -478,21 +481,21 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // Check if journal entry can be rejected
             if (journalEntry.Status != JournalEntryStatus.Pending)
             {
-                TempData["ErrorMessage"] = _localizer["Only pending journal entries can be rejected."];
+                TempData["ErrorMessage"] = _localizer["Only pending journal entries can be rejected."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
             // Validate rejection reason
             if (string.IsNullOrWhiteSpace(rejectionReason))
             {
-                TempData["ErrorMessage"] = _localizer["Rejection reason is required."];
+                TempData["ErrorMessage"] = _localizer["Rejection reason is required."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
             // Reject journal entry
             await _generalLedgerService.RejectJournalEntryAsync(id, rejectionReason);
             
-            TempData["SuccessMessage"] = _localizer["Journal entry rejected."];
+            TempData["SuccessMessage"] = _localizer["Journal entry rejected."].ToString();
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -510,7 +513,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // Check if journal entry can be posted
             if (journalEntry.Status != JournalEntryStatus.Approved)
             {
-                TempData["ErrorMessage"] = _localizer["Only approved journal entries can be posted."];
+                TempData["ErrorMessage"] = _localizer["Only approved journal entries can be posted."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
@@ -518,14 +521,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(journalEntry.PostingDate);
             if (isPeriodClosed)
             {
-                TempData["ErrorMessage"] = _localizer["Cannot post to a closed period."];
+                TempData["ErrorMessage"] = _localizer["Cannot post to a closed period."].ToString();
                 return RedirectToAction(nameof(Details), new { id });
             }
             
             // Post journal entry
             await _generalLedgerService.PostJournalEntryAsync(id);
             
-            TempData["SuccessMessage"] = _localizer["Journal entry posted."];
+            TempData["SuccessMessage"] = _localizer["Journal entry posted."].ToString();
             return RedirectToAction(nameof(Details), new { id });
         }
 

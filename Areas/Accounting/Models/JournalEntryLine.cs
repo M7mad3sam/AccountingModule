@@ -20,7 +20,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public CostCenter CostCenter { get; set; }
         
         [StringLength(200)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         
         [Required]
         public decimal DebitAmount { get; set; }

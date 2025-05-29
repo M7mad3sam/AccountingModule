@@ -31,8 +31,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label asp-for="EntryNumber" class="control-label"></label>
-                                <input asp-for="EntryNumber" class="form-control" readonly />
+                                <input asp-for="EntryNumber" class="form-control" />
                                 <span asp-validation-for="EntryNumber" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Reference" class="control-label"></label>
+                                <input asp-for="Reference" class="form-control" />
+                                <span asp-validation-for="Reference" class="text-danger"></span>
                             </div>
                             <div class="form-group">
                                 <label asp-for="EntryDate" class="control-label"></label>

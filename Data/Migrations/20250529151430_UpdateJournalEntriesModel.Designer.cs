@@ -3,6 +3,7 @@ using System;
 using AspNetCoreMvcTemplate.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspNetCoreMvcTemplate.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250529151430_UpdateJournalEntriesModel")]
+    partial class UpdateJournalEntriesModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -283,6 +286,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ModifiedById")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -343,6 +347,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ModifiedById")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -436,6 +441,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ModifiedById")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedDate")
@@ -532,6 +538,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
@@ -1048,7 +1055,9 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
 
                     b.HasOne("AspNetCoreMvcTemplate.Models.ApplicationUser", "ModifiedBy")
                         .WithMany()
-                        .HasForeignKey("ModifiedById");
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ClosedBy");
 
@@ -1073,7 +1082,9 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
 
                     b.HasOne("AspNetCoreMvcTemplate.Models.ApplicationUser", "ModifiedBy")
                         .WithMany()
-                        .HasForeignKey("ModifiedById");
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ClosedBy");
 
@@ -1106,7 +1117,9 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
 
                     b.HasOne("AspNetCoreMvcTemplate.Models.ApplicationUser", "ModifiedBy")
                         .WithMany()
-                        .HasForeignKey("ModifiedById");
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("AspNetCoreMvcTemplate.Models.ApplicationUser", "PostedBy")
                         .WithMany()

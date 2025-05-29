@@ -64,7 +64,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 };
 
                 await _taxService.AddTaxRateAsync(taxRate);
-                TempData["SuccessMessage"] = _localizer["Tax rate created successfully."];
+                TempData["SuccessMessage"] = _localizer["Tax rate created successfully."].ToString();
                 return RedirectToAction(nameof(Index));
             }
             return View(viewModel);
@@ -124,7 +124,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 taxRate.EffectiveTo = viewModel.EffectiveTo;
 
                 await _taxService.UpdateTaxRateAsync(taxRate);
-                TempData["SuccessMessage"] = _localizer["Tax rate updated successfully."];
+                TempData["SuccessMessage"] = _localizer["Tax rate updated successfully."].ToString();
                 return RedirectToAction(nameof(Index));
             }
             return View(viewModel);
@@ -147,7 +147,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             await _taxService.DeleteTaxRateAsync(id);
-            TempData["SuccessMessage"] = _localizer["Tax rate deleted successfully."];
+            TempData["SuccessMessage"] = _localizer["Tax rate deleted successfully."].ToString();
             return RedirectToAction(nameof(Index));
         }
 
@@ -234,7 +234,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 };
 
                 await _taxService.AddWithholdingTaxAsync(withholdingTax);
-                TempData["SuccessMessage"] = _localizer["Withholding tax created successfully."];
+                TempData["SuccessMessage"] = _localizer["Withholding tax created successfully."].ToString();
                 return RedirectToAction(nameof(WithholdingTaxes));
             }
             return View(viewModel);
@@ -296,7 +296,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 withholdingTax.MinimumThreshold = viewModel.MinimumThreshold;
 
                 await _taxService.UpdateWithholdingTaxAsync(withholdingTax);
-                TempData["SuccessMessage"] = _localizer["Withholding tax updated successfully."];
+                TempData["SuccessMessage"] = _localizer["Withholding tax updated successfully."].ToString();
                 return RedirectToAction(nameof(WithholdingTaxes));
             }
             return View(viewModel);
@@ -319,7 +319,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         public async Task<IActionResult> DeleteWithholdingTaxConfirmed(Guid id)
         {
             await _taxService.DeleteWithholdingTaxAsync(id);
-            TempData["SuccessMessage"] = _localizer["Withholding tax deleted successfully."];
+            TempData["SuccessMessage"] = _localizer["Withholding tax deleted successfully."].ToString();
             return RedirectToAction(nameof(WithholdingTaxes));
         }
     }
