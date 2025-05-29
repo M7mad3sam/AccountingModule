@@ -9,29 +9,29 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v4
+
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 6.0.x
-        
+        dotnet-version: 8.0.x      # current LTS
+        cache: true                # built-in NuGet cache
+
     - name: Restore dependencies
       run: dotnet restore
-      
+
     - name: Build
-      run: dotnet build --no-restore --configuration Release
-      
+      run: dotnet build -bl:build.binlog --no-restore --configuration Release
+
     - name: Test
       run: dotnet test --no-build --verbosity normal --configuration Release
-      
+
     - name: Upload build logs on failure
-      if: failure()
-      uses: actions/upload-artifact@v3
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
       with:
-        name: build-logs
+        name: build-logs-${{ github.run_id }}
         path: |
           **/*.binlog
           **/bin/Release/netcoreapp*/*.txt
