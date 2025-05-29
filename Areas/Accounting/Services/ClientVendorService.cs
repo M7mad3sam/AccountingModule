@@ -5,7 +5,6 @@ using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using AspNetCoreMvcTemplate.Data.Repository;
 using System.Linq;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
-
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
     public interface IClientVendorService
@@ -19,6 +18,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task DeleteClientAsync(Guid id);
         Task<IEnumerable<ClientType>> GetClientTypesAsync();
         
+        // Missing method that's called in ClientsController
+        Task CreateClientAsync(Client client);
+        
         // Vendor methods
         Task<IEnumerable<Vendor>> GetVendorsAsync(string searchTerm = null, string vendorType = null, bool? isActive = null, bool? subjectToWithholdingTax = null);
         Task<Vendor> GetVendorByIdAsync(Guid id);
@@ -27,6 +29,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task UpdateVendorAsync(Vendor vendor);
         Task DeleteVendorAsync(Guid id);
         Task<IEnumerable<string>> GetVendorTypesAsync();
+        
+        // Missing method for vendor creation that might be needed for consistency
+        Task CreateVendorAsync(Vendor vendor);
+        
+        // Missing method for account retrieval that might be needed
+        Task<IEnumerable<Account>> GetVendorAccountsAsync();
     }
 
     public class ClientVendorService : IClientVendorService
@@ -34,17 +42,20 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         private readonly IRepository<Client> _clientRepository;
         private readonly IRepository<Vendor> _vendorRepository;
         private readonly IRepository<JournalEntry> _journalEntryRepository;
+        private readonly IRepository<Account> _accountRepository;
         private readonly IAuditService _auditService;
 
         public ClientVendorService(
             IRepository<Client> clientRepository,
             IRepository<Vendor> vendorRepository,
             IRepository<JournalEntry> journalEntryRepository,
+            IRepository<Account> accountRepository,
             IAuditService auditService)
         {
             _clientRepository = clientRepository;
             _vendorRepository = vendorRepository;
             _journalEntryRepository = journalEntryRepository;
+            _accountRepository = accountRepository;
             _auditService = auditService;
         }
 
@@ -88,6 +99,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             return clients.FirstOrDefault();
         }
 
+        // Implementation of the missing CreateClientAsync method
+        public async Task CreateClientAsync(Client client)
+        {
+            // This method should delegate to AddClientAsync for consistency
+            await AddClientAsync(client);
+        }
+
         public async Task AddClientAsync(Client client)
         {
             // Check if code is unique
@@ -121,14 +139,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             {
                 throw new ArgumentException("Client not found");
             }
-
             // Check if there are journal entries referencing this client
             var journalEntries = await _journalEntryRepository.FindAllAsync(j => j.ClientId == id);
             if (journalEntries.Any())
             {
                 throw new InvalidOperationException("Cannot delete a client with associated journal entries");
             }
-
             await _clientRepository.DeleteAsync(id);
             await _auditService.LogActivityAsync("Client", "Delete", $"Deleted client: {client.NameEn}");
         }
@@ -145,7 +161,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         public async Task<IEnumerable<Vendor>> GetVendorsAsync(string searchTerm = null, string vendorType = null, bool? isActive = null, bool? subjectToWithholdingTax = null)
         {
             var specification = new Specification<Vendor>(v => true);
-
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 searchTerm = searchTerm.ToLower();
@@ -155,22 +170,18 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                     v.NameAr.ToLower().Contains(searchTerm) ||
                     (v.TaxRegistrationNumber != null && v.TaxRegistrationNumber.ToLower().Contains(searchTerm)));
             }
-
             if (!string.IsNullOrWhiteSpace(vendorType))
             {
-                specification = specification.And(v => v.VendorType == vendorType);
+                specification = specification.And(v => v.Type.ToString() == vendorType);
             }
-
             if (isActive.HasValue)
             {
                 specification = specification.And(v => v.IsActive == isActive.Value);
             }
-
             if (subjectToWithholdingTax.HasValue)
             {
                 specification = specification.And(v => v.SubjectToWithholdingTax == subjectToWithholdingTax.Value);
             }
-
             return await _vendorRepository.FindAllAsync(specification);
         }
 
@@ -185,6 +196,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             return vendors.FirstOrDefault();
         }
 
+        // Implementation of the missing CreateVendorAsync method
+        public async Task CreateVendorAsync(Vendor vendor)
+        {
+            // This method should delegate to AddVendorAsync for consistency
+            await AddVendorAsync(vendor);
+        }
+
         public async Task AddVendorAsync(Vendor vendor)
         {
             // Check if code is unique
@@ -193,7 +211,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             {
                 throw new InvalidOperationException($"A vendor with code '{vendor.Code}' already exists");
             }
-
             await _vendorRepository.AddAsync(vendor);
             await _auditService.LogActivityAsync("Vendor", "Create", $"Created vendor: {vendor.NameEn}");
         }
@@ -206,7 +223,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             {
                 throw new InvalidOperationException($"A vendor with code '{vendor.Code}' already exists");
             }
-
             await _vendorRepository.UpdateAsync(vendor);
             await _auditService.LogActivityAsync("Vendor", "Update", $"Updated vendor: {vendor.NameEn}");
         }
@@ -218,14 +234,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             {
                 throw new ArgumentException("Vendor not found");
             }
-
             // Check if there are journal entries referencing this vendor
             var journalEntries = await _journalEntryRepository.FindAllAsync(j => j.VendorId == id);
             if (journalEntries.Any())
             {
                 throw new InvalidOperationException("Cannot delete a vendor with associated journal entries");
             }
-
             await _vendorRepository.DeleteAsync(id);
             await _auditService.LogActivityAsync("Vendor", "Delete", $"Deleted vendor: {vendor.NameEn}");
         }
@@ -234,10 +248,21 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         {
             var vendors = await _vendorRepository.GetAllAsync();
             return vendors
-                .Where(v => !string.IsNullOrEmpty(v.VendorType))
-                .Select(v => v.VendorType)
+                .Where(v => !string.IsNullOrEmpty(v.Type.ToString()))
+                .Select(v => v.Type.ToString())
                 .Distinct()
                 .OrderBy(t => t);
+        }
+
+        // Implementation of the missing GetVendorAccountsAsync method
+        public async Task<IEnumerable<Account>> GetVendorAccountsAsync()
+        {
+            // Get accounts that are typically associated with vendors (e.g., Accounts Payable)
+            var specification = new Specification<Account>(a => 
+                a.AccountType == AccountType.Liability && 
+                a.IsActive == true);
+                
+            return await _accountRepository.FindAllAsync(specification);
         }
 
         #endregion
