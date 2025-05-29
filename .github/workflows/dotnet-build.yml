@@ -12,8 +12,8 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x      # current LTS
-        cache: false               # disable built-in NuGet cache to avoid lock file issues
+        dotnet-version: 9.0.x-preview      # Use .NET 9.0 preview SDK
+        cache: false                       # disable built-in NuGet cache to avoid lock file issues
     - name: Restore dependencies
       run: dotnet restore /p:RestoreLockedMode=false
     - name: Build
