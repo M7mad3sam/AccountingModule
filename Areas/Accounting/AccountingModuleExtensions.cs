@@ -7,7 +7,6 @@ using AspNetCoreMvcTemplate.Areas.Accounting.Services;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 using AspNetCoreMvcTemplate.Data.Repository;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
-
 namespace AspNetCoreMvcTemplate.Areas.Accounting
 {
     public static class AccountingModuleExtensions
@@ -27,18 +26,20 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting
             services.AddScoped(typeof(IRepository<Client>), typeof(Repository<Client>));
             services.AddScoped(typeof(IRepository<Vendor>), typeof(Repository<Vendor>));
             services.AddScoped(typeof(IRepository<AuditLog>), typeof(Repository<AuditLog>));
-
+            
             // Register services
+            // IMPORTANT: Register PeriodStatusService for IPeriodValidator to break circular dependency
+            services.AddScoped<IPeriodValidator, PeriodStatusService>();
+            
             services.AddScoped<IChartOfAccountsService, ChartOfAccountsService>();
             services.AddScoped<ICostCenterService, CostCenterService>();
             services.AddScoped<IGeneralLedgerService, GeneralLedgerService>();
             services.AddScoped<IPeriodManagementService, PeriodManagementService>();
-            services.AddScoped<IPeriodValidator, PeriodManagementService>(); // Register IPeriodValidator with same implementation
             services.AddScoped<ITaxService, TaxService>();
             services.AddScoped<IClientVendorService, ClientVendorService>();
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<IFinancialReportingService, FinancialReportingService>();
-
+            
             return services;
         }
     }
