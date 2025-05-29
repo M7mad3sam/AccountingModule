@@ -1,7 +1,8 @@
 @model IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.VendorListViewModel>
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Vendors";
+    ViewData["Title"] = Localizer["VendorList"];
 }
 
 <div class="content-header">
@@ -12,8 +13,8 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item active">Vendors</li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                    <li class="breadcrumb-item active">@Localizer["Vendors"]</li>
                 </ol>
             </div>
         </div>
@@ -26,11 +27,11 @@
             <div class="card-header">
                 <div class="row">
                     <div class="col-md-6">
-                        <h3 class="card-title">Vendor List</h3>
+                        <h3 class="card-title">@Localizer["VendorList"]</h3>
                     </div>
                     <div class="col-md-6 text-right">
                         <a asp-action="Create" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Create New
+                            <i class="fas fa-plus"></i> @Localizer["CreateNew"]
                         </a>
                     </div>
                 </div>
@@ -47,7 +48,7 @@
                                 <th>@Html.DisplayNameFor(model => model.Phone)</th>
                                 <th>@Html.DisplayNameFor(model => model.Email)</th>
                                 <th>@Html.DisplayNameFor(model => model.IsActive)</th>
-                                <th>Actions</th>
+                                <th>@Localizer["Actions"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,22 +64,22 @@
                                     <td>
                                         @if (item.IsActive)
                                         {
-                                            <span class="badge badge-success">Active</span>
+                                            <span class="badge badge-success">@Localizer["Active"]</span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-danger">Inactive</span>
+                                            <span class="badge badge-danger">@Localizer["Inactive"]</span>
                                         }
                                     </td>
                                     <td>
                                         <div class="btn-group">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="@Localizer["Edit"]">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="@Localizer["Details"]">
                                                 <i class="fas fa-info-circle"></i>
                                             </a>
-                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="@Localizer["Delete"]">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </div>

@@ -1,7 +1,8 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.ClientViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Create Client";
+    ViewData["Title"] = Localizer["CreateClient"];
 }
 
 <div class="content-header">
@@ -12,9 +13,9 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Clients" asp-action="Index">Clients</a></li>
-                    <li class="breadcrumb-item active">Create</li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Clients" asp-action="Index">@Localizer["Clients"]</a></li>
+                    <li class="breadcrumb-item active">@Localizer["Create"]</li>
                 </ol>
             </div>
         </div>
@@ -25,7 +26,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Create New Client</h3>
+                <h3 class="card-title">@Localizer["CreateClient"]</h3>
             </div>
             <form asp-action="Create">
                 <div class="card-body">
@@ -50,7 +51,7 @@
                             <div class="form-group">
                                 <label asp-for="ClientType" class="control-label"></label>
                                 <select asp-for="ClientType" asp-items="Model.AvailableClientTypes" class="form-control">
-                                    <option value="">-- Select Client Type --</option>
+                                    <option value="">-- @Localizer["Select"] @Localizer["ClientType"] --</option>
                                 </select>
                                 <span asp-validation-for="ClientType" class="text-danger"></span>
                             </div>
@@ -116,8 +117,8 @@
                 </div>
                 <div class="card-footer">
                     <div class="btn-group">
-                        <input type="submit" value="Create" class="btn btn-primary" />
-                        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        <input type="submit" value="@Localizer["Create"]" class="btn btn-primary" />
+                        <a asp-action="Index" class="btn btn-secondary">@Localizer["Cancel"]</a>
                     </div>
                 </div>
             </form>

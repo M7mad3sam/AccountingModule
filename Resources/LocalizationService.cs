@@ -36,6 +36,7 @@ namespace AspNetCoreMvcTemplate.Resources
                 var supportedCultures = new[]
                 {
                     new CultureInfo("en-US"),
+                    new CultureInfo("ar-EG"),
                     new CultureInfo("ar-SA")
                 };
 

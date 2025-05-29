@@ -1,7 +1,8 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.ClientViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Client Details";
+    ViewData["Title"] = Localizer["ClientDetails"];
 }
 
 <div class="content-header">
@@ -12,9 +13,9 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Clients" asp-action="Index">Clients</a></li>
-                    <li class="breadcrumb-item active">Details</li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Clients" asp-action="Index">@Localizer["Clients"]</a></li>
+                    <li class="breadcrumb-item active">@Localizer["Details"]</li>
                 </ol>
             </div>
         </div>
@@ -25,7 +26,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Client Information</h3>
+                <h3 class="card-title">@Localizer["ClientInformation"]</h3>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -84,8 +85,8 @@
             </div>
             <div class="card-footer">
                 <div class="btn-group">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
-                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Edit"]</a>
+                    <a asp-action="Index" class="btn btn-secondary">@Localizer["BackToList"]</a>
                 </div>
             </div>
         </div>
