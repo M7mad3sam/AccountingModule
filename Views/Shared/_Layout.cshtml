@@ -228,6 +228,33 @@
                                                 </a>
                                             </li>
                                         }
+                                        
+                                        @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager"))
+                                        {
+                                            <li class="nav-item has-treeview">
+                                                <a href="#" class="nav-link">
+                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <p>
+                                                        Clients & Vendors
+                                                        <i class="right fas fa-angle-left"></i>
+                                                    </p>
+                                                </a>
+                                                <ul class="nav nav-treeview">
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="Clients" asp-action="Index" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>Clients</p>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a asp-area="Accounting" asp-controller="Vendors" asp-action="Index" class="nav-link">
+                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <p>Vendors</p>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        }
                                     </ul>
                                 </li>
                             }
