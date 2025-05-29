@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Localization;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using AspNetCoreMvcTemplate.Areas.Accounting.Services;
 using AspNetCoreMvcTemplate.Areas.Accounting.ViewModels;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
 {
     [Area("Accounting")]
-    [Authorize(Roles = "Admin,Accountant")]
     public class VendorsController : Controller
     {
         private readonly IClientVendorService _clientVendorService;
@@ -26,7 +24,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             _clientVendorService = clientVendorService;
             _localizer = localizer;
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm = null, string vendorType = null, bool? isActive = null, bool? subjectToWithholdingTax = null)
         {
@@ -38,24 +36,42 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 Vendors = vendors,
                 SearchTerm = searchTerm,
                 VendorType = vendorType,
-                IsActive = isActive,
+                SearchIsActive = isActive,
                 SubjectToWithholdingTax = subjectToWithholdingTax,
-                VendorTypes = vendorTypes.Select(t => new SelectListItem { Value = t, Text = t })
+                VendorTypes = vendorTypes.Select(vt => new SelectListItem
+                {
+                    Value = vt.Name,
+                    Text = vt.Name
+                }).ToList()
             };
             
             return View(viewModel);
         }
-
+        
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var viewModel = new VendorViewModel
+            var viewModel = new VendorViewModel();
+            
+            // Get vendor types and accounts for dropdown lists
+            var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
+            var accounts = await _clientVendorService.GetVendorAccountsAsync();
+            
+            viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
-                IsActive = true
-            };
+                Value = vt.Name,
+                Text = vt.Name
+            }).ToList();
+            
+            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.Name}"
+            }).ToList();
+            
             return View(viewModel);
         }
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(VendorViewModel viewModel)
@@ -67,6 +83,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     Code = viewModel.Code,
                     NameEn = viewModel.NameEn,
                     NameAr = viewModel.NameAr,
+                    Type = viewModel.Type,
                     TaxRegistrationNumber = viewModel.TaxRegistrationNumber,
                     CommercialRegistration = viewModel.CommercialRegistration,
                     ContactPerson = viewModel.ContactPerson,
@@ -75,36 +92,56 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     Address = viewModel.Address,
                     PaymentTerms = viewModel.PaymentTerms,
                     IsActive = viewModel.IsActive,
-                    VendorType = viewModel.VendorType,
                     SubjectToWithholdingTax = viewModel.SubjectToWithholdingTax,
                     Notes = viewModel.Notes,
                     BankName = viewModel.BankName,
                     BankAccountNumber = viewModel.BankAccountNumber,
-                    IBAN = viewModel.IBAN
+                    IBAN = viewModel.IBAN,
+                    AccountId = viewModel.AccountId
                 };
-
-                await _clientVendorService.AddVendorAsync(vendor);
-                TempData["SuccessMessage"] = _localizer["Vendor created successfully."];
+                
+                await _clientVendorService.CreateVendorAsync(vendor);
+                
                 return RedirectToAction(nameof(Index));
             }
+            
+            // If we got this far, something failed, redisplay form
+            // Get vendor types and accounts for dropdown lists
+            var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
+            var accounts = await _clientVendorService.GetVendorAccountsAsync();
+            
+            viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
+            {
+                Value = vt.Name,
+                Text = vt.Name
+            }).ToList();
+            
+            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.Name}"
+            }).ToList();
+            
             return View(viewModel);
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
             var vendor = await _clientVendorService.GetVendorByIdAsync(id);
+            
             if (vendor == null)
             {
                 return NotFound();
             }
-
+            
             var viewModel = new VendorViewModel
             {
                 Id = vendor.Id,
                 Code = vendor.Code,
                 NameEn = vendor.NameEn,
                 NameAr = vendor.NameAr,
+                Type = vendor.Type,
                 TaxRegistrationNumber = vendor.TaxRegistrationNumber,
                 CommercialRegistration = vendor.CommercialRegistration,
                 ContactPerson = vendor.ContactPerson,
@@ -113,17 +150,35 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 Address = vendor.Address,
                 PaymentTerms = vendor.PaymentTerms,
                 IsActive = vendor.IsActive,
-                VendorType = vendor.VendorType,
                 SubjectToWithholdingTax = vendor.SubjectToWithholdingTax,
                 Notes = vendor.Notes,
                 BankName = vendor.BankName,
                 BankAccountNumber = vendor.BankAccountNumber,
-                IBAN = vendor.IBAN
+                IBAN = vendor.IBAN,
+                AccountId = vendor.AccountId
             };
-
+            
+            // Get vendor types and accounts for dropdown lists
+            var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
+            var accounts = await _clientVendorService.GetVendorAccountsAsync();
+            
+            viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
+            {
+                Value = vt.Name,
+                Text = vt.Name,
+                Selected = vt.Name == vendor.Type.ToString()
+            }).ToList();
+            
+            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.Name}",
+                Selected = a.Id == vendor.AccountId
+            }).ToList();
+            
             return View(viewModel);
         }
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, VendorViewModel viewModel)
@@ -132,18 +187,20 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             {
                 return NotFound();
             }
-
+            
             if (ModelState.IsValid)
             {
                 var vendor = await _clientVendorService.GetVendorByIdAsync(id);
+                
                 if (vendor == null)
                 {
                     return NotFound();
                 }
-
+                
                 vendor.Code = viewModel.Code;
                 vendor.NameEn = viewModel.NameEn;
                 vendor.NameAr = viewModel.NameAr;
+                vendor.Type = viewModel.Type;
                 vendor.TaxRegistrationNumber = viewModel.TaxRegistrationNumber;
                 vendor.CommercialRegistration = viewModel.CommercialRegistration;
                 vendor.ContactPerson = viewModel.ContactPerson;
@@ -152,57 +209,124 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 vendor.Address = viewModel.Address;
                 vendor.PaymentTerms = viewModel.PaymentTerms;
                 vendor.IsActive = viewModel.IsActive;
-                vendor.VendorType = viewModel.VendorType;
                 vendor.SubjectToWithholdingTax = viewModel.SubjectToWithholdingTax;
                 vendor.Notes = viewModel.Notes;
                 vendor.BankName = viewModel.BankName;
                 vendor.BankAccountNumber = viewModel.BankAccountNumber;
                 vendor.IBAN = viewModel.IBAN;
-
+                vendor.AccountId = viewModel.AccountId;
+                
                 await _clientVendorService.UpdateVendorAsync(vendor);
-                TempData["SuccessMessage"] = _localizer["Vendor updated successfully."];
+                
                 return RedirectToAction(nameof(Index));
             }
+            
+            // If we got this far, something failed, redisplay form
+            // Get vendor types and accounts for dropdown lists
+            var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
+            var accounts = await _clientVendorService.GetVendorAccountsAsync();
+            
+            viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
+            {
+                Value = vt.Name,
+                Text = vt.Name,
+                Selected = vt.Name == viewModel.Type.ToString()
+            }).ToList();
+            
+            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.Name}",
+                Selected = a.Id == viewModel.AccountId
+            }).ToList();
+            
             return View(viewModel);
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Details(Guid id)
         {
             var vendor = await _clientVendorService.GetVendorByIdAsync(id);
+            
             if (vendor == null)
             {
                 return NotFound();
             }
-
-            return View(vendor);
+            
+            var viewModel = new VendorViewModel
+            {
+                Id = vendor.Id,
+                Code = vendor.Code,
+                NameEn = vendor.NameEn,
+                NameAr = vendor.NameAr,
+                Type = vendor.Type,
+                TaxRegistrationNumber = vendor.TaxRegistrationNumber,
+                CommercialRegistration = vendor.CommercialRegistration,
+                ContactPerson = vendor.ContactPerson,
+                Phone = vendor.Phone,
+                Email = vendor.Email,
+                Address = vendor.Address,
+                PaymentTerms = vendor.PaymentTerms,
+                IsActive = vendor.IsActive,
+                SubjectToWithholdingTax = vendor.SubjectToWithholdingTax,
+                Notes = vendor.Notes,
+                BankName = vendor.BankName,
+                BankAccountNumber = vendor.BankAccountNumber,
+                IBAN = vendor.IBAN,
+                AccountId = vendor.AccountId
+            };
+            
+            return View(viewModel);
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Delete(Guid id)
         {
             var vendor = await _clientVendorService.GetVendorByIdAsync(id);
+            
             if (vendor == null)
             {
                 return NotFound();
             }
-
-            return View(vendor);
+            
+            var viewModel = new VendorViewModel
+            {
+                Id = vendor.Id,
+                Code = vendor.Code,
+                NameEn = vendor.NameEn,
+                NameAr = vendor.NameAr,
+                Type = vendor.Type,
+                TaxRegistrationNumber = vendor.TaxRegistrationNumber,
+                CommercialRegistration = vendor.CommercialRegistration,
+                ContactPerson = vendor.ContactPerson,
+                Phone = vendor.Phone,
+                Email = vendor.Email,
+                Address = vendor.Address,
+                PaymentTerms = vendor.PaymentTerms,
+                IsActive = vendor.IsActive,
+                SubjectToWithholdingTax = vendor.SubjectToWithholdingTax,
+                Notes = vendor.Notes,
+                BankName = vendor.BankName,
+                BankAccountNumber = vendor.BankAccountNumber,
+                IBAN = vendor.IBAN,
+                AccountId = vendor.AccountId
+            };
+            
+            return View(viewModel);
         }
-
+        
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            try
+            var vendor = await _clientVendorService.GetVendorByIdAsync(id);
+            
+            if (vendor == null)
             {
-                await _clientVendorService.DeleteVendorAsync(id);
-                TempData["SuccessMessage"] = _localizer["Vendor deleted successfully."];
+                return NotFound();
             }
-            catch (InvalidOperationException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
+            
+            await _clientVendorService.DeleteVendorAsync(vendor);
             
             return RedirectToAction(nameof(Index));
         }

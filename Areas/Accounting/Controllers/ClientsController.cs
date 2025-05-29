@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Localization;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using AspNetCoreMvcTemplate.Areas.Accounting.Services;
 using AspNetCoreMvcTemplate.Areas.Accounting.ViewModels;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
 {
     [Area("Accounting")]
-    [Authorize(Roles = "Admin,Accountant")]
     public class ClientsController : Controller
     {
         private readonly IClientVendorService _clientVendorService;
@@ -26,7 +24,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             _clientVendorService = clientVendorService;
             _localizer = localizer;
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Index(string searchTerm = null, ClientType? clientType = null, bool? isActive = null)
         {
@@ -35,35 +33,43 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // Create SelectListItems for ClientType enum
             var clientTypeItems = Enum.GetValues(typeof(ClientType))
                 .Cast<ClientType>()
-                .Select(t => new SelectListItem 
-                { 
-                    Value = ((int)t).ToString(), 
-                    Text = t.ToString() 
-                });
+                .Select(c => new SelectListItem
+                {
+                    Value = c.ToString(),
+                    Text = c.ToString()
+                }).ToList();
+            
+            clientTypeItems.Insert(0, new SelectListItem { Value = "", Text = _localizer["All"] });
             
             var viewModel = new ClientListViewModel
             {
                 Clients = clients,
                 SearchTerm = searchTerm,
-                ClientType = clientType,
-                IsActive = isActive,
+                SearchClientType = clientType,
+                SearchIsActive = isActive,
                 ClientTypes = clientTypeItems
             };
             
             return View(viewModel);
         }
-
+        
         [HttpGet]
         public IActionResult Create()
         {
-            var viewModel = new ClientViewModel
-            {
-                IsActive = true,
-                ClientType = ClientType.Individual // Default value
-            };
+            var viewModel = new ClientViewModel();
+            
+            // Create SelectListItems for ClientType enum
+            viewModel.AvailableClientTypes = Enum.GetValues(typeof(ClientType))
+                .Cast<ClientType>()
+                .Select(c => new SelectListItem
+                {
+                    Value = ((int)c).ToString(),
+                    Text = c.ToString()
+                }).ToList();
+            
             return View(viewModel);
         }
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ClientViewModel viewModel)
@@ -84,26 +90,38 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     CreditLimit = viewModel.CreditLimit,
                     CreditPeriod = viewModel.CreditPeriod,
                     IsActive = viewModel.IsActive,
-                    ClientType = viewModel.ClientType,
+                    ClientType = (ClientType)viewModel.ClientType,
                     Notes = viewModel.Notes
                 };
-
-                await _clientVendorService.AddClientAsync(client);
-                TempData["SuccessMessage"] = _localizer["Client created successfully."];
+                
+                await _clientVendorService.CreateClientAsync(client);
+                
                 return RedirectToAction(nameof(Index));
             }
+            
+            // If we got this far, something failed, redisplay form
+            // Create SelectListItems for ClientType enum
+            viewModel.AvailableClientTypes = Enum.GetValues(typeof(ClientType))
+                .Cast<ClientType>()
+                .Select(c => new SelectListItem
+                {
+                    Value = ((int)c).ToString(),
+                    Text = c.ToString()
+                }).ToList();
+            
             return View(viewModel);
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
             var client = await _clientVendorService.GetClientByIdAsync(id);
+            
             if (client == null)
             {
                 return NotFound();
             }
-
+            
             var viewModel = new ClientViewModel
             {
                 Id = client.Id,
@@ -122,10 +140,20 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 ClientType = client.ClientType,
                 Notes = client.Notes
             };
-
+            
+            // Create SelectListItems for ClientType enum
+            viewModel.AvailableClientTypes = Enum.GetValues(typeof(ClientType))
+                .Cast<ClientType>()
+                .Select(c => new SelectListItem
+                {
+                    Value = ((int)c).ToString(),
+                    Text = c.ToString(),
+                    Selected = c == client.ClientType
+                }).ToList();
+            
             return View(viewModel);
         }
-
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, ClientViewModel viewModel)
@@ -134,15 +162,16 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             {
                 return NotFound();
             }
-
+            
             if (ModelState.IsValid)
             {
                 var client = await _clientVendorService.GetClientByIdAsync(id);
+                
                 if (client == null)
                 {
                     return NotFound();
                 }
-
+                
                 client.Code = viewModel.Code;
                 client.NameEn = viewModel.NameEn;
                 client.NameAr = viewModel.NameAr;
@@ -157,51 +186,102 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 client.IsActive = viewModel.IsActive;
                 client.ClientType = viewModel.ClientType;
                 client.Notes = viewModel.Notes;
-
+                
                 await _clientVendorService.UpdateClientAsync(client);
-                TempData["SuccessMessage"] = _localizer["Client updated successfully."];
+                
                 return RedirectToAction(nameof(Index));
             }
+            
+            // If we got this far, something failed, redisplay form
+            // Create SelectListItems for ClientType enum
+            viewModel.AvailableClientTypes = Enum.GetValues(typeof(ClientType))
+                .Cast<ClientType>()
+                .Select(c => new SelectListItem
+                {
+                    Value = ((int)c).ToString(),
+                    Text = c.ToString(),
+                    Selected = c == viewModel.ClientType
+                }).ToList();
+            
             return View(viewModel);
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Details(Guid id)
         {
             var client = await _clientVendorService.GetClientByIdAsync(id);
+            
             if (client == null)
             {
                 return NotFound();
             }
-
-            return View(client);
+            
+            var viewModel = new ClientViewModel
+            {
+                Id = client.Id,
+                Code = client.Code,
+                NameEn = client.NameEn,
+                NameAr = client.NameAr,
+                TaxRegistrationNumber = client.TaxRegistrationNumber,
+                CommercialRegistration = client.CommercialRegistration,
+                ContactPerson = client.ContactPerson,
+                Phone = client.Phone,
+                Email = client.Email,
+                Address = client.Address,
+                CreditLimit = client.CreditLimit,
+                CreditPeriod = client.CreditPeriod,
+                IsActive = client.IsActive,
+                ClientType = client.ClientType,
+                Notes = client.Notes
+            };
+            
+            return View(viewModel);
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Delete(Guid id)
         {
             var client = await _clientVendorService.GetClientByIdAsync(id);
+            
             if (client == null)
             {
                 return NotFound();
             }
-
-            return View(client);
+            
+            var viewModel = new ClientViewModel
+            {
+                Id = client.Id,
+                Code = client.Code,
+                NameEn = client.NameEn,
+                NameAr = client.NameAr,
+                TaxRegistrationNumber = client.TaxRegistrationNumber,
+                CommercialRegistration = client.CommercialRegistration,
+                ContactPerson = client.ContactPerson,
+                Phone = client.Phone,
+                Email = client.Email,
+                Address = client.Address,
+                CreditLimit = client.CreditLimit,
+                CreditPeriod = client.CreditPeriod,
+                IsActive = client.IsActive,
+                ClientType = client.ClientType,
+                Notes = client.Notes
+            };
+            
+            return View(viewModel);
         }
-
+        
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            try
+            var client = await _clientVendorService.GetClientByIdAsync(id);
+            
+            if (client == null)
             {
-                await _clientVendorService.DeleteClientAsync(id);
-                TempData["SuccessMessage"] = _localizer["Client deleted successfully."];
+                return NotFound();
             }
-            catch (InvalidOperationException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
+            
+            await _clientVendorService.DeleteClientAsync(client);
             
             return RedirectToAction(nameof(Index));
         }

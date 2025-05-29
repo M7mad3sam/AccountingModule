@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 
@@ -15,8 +16,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public string EntryNumber { get; set; }
         
         [Required]
-        [Display(Name = "Description")]
+        [StringLength(50)]
+        [Display(Name = "Reference")]
+        public string Reference { get; set; }
+        
+        [Required]
         [StringLength(200)]
+        [Display(Name = "Description")]
         public string Description { get; set; }
         
         [Required]
@@ -29,6 +35,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [DataType(DataType.Date)]
         public DateTime PostingDate { get; set; } = DateTime.Today;
         
+        [Display(Name = "Fiscal Period")]
+        public Guid FiscalPeriodId { get; set; }
+        
         [Display(Name = "Status")]
         public JournalEntryStatus Status { get; set; } = JournalEntryStatus.Draft;
         
@@ -37,14 +46,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         
         [Display(Name = "Vendor")]
         public Guid? VendorId { get; set; }
-        
-        [Display(Name = "Currency")]
-        [StringLength(3)]
-        public string Currency { get; set; } = "USD";
-        
-        [Display(Name = "Exchange Rate")]
-        [Range(0.01, 9999.99)]
-        public decimal ExchangeRate { get; set; } = 1;
         
         [Display(Name = "Is Recurring")]
         public bool IsRecurring { get; set; }
@@ -66,15 +67,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Display(Name = "Source Document")]
         public string SourceDocument { get; set; }
         
-        [Display(Name = "Attachment")]
-        public string AttachmentUrl { get; set; }
+        [Display(Name = "Source Document ID")]
+        public Guid? SourceDocumentId { get; set; }
         
-        [Display(Name = "Notes")]
-        public string Notes { get; set; }
-        
-        [Display(Name = "Fiscal Period")]
-        public Guid FiscalPeriodId { get; set; }
-        
+        [Display(Name = "Journal Entry Lines")]
         public List<JournalEntryLineViewModel> Lines { get; set; } = new List<JournalEntryLineViewModel>();
         
         public IEnumerable<SelectListItem> AvailableClients { get; set; } = new List<SelectListItem>();

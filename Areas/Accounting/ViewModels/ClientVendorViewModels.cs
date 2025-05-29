@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
+
 namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 {
     public class ClientViewModel
@@ -63,6 +66,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         
         [Display(Name = "Notes")]
         public string Notes { get; set; }
+        
+        [Display(Name = "Available Client Types")]
+        public IEnumerable<SelectListItem> AvailableClientTypes { get; set; } = new List<SelectListItem>();
     }
     
     public class VendorViewModel
