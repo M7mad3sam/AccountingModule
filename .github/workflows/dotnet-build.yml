@@ -15,7 +15,7 @@ jobs:
         dotnet-version: 8.0.x      # current LTS
         cache: false               # disable built-in NuGet cache to avoid lock file issues
     - name: Restore dependencies
-      run: dotnet restore --disable-lock-file
+      run: dotnet restore /p:RestoreLockedMode=false
     - name: Build
       run: dotnet build -bl:build.binlog --no-restore --configuration Release
     - name: Test
