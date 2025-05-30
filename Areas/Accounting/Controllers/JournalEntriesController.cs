@@ -161,15 +161,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 };
                 
                 // Add journal entry lines
-                foreach (var lineViewModel in viewModel.Lines.Where(l => l.AccountId != Guid.Empty && (l.Debit > 0 || l.Credit > 0)))
+                foreach (var lineViewModel in viewModel.Lines.Where(l => l.AccountId != Guid.Empty && (l.DebitAmount > 0 || l.CreditAmount > 0)))
                 {
                     journalEntry.Lines.Add(new JournalEntryLine
                     {
                         AccountId = lineViewModel.AccountId,
                         CostCenterId = lineViewModel.CostCenterId,
                         Description = lineViewModel.Description,
-                        Debit = lineViewModel.Debit,
-                        Credit = lineViewModel.Credit,
+                        Debit = lineViewModel.DebitAmount,
+                        Credit = lineViewModel.CreditAmount,
                         TaxRateId = lineViewModel.TaxRateId,
                         TaxAmount = lineViewModel.TaxAmount,
                         WithholdingTaxId = lineViewModel.WithholdingTaxId,
@@ -210,9 +210,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
             
-            var viewModel = new JournalEntryViewModel
+            var viewModel = await PrepareJournalEntryViewModel(new JournalEntryViewModel
             {
                 Id = journalEntry.Id,
+                EntryNumber = journalEntry.Number,
                 EntryDate = journalEntry.EntryDate,
                 PostingDate = journalEntry.PostingDate,
                 Reference = journalEntry.Reference,
@@ -230,28 +231,28 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 SourceDocument = journalEntry.SourceDocument,
                 AttachmentUrl = journalEntry.AttachmentUrl,
                 Notes = journalEntry.Notes,
+                FiscalPeriodId = journalEntry.FiscalPeriodId,
                 Lines = journalEntry.Lines.Select(l => new JournalEntryLineViewModel
                 {
                     Id = l.Id,
                     AccountId = l.AccountId,
                     CostCenterId = l.CostCenterId,
                     Description = l.Description,
-                    Debit = l.Debit,
-                    Credit = l.Credit,
+                    DebitAmount = l.Debit,
+                    CreditAmount = l.Credit,
                     TaxRateId = l.TaxRateId,
                     TaxAmount = l.TaxAmount,
                     WithholdingTaxId = l.WithholdingTaxId,
                     WithholdingTaxAmount = l.WithholdingTaxAmount
                 }).ToList()
-            };
+            });
             
-            viewModel = await PrepareJournalEntryViewModel(viewModel);
             return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, JournalEntryViewModel viewModel, IFormFile attachment)
+        public async Task<IActionResult> Edit(Guid id, JournalEntryViewModel viewModel, IFormFile? attachment)
         {
             if (id != viewModel.Id)
             {
@@ -324,15 +325,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 
                 // Update journal entry lines
                 journalEntry.Lines.Clear();
-                foreach (var lineViewModel in viewModel.Lines.Where(l => l.AccountId != Guid.Empty && (l.Debit > 0 || l.Credit > 0)))
+                foreach (var lineViewModel in viewModel.Lines.Where(l => l.AccountId != Guid.Empty && (l.DebitAmount > 0 || l.CreditAmount > 0)))
                 {
                     journalEntry.Lines.Add(new JournalEntryLine
                     {
                         AccountId = lineViewModel.AccountId,
                         CostCenterId = lineViewModel.CostCenterId,
                         Description = lineViewModel.Description,
-                        Debit = lineViewModel.Debit,
-                        Credit = lineViewModel.Credit,
+                        Debit = lineViewModel.DebitAmount,
+                        Credit = lineViewModel.CreditAmount,
                         TaxRateId = lineViewModel.TaxRateId,
                         TaxAmount = lineViewModel.TaxAmount,
                         WithholdingTaxId = lineViewModel.WithholdingTaxId,
@@ -366,7 +367,45 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 return NotFound();
             }
             
-            return View(journalEntry);
+            return View(new JournalEntryViewModel
+            {
+                Id = journalEntry.Id,
+                EntryDate = journalEntry.EntryDate,
+                PostingDate = journalEntry.PostingDate,
+                Reference = journalEntry.Reference,
+                Description = journalEntry.Description,
+                Status = journalEntry.Status,
+                ClientId = journalEntry.ClientId,
+                ClientName = journalEntry.Client?.NameEn,
+                VendorId = journalEntry.VendorId,
+                VendorName = journalEntry.Vendor?.NameEn,
+                Currency = journalEntry.Currency,
+                ExchangeRate = journalEntry.ExchangeRate,
+                IsRecurring = journalEntry.IsRecurring,
+                RecurrencePattern = journalEntry.RecurrencePattern,
+                NextRecurrenceDate = journalEntry.NextRecurrenceDate,
+                EndRecurrenceDate = journalEntry.EndRecurrenceDate,
+                IsSystemGenerated = journalEntry.IsSystemGenerated,
+                SourceDocument = journalEntry.SourceDocument,
+                AttachmentUrl = journalEntry.AttachmentUrl,
+                Notes = journalEntry.Notes,
+                Lines = journalEntry.Lines.Select(l => new JournalEntryLineViewModel
+                {
+                    Id = l.Id,
+                    AccountId = l.AccountId,
+                    AccountCode = l.Account?.Code,
+                    AccountName = l.Account?.NameEn,
+                    CostCenterId = l.CostCenterId,
+                    CostCenterName = l.CostCenter?.NameEn,
+                    Description = l.Description,
+                    DebitAmount = l.Debit,
+                    CreditAmount = l.Credit,
+                    TaxRateId = l.TaxRateId,
+                    TaxAmount = l.TaxAmount,
+                    WithholdingTaxId = l.WithholdingTaxId,
+                    WithholdingTaxAmount = l.WithholdingTaxAmount
+                }).ToList()
+            });
         }
 
         [HttpGet]

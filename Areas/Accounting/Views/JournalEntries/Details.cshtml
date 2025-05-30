@@ -1,4 +1,4 @@
-@model AspNetCoreMvcTemplate.Areas.Accounting.Models.JournalEntry
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.JournalEntryViewModel
 
 @{
     ViewData["Title"] = "Journal Entry Details";
@@ -54,13 +54,13 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <label class="control-label">Client</label>
-                    <input type="text" value="@(Model.Client?.NameEn ?? "N/A")" class="form-control" readonly />
+                    <input type="text" value="@(Model.ClientName ?? "N/A")" class="form-control" readonly />
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">
                     <label class="control-label">Vendor</label>
-                    <input type="text" value="@(Model.Vendor?.NameEn ?? "N/A")" class="form-control" readonly />
+                    <input type="text" value="@(Model.VendorName ?? "N/A")" class="form-control" readonly />
                 </div>
             </div>
             <div class="col-md-2">
@@ -117,20 +117,29 @@
                             @foreach (var line in Model.Lines)
                             {
                                 <tr>
-                                    <td>@line.Account.Code - @line.Account.NameEn</td>
-                                    <td>@(line.CostCenter?.NameEn ?? "N/A")</td>
+                                <td>@line.AccountCode - @line.AccountName</td>
+                                <td>@(line.CostCenterName ?? "N/A")</td>
                                     <td>@(line.Description ?? "N/A")</td>
-                                    <td>@line.Debit.ToString("N2")</td>
-                                    <td>@line.Credit.ToString("N2")</td>
-                                    <td>@(line.TaxRate?.NameEn ?? "N/A")</td>
+                                    <td>@line.DebitAmount.ToString("N2")</td>
+                                    <td>@line.CreditAmount.ToString("N2")</td>
+                                    <td>
+                                        @if (line.TaxRateId.HasValue)
+                                        {
+                                            @($"{line.TaxRateId.Value} - {line.TaxAmount?.ToString("N2")}")
+                                        }
+                                        else
+                                        {
+                                            @("N/A")
+                                        }
+                                    </td>
                                 </tr>
                             }
                         </tbody>
                         <tfoot>
                             <tr>
                                 <th colspan="3" class="text-right">Total:</th>
-                                <th>@Model.Lines.Sum(l => l.Debit).ToString("N2")</th>
-                                <th>@Model.Lines.Sum(l => l.Credit).ToString("N2")</th>
+                                <th>@Model.Lines.Sum(l => l.DebitAmount).ToString("N2")</th>
+                                <th>@Model.Lines.Sum(l => l.CreditAmount).ToString("N2")</th>
                                 <th></th>
                             </tr>
                         </tfoot>
