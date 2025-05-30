@@ -1,12 +1,13 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.BalanceSheetFilterViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Balance Sheet";
+    ViewData["Title"] = Localizer["BalanceSheet"];
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Balance Sheet</h3>
+        <h3 class="card-title">@Localizer["BalanceSheet"]</h3>
     </div>
     <div class="card-body">
         <form asp-action="BalanceSheet" method="post">
@@ -22,13 +23,13 @@
                     <div class="form-group">
                         <label asp-for="CostCenterId" class="control-label"></label>
                         <select asp-for="CostCenterId" class="form-control select2" asp-items="@(new SelectList(Model.CostCenters, "Id", "NameEn"))">
-                            <option value="">-- All Cost Centers --</option>
+                            <option value="">-- @Localizer["AllCostCenters"] --</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <div class="form-group">
-                        <button type="submit" class="btn btn-primary">Generate Report</button>
+                        <button type="submit" class="btn btn-primary">@Localizer["GenerateReport"]</button>
                     </div>
                 </div>
             </div>
