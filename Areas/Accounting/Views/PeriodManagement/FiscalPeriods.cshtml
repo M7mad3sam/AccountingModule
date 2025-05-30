@@ -1,20 +1,21 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.FiscalPeriodsViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Fiscal Periods";
+    ViewData["Title"] = Localizer["FiscalPeriods"];
 }
 
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0">Fiscal Periods - @Model.FiscalYearName (@Model.FiscalYearCode)</h1>
+                <h1 class="m-0">@Localizer["FiscalPeriods"] - @Model.FiscalYearName (@Model.FiscalYearCode)</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="PeriodManagement" asp-action="FiscalYears">Fiscal Years</a></li>
-                    <li class="breadcrumb-item active">Fiscal Periods</li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="PeriodManagement" asp-action="FiscalYears">@Localizer["FiscalYears"]</a></li>
+                    <li class="breadcrumb-item active">@Localizer["FiscalPeriods"]</li>
                 </ol>
             </div>
         </div>
@@ -27,7 +28,7 @@
         {
             <div class="alert alert-success alert-dismissible">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <h5><i class="icon fas fa-check"></i> Success!</h5>
+                <h5><i class="icon fas fa-check"></i> @Localizer["Success"]!</h5>
                 @TempData["SuccessMessage"]
             </div>
         }
@@ -35,17 +36,17 @@
         {
             <div class="alert alert-danger alert-dismissible">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                <h5><i class="icon fas fa-ban"></i> @Localizer["Error"]!</h5>
                 @TempData["ErrorMessage"]
             </div>
         }
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Fiscal Periods</h3>
+                <h3 class="card-title">@Localizer["FiscalPeriods"]</h3>
                 <div class="card-tools">
                     <a asp-action="CreateFiscalPeriod" asp-route-fiscalYearId="@Model.FiscalYearId" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Create New
+                        <i class="fas fa-plus"></i> @Localizer["CreateNew"]
                     </a>
                 </div>
             </div>
@@ -53,12 +54,12 @@
                 <table class="table table-hover text-nowrap">
                     <thead>
                         <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th>@Localizer["Code"]</th>
+                            <th>@Localizer["Name"]</th>
+                            <th>@Localizer["StartDate"]</th>
+                            <th>@Localizer["EndDate"]</th>
+                            <th>@Localizer["Status"]</th>
+                            <th>@Localizer["Actions"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,15 +73,15 @@
                                 <td>
                                     @if (period.IsClosed)
                                     {
-                                        <span class="badge badge-danger">Closed</span>
+                                        <span class="badge badge-danger">@Localizer["Closed"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge badge-success">Open</span>
+                                        <span class="badge badge-success">@Localizer["Open"]</span>
                                     }
                                     @if (!period.IsActive)
                                     {
-                                        <span class="badge badge-warning">Inactive</span>
+                                        <span class="badge badge-warning">@Localizer["Inactive"]</span>
                                     }
                                 </td>
                                 <td>
@@ -94,7 +95,7 @@
                                                 <input type="hidden" name="id" value="@period.Id" />
                                                 <input type="hidden" name="fiscalYearId" value="@Model.FiscalYearId" />
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to close this period?');">
+                                                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('@Localizer["ClosePeriodConfirmation"]');">
                                                     <i class="fas fa-lock"></i>
                                                 </button>
                                             </form>
@@ -105,7 +106,7 @@
                                                 <input type="hidden" name="id" value="@period.Id" />
                                                 <input type="hidden" name="fiscalYearId" value="@Model.FiscalYearId" />
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to open this period?');">
+                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('@Localizer["OpenPeriodConfirmation"]');">
                                                     <i class="fas fa-lock-open"></i>
                                                 </button>
                                             </form>
@@ -114,7 +115,7 @@
                                             <input type="hidden" name="id" value="@period.Id" />
                                             <input type="hidden" name="fiscalYearId" value="@Model.FiscalYearId" />
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this period?');">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('@Localizer["DeletePeriodConfirmation"]');">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
