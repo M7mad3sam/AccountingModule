@@ -1,27 +1,28 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.TrialBalanceFilterViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Income Statement";
+    ViewData["Title"] = Localizer["IncomeStatement"];
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Income Statement</h3>
+        <h3 class="card-title">@Localizer["IncomeStatement"]</h3>
     </div>
     <div class="card-body">
         <form asp-action="IncomeStatement" method="get" id="filter-form">
             <div class="row">
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label asp-for="AsOfDate" class="control-label">As of Date</label>
+                        <label asp-for="AsOfDate" class="control-label">@Localizer["AsOfDate"]</label>
                         <input asp-for="AsOfDate" class="form-control" type="date" />
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label asp-for="CostCenterId" class="control-label">Cost Center</label>
+                        <label asp-for="CostCenterId" class="control-label">@Localizer["CostCenter"]</label>
                         <select asp-for="CostCenterId" asp-items="@(new SelectList(Model.CostCenters, "Id", "NameEn"))" class="form-control select2">
-                            <option value="">-- All Cost Centers --</option>
+                            <option value="">-- @Localizer["AllCostCenters"] --</option>
                         </select>
                     </div>
                 </div>
@@ -30,11 +31,11 @@
                         <label class="control-label">&nbsp;</label>
                         <div>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter"></i> Apply Filter
+                                <i class="fas fa-filter"></i> @Localizer["ApplyFilter"]
                             </button>
                             <a asp-action="IncomeStatementReport" asp-route-asOfDate="@Model.AsOfDate.ToString("yyyy-MM-dd")" 
                                asp-route-costCenterId="@Model.CostCenterId" class="btn btn-info" target="_blank">
-                                <i class="fas fa-print"></i> Print Report
+                                <i class="fas fa-print"></i> @Localizer["PrintReport"]
                             </a>
                         </div>
                     </div>
@@ -48,15 +49,15 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Account</th>
-                        <th>Description</th>
-                        <th class="text-right">Amount</th>
+                        <th>@Localizer["Account"]</th>
+                        <th>@Localizer["Description"]</th>
+                        <th class="text-right">@Localizer["Amount"]</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- Revenue Section -->
                     <tr class="bg-light">
-                        <th colspan="3">Revenue</th>
+                        <th colspan="3">@Localizer["Revenue"]</th>
                     </tr>
                     @if (ViewBag.RevenueAccounts != null)
                     {
@@ -70,13 +71,13 @@
                         }
                     }
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Revenue</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalRevenue"]</td>
                         <td class="text-right">@ViewBag.TotalRevenue.ToString("N2")</td>
                     </tr>
                     
                     <!-- Expenses Section -->
                     <tr class="bg-light">
-                        <th colspan="3">Expenses</th>
+                        <th colspan="3">@Localizer["Expenses"]</th>
                     </tr>
                     @if (ViewBag.ExpenseAccounts != null)
                     {
@@ -90,13 +91,13 @@
                         }
                     }
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Expenses</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalExpenses"]</td>
                         <td class="text-right">@ViewBag.TotalExpenses.ToString("N2")</td>
                     </tr>
                     
                     <!-- Net Income/Loss -->
                     <tr class="font-weight-bold bg-info">
-                        <td colspan="2" class="text-right">Net Income (Loss)</td>
+                        <td colspan="2" class="text-right">@Localizer["NetIncomeLoss"]</td>
                         <td class="text-right">@ViewBag.NetIncome.ToString("N2")</td>
                     </tr>
                 </tbody>
