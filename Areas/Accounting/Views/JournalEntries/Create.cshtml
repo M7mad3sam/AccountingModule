@@ -1,6 +1,7 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.JournalEntryViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Create Journal Entry";
+    ViewData["Title"] = Localizer["CreateJournalEntry"];
 }
 <div class="content-header">
     <div class="container-fluid">
@@ -10,9 +11,9 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Index">Journal Entries</a></li>
-                    <li class="breadcrumb-item active">Create</li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Index">@Localizer["JournalEntries"]</a></li>
+                    <li class="breadcrumb-item active">@Localizer["Create"]</li>
                 </ol>
             </div>
         </div>
@@ -24,7 +25,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Journal Entry Details</h3>
+                    <h3 class="card-title">@Localizer["JournalEntryDetails"]</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -52,7 +53,7 @@
                             <div class="form-group">
                                 <label asp-for="FiscalPeriodId" class="control-label"></label>
                                 <select asp-for="FiscalPeriodId" class="form-control select2" asp-items="Model.AvailableFiscalPeriods">
-                                    <option value="">-- Select Fiscal Period --</option>
+                                    <option value="">-- @Localizer["SelectFiscalPeriod"] --</option>
                                 </select>
                                 <span asp-validation-for="FiscalPeriodId" class="text-danger"></span>
                             </div>
@@ -61,7 +62,7 @@
                             <div class="form-group">
                                 <label asp-for="ClientId" class="control-label"></label>
                                 <select asp-for="ClientId" class="form-control select2">
-                                    <option value="">-- Select Client --</option>
+                                    <option value="">-- @Localizer["SelectClient"] --</option>
                                     @foreach (var client in Model.AvailableClients)
                                     {
                                         <option value="@client.Value">@client.Text</option>
@@ -72,7 +73,7 @@
                             <div class="form-group">
                                 <label asp-for="VendorId" class="control-label"></label>
                                 <select asp-for="VendorId" class="form-control select2">
-                                    <option value="">-- Select Vendor --</option>
+                                    <option value="">-- @Localizer["SelectVendor"] --</option>
                                     @foreach (var vendor in Model.AvailableVendors)
                                     {
                                         <option value="@vendor.Value">@vendor.Text</option>
@@ -133,10 +134,10 @@
             </div>
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Journal Entry Lines</h3>
+                    <h3 class="card-title">@Localizer["JournalEntryLines"]</h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-sm btn-primary" id="addLine">
-                            <i class="fas fa-plus"></i> Add Line
+                            <i class="fas fa-plus"></i> @Localizer["AddLine"]
                         </button>
                     </div>
                 </div>
@@ -145,13 +146,13 @@
                         <table class="table table-bordered table-striped" id="journalLinesTable">
                             <thead>
                                 <tr>
-                                    <th>Account</th>
-                                    <th>Cost Center</th>
-                                    <th>Description</th>
-                                    <th>Debit</th>
-                                    <th>Credit</th>
-                                    <th>Tax Rate</th>
-                                    <th>Actions</th>
+                                    <th>@Localizer["Account"]</th>
+                                    <th>@Localizer["CostCenter"]</th>
+                                    <th>@Localizer["Description"]</th>
+                                    <th>@Localizer["Debit"]</th>
+                                    <th>@Localizer["Credit"]</th>
+                                    <th>@Localizer["TaxRate"]</th>
+                                    <th>@Localizer["Actions"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -161,7 +162,7 @@
                                         <td>
                                             <input type="hidden" asp-for="Lines[i].Id" />
                                             <select asp-for="Lines[i].AccountId" class="form-control select2 account-select">
-                                                <option value="">-- Select Account --</option>
+                                                <option value="">-- @Localizer["SelectAccount"] --</option>
                                                 @foreach (var item in Model.AvailableAccounts)
                                                 {
                                                     <option value="@item.Value" selected="@(item.Value == Model.Lines[i].AccountId.ToString())">@item.Text</option>
@@ -170,7 +171,7 @@
                                         </td>
                                         <td>
                                             <select asp-for="Lines[i].CostCenterId" class="form-control select2">
-                                                <option value="">-- Select Cost Center --</option>
+                                                <option value="">-- @Localizer["SelectCostCenter"] --</option>
                                                 @foreach (var item in Model.AvailableCostCenters)
                                                 {
                                                     <option value="@item.Value" selected="@(item.Value == Model.Lines[i].CostCenterId?.ToString())">@item.Text</option>
@@ -188,7 +189,7 @@
                                         </td>
                                         <td>
                                             <select asp-for="Lines[i].TaxRateId" class="form-control select2">
-                                                <option value="">-- Select Tax Rate --</option>
+                                                <option value="">-- @Localizer["SelectTaxRate"] --</option>
                                                 @foreach (var item in Model.AvailableTaxRates)
                                                 {
                                                     <option value="@item.Value" selected="@(item.Value == Model.Lines[i].TaxRateId?.ToString())">@item.Text</option>
@@ -205,13 +206,13 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="3" class="text-right">Total:</th>
+                                    <th colspan="3" class="text-right">@Localizer["Total"]:</th>
                                     <th><span id="totalDebit">0.00</span></th>
                                     <th><span id="totalCredit">0.00</span></th>
                                     <th colspan="2"></th>
                                 </tr>
                                 <tr>
-                                    <th colspan="3" class="text-right">Difference:</th>
+                                    <th colspan="3" class="text-right">@Localizer["Difference"]:</th>
                                     <th colspan="2"><span id="difference">0.00</span></th>
                                     <th colspan="2"></th>
                                 </tr>
@@ -223,21 +224,21 @@
             <div id="recurring-options" class="row mt-3" style="display: none;">
                 <div class="col-md-12">
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Recurring Options</h3>
-                        </div>
+                         <div class="card-header">
+                    <h3 class="card-title">@Localizer["RecurringOptions"]</h3>
+                </div>         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label asp-for="RecurrencePattern" class="control-label"></label>
                                         <select asp-for="RecurrencePattern" class="form-control">
-                                            <option value="">-- Select Pattern --</option>
-                                            <option value="daily:1">Daily</option>
-                                            <option value="weekly:1">Weekly</option>
-                                            <option value="monthly:1">Monthly</option>
-                                            <option value="quarterly:1">Quarterly</option>
-                                            <option value="yearly:1">Yearly</option>
+                                            <option value="">-- @Localizer["SelectPattern"] --</option>
+                                            <option value="daily:1">@Localizer["Daily"]</option>
+                                            <option value="weekly:1">@Localizer["Weekly"]</option>
+                                            <option value="monthly:1">@Localizer["Monthly"]</option>
+                                            <option value="quarterly:1">@Localizer["Quarterly"]</option>
+                                            <option value="yearly:1">@Localizer["Yearly"]</option>
                                         </select>
                                         <span asp-validation-for="RecurrencePattern" class="text-danger"></span>
                                     </div>

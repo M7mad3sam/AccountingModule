@@ -1,15 +1,16 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.JournalEntryListViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Journal Entries";
+    ViewData["Title"] = Localizer["JournalEntries"];
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Journal Entries</h3>
+        <h3 class="card-title">@Localizer["JournalEntries"]</h3>
         <div class="card-tools">
             <a asp-action="Create" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Create New Journal Entry
+                <i class="fas fa-plus"></i> @Localizer["CreateNewJournalEntry"]
             </a>
         </div>
     </div>
@@ -18,13 +19,13 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Number</th>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Reference</th>
-                        <th>Status</th>
-                        <th>Total</th>
-                        <th>Actions</th>
+                        <th>@Localizer["Number"]</th>
+                        <th>@Localizer["Date"]</th>
+                        <th>@Localizer["Description"]</th>
+                        <th>@Localizer["Reference"]</th>
+                        <th>@Localizer["Status"]</th>
+                        <th>@Localizer["Total"]</th>
+                        <th>@Localizer["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,16 +40,16 @@
                                 @switch (entry.Status)
                                 {
                                     case JournalEntryStatus.Draft:
-                                        <span class="badge badge-warning">Draft</span>
+                                        <span class="badge badge-warning">@Localizer["Draft"]</span>
                                         break;
                                     case JournalEntryStatus.Pending:
-                                        <span class="badge badge-info">Pending</span>
+                                        <span class="badge badge-info">@Localizer["Pending"]</span>
                                         break;
                                     case JournalEntryStatus.Approved:
-                                        <span class="badge badge-success">Approved</span>
+                                        <span class="badge badge-success">@Localizer["Approved"]</span>
                                         break;
                                     case JournalEntryStatus.Rejected:
-                                        <span class="badge badge-danger">Rejected</span>
+                                        <span class="badge badge-danger">@Localizer["Rejected"]</span>
                                         break;
                                 }
                             </td>
