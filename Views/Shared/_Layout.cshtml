@@ -20,11 +20,16 @@
     <link rel="stylesheet" href="~/lib/adminlte/plugins/fontawesome-free/css/all.min.css" />
     <!-- Theme style -->
     <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.min.css" />
-    <!-- RTL style for Arabic -->
-    <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.rtl.min.css" id="rtl-style" disabled="@(!isRtl)" />
+    @if (isRtl)
+    {
+        <!-- RTL style for Arabic -->
+        <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.rtl.min.css" />
+        <!-- Custom RTL fixes -->
+        <link rel="stylesheet" href="~/css/rtl-fixes.css" asp-append-version="true" />
+    }
     <!-- Custom site styles -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    
+
     <link rel="stylesheet" href="~/lib/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" />
     <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
 </head>
@@ -226,7 +231,7 @@
                                                 </ul>
                                             </li>
                                         }
-                                        
+
                                         @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager"))
                                         {
                                             <li class="nav-item">
@@ -236,7 +241,7 @@
                                                 </a>
                                             </li>
                                         }
-                                        
+
                                         @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager"))
                                         {
                                             <li class="nav-item has-treeview">
@@ -273,6 +278,7 @@
                 <!-- /.sidebar -->
             </aside>
         }
+
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
             <!-- Content Header (Page header) -->
@@ -281,22 +287,29 @@
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">@ViewData["Title"]</h1>
-                        </div>
+                        </div><!-- /.col -->
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="#">@Localizer["Home"]</a></li>
+                                <li class="breadcrumb-item"><a asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                                @if (ViewData["BreadcrumbItems"] != null)
+                                {
+                                    foreach (var item in (List<(string Text, string Url)>)ViewData["BreadcrumbItems"])
+                                    {
+                                        <li class="breadcrumb-item"><a href="@item.Url">@item.Text</a></li>
+                                    }
+                                }
                                 <li class="breadcrumb-item active">@ViewData["Title"]</li>
                             </ol>
-                        </div>
-                    </div>
-                </div>
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                </div><!-- /.container-fluid -->
             </div>
             <!-- /.content-header -->
             <!-- Main content -->
             <div class="content">
                 <div class="container-fluid">
                     @RenderBody()
-                </div>
+                </div><!-- /.container-fluid -->
             </div>
             <!-- /.content -->
         </div>
@@ -305,51 +318,31 @@
         <footer class="main-footer">
             <!-- To the right -->
             <div class="float-right d-none d-sm-inline">
-                ASP.NET Core MVC Template
+                AspNetCoreMvcTemplate
             </div>
             <!-- Default to the left -->
             <strong>Copyright &copy; @DateTime.Now.Year <a href="#">AspNetCoreMvcTemplate</a>.</strong> All rights reserved.
         </footer>
     </div>
     <!-- ./wrapper -->
-    <!-- REQUIRED SCRIPTS -->
     <!-- jQuery -->
     <script src="~/lib/adminlte/plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 4 -->
     <script src="~/lib/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE App -->
     <script src="~/lib/adminlte/js/adminlte.min.js"></script>
+    <!-- Select2 -->
+    <script src="~/lib/select2/js/select2.full.min.js"></script>
     <!-- Custom site scripts -->
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script src="~/lib/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="~/lib/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="~/lib/select2/js/select2.full.min.js"></script>
-
     <script>
-        // Language switch functionality
-        $(document).ready(function() {
+        $(function () {
+            // Language switcher
             $('#language-switch').change(function() {
-                var culture = '';
-                if($(this).is(':checked')) {
-                    // Switch to Arabic (RTL)
-                    $('html').attr('dir', 'rtl').attr('lang', 'ar');
-                    $('#rtl-style').prop('disabled', false);
-                    $('#language-label').text('@Localizer["Arabic"]');
-                    culture = 'ar-EG';
-                } else {
-                    // Switch to English (LTR)
-                    $('html').attr('dir', 'ltr').attr('lang', 'en');
-                    $('#rtl-style').prop('disabled', true);
-                    $('#language-label').text('@Localizer["English"]');
-                    culture = 'en-US';
-                }
-                
-                // Set language cookie
-                document.cookie = "Language=" + culture + ";path=/;";
-                
-                // Reload page to apply language change
-                location.reload();
+                var culture = $(this).prop('checked') ? 'ar-EG' : 'en-US';
+                document.cookie = 'Language=' + culture + ';path=/';
+                window.location.reload();
             });
         });
     </script>

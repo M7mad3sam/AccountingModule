@@ -1,0 +1,105 @@
+/* RTL-specific fixes for AdminLTE */
+html[dir="rtl"] .main-sidebar {
+    right: 0;
+    left: auto;
+}
+
+html[dir="rtl"] .content-wrapper,
+html[dir="rtl"] .main-header,
+html[dir="rtl"] .main-footer {
+    margin-right: 250px;
+    margin-left: 0;
+}
+
+html[dir="rtl"] .sidebar-mini.sidebar-collapse .content-wrapper,
+html[dir="rtl"] .sidebar-mini.sidebar-collapse .main-header,
+html[dir="rtl"] .sidebar-mini.sidebar-collapse .main-footer {
+    margin-right: 4.6rem;
+    margin-left: 0;
+}
+
+html[dir="rtl"] .nav-sidebar .nav-link > .right,
+html[dir="rtl"] .nav-sidebar .nav-link > p > .right {
+    left: 1rem;
+    right: auto;
+}
+
+    html[dir="rtl"] .nav-sidebar .nav-link > .right:nth-child(2),
+    html[dir="rtl"] .nav-sidebar .nav-link > p > .right:nth-child(2) {
+        left: 2.2rem;
+        right: auto;
+    }
+
+html[dir="rtl"] .sidebar-collapse .nav-sidebar .nav-link > .right,
+html[dir="rtl"] .sidebar-collapse .nav-sidebar .nav-link > p > .right {
+    left: .5rem;
+    right: auto;
+}
+
+    html[dir="rtl"] .sidebar-collapse .nav-sidebar .nav-link > .right:nth-child(2),
+    html[dir="rtl"] .sidebar-collapse .nav-sidebar .nav-link > p > .right:nth-child(2) {
+        left: 1.7rem;
+        right: auto;
+    }
+
+html[dir="rtl"] .navbar-nav {
+    padding-right: 0;
+}
+
+    html[dir="rtl"] .navbar-nav.ml-auto {
+        margin-right: auto !important;
+        margin-left: 0 !important;
+    }
+
+/* Fix for RTL dropdown menus */
+html[dir="rtl"] .dropdown-menu {
+    right: 0;
+    left: auto;
+    text-align: right;
+}
+
+/* Fix for RTL sidebar treeview */
+html[dir="rtl"] .nav-treeview {
+    padding-right: 1rem;
+    padding-left: 0;
+}
+
+/* Fix for RTL sidebar collapse */
+html[dir="rtl"] .sidebar-mini.sidebar-collapse .main-sidebar:hover {
+    transform: translate3d(-250px, 0, 0);
+}
+
+html[dir="rtl"] .sidebar-mini.sidebar-collapse .main-sidebar {
+    transform: translate3d(calc(250px - 4.6rem), 0, 0);
+}
+
+    html[dir="rtl"] .sidebar-mini.sidebar-collapse .main-sidebar .nav-sidebar .nav-header {
+        display: none;
+    }
+
+/* Fix for RTL tables */
+html[dir="rtl"] .text-right {
+    text-align: left !important;
+}
+
+html[dir="rtl"] .text-left {
+    text-align: right !important;
+}
+
+/* Fix for RTL form elements */
+html[dir="rtl"] .form-group label {
+    text-align: right;
+}
+
+/* Fix for RTL card elements */
+html[dir="rtl"] .card-tools {
+    right: auto;
+    left: 1rem;
+}
+
+/* Fix for RTL brand logo */
+html[dir="rtl"] .brand-link .brand-image {
+    float: right;
+    margin-right: .8rem;
+    margin-left: .5rem;
+}

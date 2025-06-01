@@ -20,3 +20,33 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* RTL Layout Fixes */
+[dir="rtl"] .main-sidebar {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .content-wrapper {
+  margin-right: 250px;
+  margin-left: 0;
+}
+
+[dir="rtl"] .navbar-nav {
+  padding-right: 0;
+}
+
+[dir="rtl"] .brand-link {
+  text-align: right;
+}
+
+[dir="rtl"] .nav-sidebar .nav-link > p {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+[dir="rtl"] .breadcrumb-item + .breadcrumb-item::before {
+  float: right;
+  padding-left: 0.5rem;
+  padding-right: 0;
+}

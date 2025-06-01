@@ -29,15 +29,14 @@ namespace AspNetCoreMvcTemplate.Resources
     {
         public static IServiceCollection AddAppLocalization(this IServiceCollection services)
         {
-            services.AddLocalization(options => options.ResourcesPath = "Resources");
+            services.AddLocalization(options => options.ResourcesPath = null);
 
             services.Configure<RequestLocalizationOptions>(options =>
             {
                 var supportedCultures = new[]
                 {
                     new CultureInfo("en-US"),
-                    new CultureInfo("ar-EG"),
-                    new CultureInfo("ar-SA")
+                    new CultureInfo("ar-EG")
                 };
 
                 options.DefaultRequestCulture = new RequestCulture("en-US");
