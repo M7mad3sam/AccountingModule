@@ -46,6 +46,11 @@
                                 <span asp-validation-for="EntryNumber" class="text-danger"></span>
                             </div>
                             <div class="form-group">
+                                <label asp-for="Reference" class="control-label"></label>
+                                <input asp-for="Reference" class="form-control" />
+                                <span asp-validation-for="Reference" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
                                 <label asp-for="EntryDate" class="control-label"></label>
                                 <input asp-for="EntryDate" class="form-control" type="date" />
                                 <span asp-validation-for="EntryDate" class="text-danger"></span>
@@ -54,6 +59,13 @@
                                 <label asp-for="PostingDate" class="control-label"></label>
                                 <input asp-for="PostingDate" class="form-control" type="date" />
                                 <span asp-validation-for="PostingDate" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="FiscalPeriodId" class="control-label"></label>
+                                <select asp-for="FiscalPeriodId" class="form-control select2" asp-items="Model.AvailableFiscalPeriods">
+                                    <option value="">-- Select Fiscal Period --</option>
+                                </select>
+                                <span asp-validation-for="FiscalPeriodId" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -179,12 +191,12 @@
                                         <td>
                                             <input asp-for="Lines[i].Description" class="form-control" />
                                         </td>
-                                        <td>
-                                            <input asp-for="Lines[i].DebitAmount" class="form-control debit-amount" />
-                                        </td>
-                                        <td>
-                                            <input asp-for="Lines[i].CreditAmount" class="form-control credit-amount" />
-                                        </td>
+                                    <td>
+                                        <input asp-for="Lines[i].DebitAmount" class="form-control debit-amount" />
+                                    </td>
+                                    <td>
+                                        <input asp-for="Lines[i].CreditAmount" class="form-control credit-amount" />
+                                    </td>
                                         <td>
                                             <select asp-for="Lines[i].TaxRateId" class="form-control select2">
                                                 <option value="">-- Select Tax Rate --</option>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 {
@@ -45,9 +46,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         
         [Display(Name = "Client")]
         public Guid? ClientId { get; set; }
+        [ValidateNever]
+        public string ClientName { get; set; }
         
         [Display(Name = "Vendor")]
         public Guid? VendorId { get; set; }
+        [ValidateNever]
+        public string VendorName { get; set; }
         
         [Display(Name = "Is Recurring")]
         public bool IsRecurring { get; set; }
@@ -84,10 +89,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public IEnumerable<SelectListItem> AvailableFiscalPeriods { get; set; } = new List<SelectListItem>();
         
         [Display(Name = "Total Debit")]
-        public decimal TotalDebit => Lines.Sum(l => l.Debit);
+        public decimal TotalDebit => Lines.Sum(l => l.DebitAmount);
         
         [Display(Name = "Total Credit")]
-        public decimal TotalCredit => Lines.Sum(l => l.Credit);
+        public decimal TotalCredit => Lines.Sum(l => l.CreditAmount);
         
         [Display(Name = "Is Balanced")]
         public bool IsBalanced => Math.Abs(TotalDebit - TotalCredit) < 0.01m;
@@ -104,38 +109,27 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Required]
         [Display(Name = "Account")]
         public Guid AccountId { get; set; }
+        [ValidateNever]
+        public string AccountCode { get; set; }
+        [ValidateNever]
+        public string AccountName { get; set; }
         
         [Display(Name = "Cost Center")]
         public Guid? CostCenterId { get; set; }
+        [ValidateNever]
+        public string CostCenterName { get; set; }
         
         [StringLength(200)]
         [Display(Name = "Description")]
         public string? Description { get; set; }
         
-        [Display(Name = "Debit")]
-        [Range(0, 9999999999.99)]
-        public decimal Debit { get; set; }
-        
-        [Display(Name = "Credit")]
-        [Range(0, 9999999999.99)]
-        public decimal Credit { get; set; }
-        
-        // Alias properties needed by views
         [Display(Name = "Debit Amount")]
         [Range(0, 9999999999.99)]
-        public decimal DebitAmount 
-        { 
-            get { return Debit; }
-            set { Debit = value; }
-        }
+        public decimal DebitAmount { get; set; }
         
         [Display(Name = "Credit Amount")]
         [Range(0, 9999999999.99)]
-        public decimal CreditAmount 
-        { 
-            get { return Credit; }
-            set { Credit = value; }
-        }
+        public decimal CreditAmount { get; set; }
         
         [Display(Name = "Tax Rate")]
         public Guid? TaxRateId { get; set; }
