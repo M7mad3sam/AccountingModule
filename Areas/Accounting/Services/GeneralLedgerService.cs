@@ -180,7 +180,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
             await _journalEntryRepository.AddAsync(journalEntry);
             await _journalEntryRepository.SaveAsync();
-            //await _auditService.LogActivityAsync("JournalEntry", "Create", $"Created journal entry: {journalEntry.Reference}");
+            await _auditService.LogActivityAsync("JournalEntry", "Create", $"Created journal entry: {journalEntry.Reference}");
         }
 
         public async Task UpdateJournalEntryAsync(JournalEntry journalEntry)

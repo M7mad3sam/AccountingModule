@@ -1,4 +1,4 @@
-@model IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.ClientListViewModel>
+@model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.ClientListViewModel
 @inject IStringLocalizer<SharedResource> Localizer
 
 @{
@@ -52,7 +52,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model)
+@foreach (var item in Model.Clients)
                             {
                                 <tr>
                                     <td>@Html.DisplayFor(modelItem => item.Code)</td>

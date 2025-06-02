@@ -116,6 +116,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             }
 
             await _clientRepository.AddAsync(client);
+            await _clientRepository.SaveAsync();
             await _auditService.LogActivityAsync("Client", "Create", $"Created client: {client.NameEn}");
         }
 
@@ -129,6 +130,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             }
 
             await _clientRepository.UpdateAsync(client);
+            await _clientRepository.SaveAsync();
             await _auditService.LogActivityAsync("Client", "Update", $"Updated client: {client.NameEn}");
         }
 
@@ -146,6 +148,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 throw new InvalidOperationException("Cannot delete a client with associated journal entries");
             }
             await _clientRepository.DeleteAsync(id);
+            await _clientRepository.SaveAsync();
             await _auditService.LogActivityAsync("Client", "Delete", $"Deleted client: {client.NameEn}");
         }
 
@@ -212,6 +215,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 throw new InvalidOperationException($"A vendor with code '{vendor.Code}' already exists");
             }
             await _vendorRepository.AddAsync(vendor);
+            await _clientRepository.SaveAsync();
             await _auditService.LogActivityAsync("Vendor", "Create", $"Created vendor: {vendor.NameEn}");
         }
 
@@ -224,6 +228,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 throw new InvalidOperationException($"A vendor with code '{vendor.Code}' already exists");
             }
             await _vendorRepository.UpdateAsync(vendor);
+            await _clientRepository.SaveAsync();
             await _auditService.LogActivityAsync("Vendor", "Update", $"Updated vendor: {vendor.NameEn}");
         }
 
@@ -241,6 +246,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 throw new InvalidOperationException("Cannot delete a vendor with associated journal entries");
             }
             await _vendorRepository.DeleteAsync(id);
+            await _clientRepository.SaveAsync();
             await _auditService.LogActivityAsync("Vendor", "Delete", $"Deleted vendor: {vendor.NameEn}");
         }
 

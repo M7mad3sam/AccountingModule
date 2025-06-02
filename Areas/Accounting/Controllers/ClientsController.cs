@@ -15,13 +15,16 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
     public class ClientsController : Controller
     {
         private readonly IClientVendorService _clientVendorService;
+        private readonly IChartOfAccountsService _chartOfAccountsService;
         private readonly IStringLocalizer<ClientsController> _localizer;
 
         public ClientsController(
             IClientVendorService clientVendorService,
+            IChartOfAccountsService chartOfAccountsService,
             IStringLocalizer<ClientsController> localizer)
         {
             _clientVendorService = clientVendorService;
+            _chartOfAccountsService = chartOfAccountsService;
             _localizer = localizer;
         }
         
@@ -54,7 +57,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         }
         
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             var viewModel = new ClientViewModel();
             
@@ -65,6 +68,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 {
                     Value = ((int)c).ToString(),
                     Text = c.ToString()
+                }).ToList();
+            
+            // Populate available accounts
+            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
+                viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+                {
+                    Value = a.Id.ToString(),
+                    Text = $"{a.Code} - {a.NameEn}"
                 }).ToList();
             
             return View(viewModel);
@@ -90,8 +101,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     CreditLimit = viewModel.CreditLimit,
                     CreditPeriod = viewModel.CreditPeriod,
                     IsActive = viewModel.IsActive,
-                    ClientType = (ClientType)viewModel.ClientType,
-                    Notes = viewModel.Notes
+                    ClientType = viewModel.ClientType,
+                    Notes = viewModel.Notes,
+                    AccountId = viewModel.AccountId
                 };
                 
                 await _clientVendorService.CreateClientAsync(client);
@@ -100,7 +112,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             }
             
             // If we got this far, something failed, redisplay form
-            // Create SelectListItems for ClientType enum
             viewModel.AvailableClientTypes = Enum.GetValues(typeof(ClientType))
                 .Cast<ClientType>()
                 .Select(c => new SelectListItem
@@ -108,6 +119,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     Value = ((int)c).ToString(),
                     Text = c.ToString()
                 }).ToList();
+            
+            // Repopulate accounts
+            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
+            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.NameEn}"
+            }).ToList();
             
             return View(viewModel);
         }
@@ -138,7 +157,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 CreditPeriod = client.CreditPeriod,
                 IsActive = client.IsActive,
                 ClientType = client.ClientType,
-                Notes = client.Notes
+                Notes = client.Notes,
+                AccountId = client.AccountId
             };
             
             // Create SelectListItems for ClientType enum
@@ -150,6 +170,15 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     Text = c.ToString(),
                     Selected = c == client.ClientType
                 }).ToList();
+            
+            // Populate available accounts
+            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
+            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.NameEn}",
+                Selected = a.Id == client.AccountId
+            }).ToList();
             
             return View(viewModel);
         }
@@ -186,6 +215,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 client.IsActive = viewModel.IsActive;
                 client.ClientType = viewModel.ClientType;
                 client.Notes = viewModel.Notes;
+                client.AccountId = viewModel.AccountId;
                 
                 await _clientVendorService.UpdateClientAsync(client);
                 
@@ -193,7 +223,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             }
             
             // If we got this far, something failed, redisplay form
-            // Create SelectListItems for ClientType enum
             viewModel.AvailableClientTypes = Enum.GetValues(typeof(ClientType))
                 .Cast<ClientType>()
                 .Select(c => new SelectListItem
@@ -202,6 +231,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     Text = c.ToString(),
                     Selected = c == viewModel.ClientType
                 }).ToList();
+            
+            // Repopulate accounts
+            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
+            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.NameEn}"
+            }).ToList();
             
             return View(viewModel);
         }

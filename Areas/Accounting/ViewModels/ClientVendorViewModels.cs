@@ -66,9 +66,16 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         
         [Display(Name = "Notes")]
         public string Notes { get; set; }
+
+        [Required]
+        [Display(Name = "Account")]
+        public Guid AccountId { get; set; }
         
         [Display(Name = "Available Client Types")]
         public IEnumerable<SelectListItem> AvailableClientTypes { get; set; } = new List<SelectListItem>();
+        
+        [Display(Name = "Available Accounts")]
+        public IEnumerable<SelectListItem> AvailableAccounts { get; set; } = new List<SelectListItem>();
     }
     
     public class VendorViewModel

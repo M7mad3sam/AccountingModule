@@ -15,13 +15,16 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
     public class VendorsController : Controller
     {
         private readonly IClientVendorService _clientVendorService;
+        private readonly IChartOfAccountsService _chartOfAccountsService;
         private readonly IStringLocalizer<VendorsController> _localizer;
 
         public VendorsController(
             IClientVendorService clientVendorService,
+            IChartOfAccountsService chartOfAccountsService,
             IStringLocalizer<VendorsController> localizer)
         {
             _clientVendorService = clientVendorService;
+            _chartOfAccountsService = chartOfAccountsService;
             _localizer = localizer;
         }
         
@@ -30,6 +33,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         {
             var vendors = await _clientVendorService.GetVendorsAsync(searchTerm, vendorType, isActive, subjectToWithholdingTax);
             var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
+            if (vendorTypes == null || !vendorTypes.Any())
+            {
+                vendorTypes = new List<string> { "Supplier", "Contractor", "ServiceProvider" };
+            }
             
             var viewModel = new VendorListViewModel
             {
@@ -55,7 +62,11 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             
             // Get vendor types and accounts for dropdown lists
             var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
-            var accounts = await _clientVendorService.GetVendorAccountsAsync();
+            if (vendorTypes == null || !vendorTypes.Any())
+            {
+                vendorTypes = new List<string> { "Supplier", "Contractor", "ServiceProvider" };
+            }
+            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
             
             viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
@@ -66,7 +77,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a}"
+                Text = $"{a.Code} - {a.NameEn}"
             }).ToList();
             
             return View(viewModel);
@@ -108,7 +119,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // If we got this far, something failed, redisplay form
             // Get vendor types and accounts for dropdown lists
             var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
-            var accounts = await _clientVendorService.GetVendorAccountsAsync();
+            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
             
             viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
@@ -119,7 +130,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a}"
+                Text = $"{a.Code} - {a.NameEn}"
             }).ToList();
             
             return View(viewModel);
@@ -160,7 +171,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             
             // Get vendor types and accounts for dropdown lists
             var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
-            var accounts = await _clientVendorService.GetVendorAccountsAsync();
+            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
             
             viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
@@ -172,7 +183,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a}",
+                Text = $"{a.Code} - {a.NameEn}",
                 Selected = a.Id == vendor.AccountId
             }).ToList();
             
@@ -224,7 +235,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // If we got this far, something failed, redisplay form
             // Get vendor types and accounts for dropdown lists
             var vendorTypes = await _clientVendorService.GetVendorTypesAsync();
-            var accounts = await _clientVendorService.GetVendorAccountsAsync();
+            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
             
             viewModel.AvailableVendorTypes = vendorTypes.Select(vt => new SelectListItem
             {
@@ -236,7 +247,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
             {
                 Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.NameAr}",
+                Text = $"{a.Code} - {a.NameEn}",
                 Selected = a.Id == viewModel.AccountId
             }).ToList();
             
