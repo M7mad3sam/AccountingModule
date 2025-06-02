@@ -1,27 +1,28 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.TrialBalanceFilterViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Balance Sheet";
+    ViewData["Title"] = Localizer["BalanceSheet"];
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Balance Sheet</h3>
+        <h3 class="card-title">@Localizer["BalanceSheet"]</h3>
     </div>
     <div class="card-body">
         <form asp-action="BalanceSheet" method="get" id="filter-form">
             <div class="row">
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label asp-for="AsOfDate" class="control-label">As of Date</label>
+                        <label asp-for="AsOfDate" class="control-label">@Localizer["AsOfDate"]</label>
                         <input asp-for="AsOfDate" class="form-control" type="date" />
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label asp-for="CostCenterId" class="control-label">Cost Center</label>
+                        <label asp-for="CostCenterId" class="control-label">@Localizer["CostCenter"]</label>
                         <select asp-for="CostCenterId" asp-items="@(new SelectList(Model.CostCenters, "Id", "NameEn"))" class="form-control select2">
-                            <option value="">-- All Cost Centers --</option>
+                            <option value="">-- @Localizer["AllCostCenters"] --</option>
                         </select>
                     </div>
                 </div>
@@ -30,11 +31,11 @@
                         <label class="control-label">&nbsp;</label>
                         <div>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter"></i> Apply Filter
+                                <i class="fas fa-filter"></i> @Localizer["ApplyFilter"]
                             </button>
                             <a asp-action="BalanceSheetReport" asp-route-asOfDate="@Model.AsOfDate.ToString("yyyy-MM-dd")" 
                                asp-route-costCenterId="@Model.CostCenterId" class="btn btn-info" target="_blank">
-                                <i class="fas fa-print"></i> Print Report
+                                <i class="fas fa-print"></i> @Localizer["PrintReport"]
                             </a>
                         </div>
                     </div>
@@ -48,20 +49,20 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Account</th>
-                        <th>Description</th>
-                        <th class="text-right">Amount</th>
+                        <th>@Localizer["Account"]</th>
+                        <th>@Localizer["Description"]</th>
+                        <th class="text-right">@Localizer["Amount"]</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- Assets Section -->
                     <tr class="bg-light">
-                        <th colspan="3">Assets</th>
+                        <th colspan="3">@Localizer["Assets"]</th>
                     </tr>
                     
                     <!-- Current Assets -->
                     <tr>
-                        <th colspan="3" class="pl-4">Current Assets</th>
+                        <th colspan="3" class="pl-4">@Localizer["CurrentAssets"]</th>
                     </tr>
                     @if (ViewBag.CurrentAssets != null)
                     {
@@ -75,13 +76,13 @@
                         }
                     }
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Current Assets</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalCurrentAssets"]</td>
                         <td class="text-right">@ViewBag.TotalCurrentAssets.ToString("N2")</td>
                     </tr>
                     
                     <!-- Fixed Assets -->
                     <tr>
-                        <th colspan="3" class="pl-4">Fixed Assets</th>
+                        <th colspan="3" class="pl-4">@Localizer["FixedAssets"]</th>
                     </tr>
                     @if (ViewBag.FixedAssets != null)
                     {
@@ -95,13 +96,13 @@
                         }
                     }
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Fixed Assets</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalFixedAssets"]</td>
                         <td class="text-right">@ViewBag.TotalFixedAssets.ToString("N2")</td>
                     </tr>
                     
                     <!-- Other Assets -->
                     <tr>
-                        <th colspan="3" class="pl-4">Other Assets</th>
+                        <th colspan="3" class="pl-4">@Localizer["OtherAssets"]</th>
                     </tr>
                     @if (ViewBag.OtherAssets != null)
                     {
@@ -115,24 +116,24 @@
                         }
                     }
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Other Assets</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalOtherAssets"]</td>
                         <td class="text-right">@ViewBag.TotalOtherAssets.ToString("N2")</td>
                     </tr>
                     
                     <!-- Total Assets -->
                     <tr class="font-weight-bold bg-info">
-                        <td colspan="2" class="text-right">Total Assets</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalAssets"]</td>
                         <td class="text-right">@ViewBag.TotalAssets.ToString("N2")</td>
                     </tr>
                     
                     <!-- Liabilities Section -->
                     <tr class="bg-light">
-                        <th colspan="3">Liabilities</th>
+                        <th colspan="3">@Localizer["Liabilities"]</th>
                     </tr>
                     
                     <!-- Current Liabilities -->
                     <tr>
-                        <th colspan="3" class="pl-4">Current Liabilities</th>
+                        <th colspan="3" class="pl-4">@Localizer["CurrentLiabilities"]</th>
                     </tr>
                     @if (ViewBag.CurrentLiabilities != null)
                     {
@@ -146,13 +147,13 @@
                         }
                     }
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Current Liabilities</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalCurrentLiabilities"]</td>
                         <td class="text-right">@ViewBag.TotalCurrentLiabilities.ToString("N2")</td>
                     </tr>
                     
                     <!-- Long-term Liabilities -->
                     <tr>
-                        <th colspan="3" class="pl-4">Long-term Liabilities</th>
+                        <th colspan="3" class="pl-4">@Localizer["LongTermLiabilities"]</th>
                     </tr>
                     @if (ViewBag.LongTermLiabilities != null)
                     {
@@ -166,19 +167,19 @@
                         }
                     }
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Long-term Liabilities</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalLongTermLiabilities"]</td>
                         <td class="text-right">@ViewBag.TotalLongTermLiabilities.ToString("N2")</td>
                     </tr>
                     
                     <!-- Total Liabilities -->
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Liabilities</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalLiabilities"]</td>
                         <td class="text-right">@ViewBag.TotalLiabilities.ToString("N2")</td>
                     </tr>
                     
                     <!-- Equity Section -->
                     <tr class="bg-light">
-                        <th colspan="3">Equity</th>
+                        <th colspan="3">@Localizer["Equity"]</th>
                     </tr>
                     @if (ViewBag.EquityAccounts != null)
                     {
@@ -192,13 +193,13 @@
                         }
                     }
                     <tr class="font-weight-bold">
-                        <td colspan="2" class="text-right">Total Equity</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalEquity"]</td>
                         <td class="text-right">@ViewBag.TotalEquity.ToString("N2")</td>
                     </tr>
                     
                     <!-- Total Liabilities and Equity -->
                     <tr class="font-weight-bold bg-info">
-                        <td colspan="2" class="text-right">Total Liabilities and Equity</td>
+                        <td colspan="2" class="text-right">@Localizer["TotalLiabilitiesAndEquity"]</td>
                         <td class="text-right">@ViewBag.TotalLiabilitiesAndEquity.ToString("N2")</td>
                     </tr>
                 </tbody>

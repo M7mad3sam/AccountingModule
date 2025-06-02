@@ -1,41 +1,42 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.IncomeStatementFilterViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Income Statement";
+    ViewData["Title"] = Localizer["IncomeStatement"];
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Income Statement</h3>
+        <h3 class="card-title">@Localizer["IncomeStatement"]</h3>
     </div>
     <div class="card-body">
         <form asp-action="IncomeStatement" method="post">
             <div class="row">
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label asp-for="FromDate" class="control-label"></label>
+                        <label asp-for="FromDate" class="control-label">@Localizer["FromDate"]</label>
                         <input asp-for="FromDate" class="form-control" />
                         <span asp-validation-for="FromDate" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label asp-for="ToDate" class="control-label"></label>
+                        <label asp-for="ToDate" class="control-label">@Localizer["ToDate"]</label>
                         <input asp-for="ToDate" class="form-control" />
                         <span asp-validation-for="ToDate" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label asp-for="CostCenterId" class="control-label"></label>
+                        <label asp-for="CostCenterId" class="control-label">@Localizer["CostCenter"]</label>
                         <select asp-for="CostCenterId" class="form-control select2" asp-items="@(new SelectList(Model.CostCenters, "Id", "NameEn"))">
-                            <option value="">-- All Cost Centers --</option>
+                            <option value="">-- @Localizer["AllCostCenters"] --</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
                     <div class="form-group">
-                        <button type="submit" class="btn btn-primary">Generate Report</button>
+                        <button type="submit" class="btn btn-primary">@Localizer["GenerateReport"]</button>
                     </div>
                 </div>
             </div>

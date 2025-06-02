@@ -1,6 +1,14 @@
 @using Microsoft.AspNetCore.Identity
+@using AspNetCoreMvcTemplate.Resources
+@inject IStringLocalizer<SharedResource> Localizer
+@{
+    var isRtl = System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft;
+    var langDirection = isRtl ? "rtl" : "ltr";
+    var currentLanguage = System.Threading.Thread.CurrentThread.CurrentUICulture.Name;
+    var displayLanguage = currentLanguage.StartsWith("ar") ? Localizer["Arabic"] : Localizer["English"];
+}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@currentLanguage" dir="@langDirection">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,11 +20,16 @@
     <link rel="stylesheet" href="~/lib/adminlte/plugins/fontawesome-free/css/all.min.css" />
     <!-- Theme style -->
     <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.min.css" />
-    <!-- RTL style for Arabic -->
-    <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.rtl.min.css" id="rtl-style" disabled />
+    @if (isRtl)
+    {
+        <!-- RTL style for Arabic -->
+        <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.rtl.min.css" />
+        <!-- Custom RTL fixes -->
+        <link rel="stylesheet" href="~/css/rtl-fixes.css" asp-append-version="true" />
+    }
     <!-- Custom site styles -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    
+
     <link rel="stylesheet" href="~/lib/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css" />
     <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
 </head>
@@ -43,10 +56,10 @@
                     </li>
                 }
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a asp-area="" asp-controller="Home" asp-action="Index" class="nav-link">Home</a>
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="nav-link">@Localizer["Home"]</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a asp-area="" asp-controller="Home" asp-action="Privacy" class="nav-link">Privacy</a>
+                    <a asp-area="" asp-controller="Home" asp-action="Privacy" class="nav-link">@Localizer["Privacy"]</a>
                 </li>
             </ul>
 
@@ -54,9 +67,9 @@
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <div class="form-check form-switch mt-2">
-                        <input class="form-check-input" type="checkbox" id="language-switch">
+                        <input class="form-check-input" type="checkbox" id="language-switch" @(isRtl ? "checked" : "")>
                         <label class="form-check-label text-light" for="language-switch">
-                            <span id="language-label">English</span>
+                            <span id="language-label">@displayLanguage</span>
                         </label>
                     </div>
                 </li>
@@ -95,13 +108,13 @@
                             <li class="nav-item">
                                 <a asp-area="" asp-controller="Home" asp-action="Index" class="nav-link">
                                     <i class="nav-icon fas fa-home"></i>
-                                    <p>Home</p>
+                                    <p>@Localizer["Home"]</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a asp-area="" asp-controller="Home" asp-action="Privacy" class="nav-link">
                                     <i class="nav-icon fas fa-lock"></i>
-                                    <p>Privacy</p>
+                                    <p>@Localizer["Privacy"]</p>
                                 </a>
                             </li>
                             @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
@@ -109,7 +122,7 @@
                                 <li class="nav-item">
                                     <a asp-controller="Users" asp-action="Index" class="nav-link">
                                         <i class="nav-icon fas fa-users-cog"></i>
-                                        <p>User Management</p>
+                                        <p>@Localizer["UserManagement"]</p>
                                     </a>
                                 </li>
                             }
@@ -121,7 +134,7 @@
                                     <a href="#" class="nav-link">
                                         <i class="nav-icon fas fa-calculator"></i>
                                         <p>
-                                            Accounting
+                                            @Localizer["Accounting"]
                                             <i class="right fas fa-angle-left"></i>
                                         </p>
                                     </a>
@@ -132,7 +145,7 @@
                                                 <a href="#" class="nav-link">
                                                     <i class="far fa-circle nav-icon"></i>
                                                     <p>
-                                                        Chart of Accounts
+                                                        @Localizer["ChartOfAccounts"]
                                                         <i class="right fas fa-angle-left"></i>
                                                     </p>
                                                 </a>
@@ -140,13 +153,13 @@
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="ChartOfAccounts" asp-action="Index" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>View Accounts</p>
+                                                            <p>@Localizer["ViewAccounts"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="ChartOfAccounts" asp-action="Create" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>Create Account</p>
+                                                            <p>@Localizer["CreateAccount"]</p>
                                                         </a>
                                                     </li>
                                                 </ul>
@@ -159,7 +172,7 @@
                                                 <a href="#" class="nav-link">
                                                     <i class="far fa-circle nav-icon"></i>
                                                     <p>
-                                                        Journal Entries
+                                                        @Localizer["JournalEntries"]
                                                         <i class="right fas fa-angle-left"></i>
                                                     </p>
                                                 </a>
@@ -167,13 +180,13 @@
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Index" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>View Entries</p>
+                                                            <p>@Localizer["ViewEntries"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Create" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>Create Entry</p>
+                                                            <p>@Localizer["CreateEntry"]</p>
                                                         </a>
                                                     </li>
                                                 </ul>
@@ -186,7 +199,7 @@
                                                 <a href="#" class="nav-link">
                                                     <i class="far fa-circle nav-icon"></i>
                                                     <p>
-                                                        Financial Reports
+                                                        @Localizer["FinancialReports"]
                                                         <i class="right fas fa-angle-left"></i>
                                                     </p>
                                                 </a>
@@ -194,48 +207,48 @@
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Reports" asp-action="TrialBalance" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>Trial Balance</p>
+                                                            <p>@Localizer["TrialBalance"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Reports" asp-action="BalanceSheet" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>Balance Sheet</p>
+                                                            <p>@Localizer["BalanceSheet"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Reports" asp-action="IncomeStatement" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>Income Statement</p>
+                                                            <p>@Localizer["IncomeStatement"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Reports" asp-action="CashFlow" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>Cash Flow</p>
+                                                            <p>@Localizer["CashFlow"]</p>
                                                         </a>
                                                     </li>
                                                 </ul>
                                             </li>
                                         }
-                                        
+
                                         @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager"))
                                         {
                                             <li class="nav-item">
                                                 <a asp-area="Accounting" asp-controller="PeriodManagement" asp-action="FiscalYears" class="nav-link">
                                                     <i class="far fa-circle nav-icon"></i>
-                                                    <p>Period Management</p>
+                                                    <p>@Localizer["PeriodManagement"]</p>
                                                 </a>
                                             </li>
                                         }
-                                        
+
                                         @if (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager"))
                                         {
                                             <li class="nav-item has-treeview">
                                                 <a href="#" class="nav-link">
                                                     <i class="far fa-circle nav-icon"></i>
                                                     <p>
-                                                        Clients & Vendors
+                                                        @Localizer["ClientsVendors"]
                                                         <i class="right fas fa-angle-left"></i>
                                                     </p>
                                                 </a>
@@ -243,13 +256,13 @@
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Clients" asp-action="Index" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>Clients</p>
+                                                            <p>@Localizer["Clients"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Vendors" asp-action="Index" class="nav-link">
                                                             <i class="far fa-dot-circle nav-icon"></i>
-                                                            <p>Vendors</p>
+                                                            <p>@Localizer["Vendors"]</p>
                                                         </a>
                                                     </li>
                                                 </ul>
@@ -265,6 +278,7 @@
                 <!-- /.sidebar -->
             </aside>
         }
+
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
             <!-- Content Header (Page header) -->
@@ -273,22 +287,29 @@
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">@ViewData["Title"]</h1>
-                        </div>
+                        </div><!-- /.col -->
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item"><a asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                                @if (ViewData["BreadcrumbItems"] != null)
+                                {
+                                    foreach (var item in (List<(string Text, string Url)>)ViewData["BreadcrumbItems"])
+                                    {
+                                        <li class="breadcrumb-item"><a href="@item.Url">@item.Text</a></li>
+                                    }
+                                }
                                 <li class="breadcrumb-item active">@ViewData["Title"]</li>
                             </ol>
-                        </div>
-                    </div>
-                </div>
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                </div><!-- /.container-fluid -->
             </div>
             <!-- /.content-header -->
             <!-- Main content -->
             <div class="content">
                 <div class="container-fluid">
                     @RenderBody()
-                </div>
+                </div><!-- /.container-fluid -->
             </div>
             <!-- /.content -->
         </div>
@@ -297,44 +318,31 @@
         <footer class="main-footer">
             <!-- To the right -->
             <div class="float-right d-none d-sm-inline">
-                ASP.NET Core MVC Template
+                AspNetCoreMvcTemplate
             </div>
             <!-- Default to the left -->
             <strong>Copyright &copy; @DateTime.Now.Year <a href="#">AspNetCoreMvcTemplate</a>.</strong> All rights reserved.
         </footer>
     </div>
     <!-- ./wrapper -->
-    <!-- REQUIRED SCRIPTS -->
     <!-- jQuery -->
     <script src="~/lib/adminlte/plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 4 -->
     <script src="~/lib/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE App -->
     <script src="~/lib/adminlte/js/adminlte.min.js"></script>
+    <!-- Select2 -->
+    <script src="~/lib/select2/js/select2.full.min.js"></script>
     <!-- Custom site scripts -->
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script src="~/lib/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="~/lib/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="~/lib/select2/js/select2.full.min.js"></script>
-
     <script>
-        // Language switch functionality
-        $(document).ready(function() {
+        $(function () {
+            // Language switcher
             $('#language-switch').change(function() {
-                if($(this).is(':checked')) {
-                    // Switch to Arabic (RTL)
-                    $('html').attr('dir', 'rtl').attr('lang', 'ar');
-                    $('#rtl-style').removeAttr('disabled');
-                    $('#language-label').text('العربية');
-                    $('.main-sidebar').removeClass('sidebar-dark-primary').addClass('sidebar-dark-success');
-                } else {
-                    // Switch to English (LTR)
-                    $('html').attr('dir', 'ltr').attr('lang', 'en');
-                    $('#rtl-style').attr('disabled', 'disabled');
-                    $('#language-label').text('English');
-                    $('.main-sidebar').removeClass('sidebar-dark-success').addClass('sidebar-dark-primary');
-                }
+                var culture = $(this).prop('checked') ? 'ar-EG' : 'en-US';
+                document.cookie = 'Language=' + culture + ';path=/';
+                window.location.reload();
             });
         });
     </script>

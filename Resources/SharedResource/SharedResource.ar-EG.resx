@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- General -->
+  <data name="Home" xml:space="preserve">
+    <value>الرئيسية</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>الخصوصية</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>اللغة</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>الإنجليزية</value>
+  </data>
+  <data name="Arabic" xml:space="preserve">
+    <value>العربية</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>إنشاء</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>تفاصيل</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>رجوع</value>
+  </data>
+  <data name="BackToList" xml:space="preserve">
+    <value>العودة للقائمة</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>إجراءات</value>
+  </data>
+  <data name="CreateNew" xml:space="preserve">
+    <value>إنشاء جديد</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="Inactive" xml:space="preserve">
+    <value>غير نشط</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>نعم</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>لا</value>
+  </data>
+  
+  <!-- Navigation -->
+  <data name="Accounting" xml:space="preserve">
+    <value>المحاسبة</value>
+  </data>
+  <data name="ChartOfAccounts" xml:space="preserve">
+    <value>شجرة الحسابات</value>
+  </data>
+  <data name="ViewAccounts" xml:space="preserve">
+    <value>عرض الحسابات</value>
+  </data>
+  <data name="CreateAccount" xml:space="preserve">
+    <value>إنشاء حساب</value>
+  </data>
+  <data name="JournalEntries" xml:space="preserve">
+    <value>القيود المحاسبية</value>
+  </data>
+  <data name="ViewEntries" xml:space="preserve">
+    <value>عرض القيود</value>
+  </data>
+  <data name="CreateEntry" xml:space="preserve">
+    <value>إنشاء قيد</value>
+  </data>
+  <data name="FinancialReports" xml:space="preserve">
+    <value>التقارير المالية</value>
+  </data>
+  <data name="TrialBalance" xml:space="preserve">
+    <value>ميزان المراجعة</value>
+  </data>
+  <data name="BalanceSheet" xml:space="preserve">
+    <value>الميزانية العمومية</value>
+  </data>
+  <data name="IncomeStatement" xml:space="preserve">
+    <value>قائمة الدخل</value>
+  </data>
+  <data name="CashFlow" xml:space="preserve">
+    <value>التدفقات النقدية</value>
+  </data>
+  <data name="PeriodManagement" xml:space="preserve">
+    <value>إدارة الفترات</value>
+  </data>
+  <data name="ClientsVendors" xml:space="preserve">
+    <value>العملاء والموردين</value>
+  </data>
+  <data name="Clients" xml:space="preserve">
+    <value>العملاء</value>
+  </data>
+  <data name="Vendors" xml:space="preserve">
+    <value>الموردين</value>
+  </data>
+  <data name="UserManagement" xml:space="preserve">
+    <value>إدارة المستخدمين</value>
+  </data>
+  
+  <!-- Client/Vendor Fields -->
+  <data name="Code" xml:space="preserve">
+    <value>الكود</value>
+  </data>
+  <data name="NameEn" xml:space="preserve">
+    <value>الاسم (بالإنجليزية)</value>
+  </data>
+  <data name="NameAr" xml:space="preserve">
+    <value>الاسم (بالعربية)</value>
+  </data>
+  <data name="ClientType" xml:space="preserve">
+    <value>نوع العميل</value>
+  </data>
+  <data name="VendorType" xml:space="preserve">
+    <value>نوع المورد</value>
+  </data>
+  <data name="TaxRegistrationNumber" xml:space="preserve">
+    <value>الرقم الضريبي</value>
+  </data>
+  <data name="CommercialRegistration" xml:space="preserve">
+    <value>السجل التجاري</value>
+  </data>
+  <data name="ContactPerson" xml:space="preserve">
+    <value>الشخص المسؤول</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>الهاتف</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>البريد الإلكتروني</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="CreditLimit" xml:space="preserve">
+    <value>حد الائتمان</value>
+  </data>
+  <data name="CreditPeriod" xml:space="preserve">
+    <value>فترة الائتمان (أيام)</value>
+  </data>
+  <data name="IsActive" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>ملاحظات</value>
+  </data>
+  <data name="PaymentTerms" xml:space="preserve">
+    <value>شروط الدفع</value>
+  </data>
+  <data name="SubjectToWithholdingTax" xml:space="preserve">
+    <value>خاضع لضريبة الخصم</value>
+  </data>
+  <data name="BankName" xml:space="preserve">
+    <value>اسم البنك</value>
+  </data>
+  <data name="BankAccountNumber" xml:space="preserve">
+    <value>رقم الحساب البنكي</value>
+  </data>
+  <data name="IBAN" xml:space="preserve">
+    <value>رقم الآيبان</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>الحساب</value>
+  </data>
+  
+  <!-- Client/Vendor Types -->
+  <data name="Individual" xml:space="preserve">
+    <value>فرد</value>
+  </data>
+  <data name="Company" xml:space="preserve">
+    <value>شركة</value>
+  </data>
+  <data name="Government" xml:space="preserve">
+    <value>حكومي</value>
+  </data>
+  
+  <!-- Client/Vendor Views -->
+  <data name="ClientList" xml:space="preserve">
+    <value>قائمة العملاء</value>
+  </data>
+  <data name="VendorList" xml:space="preserve">
+    <value>قائمة الموردين</value>
+  </data>
+  <data name="CreateClient" xml:space="preserve">
+    <value>إنشاء عميل</value>
+  </data>
+  <data name="CreateVendor" xml:space="preserve">
+    <value>إنشاء مورد</value>
+  </data>
+  <data name="EditClient" xml:space="preserve">
+    <value>تعديل عميل</value>
+  </data>
+  <data name="EditVendor" xml:space="preserve">
+    <value>تعديل مورد</value>
+  </data>
+  <data name="ClientDetails" xml:space="preserve">
+    <value>تفاصيل العميل</value>
+  </data>
+  <data name="VendorDetails" xml:space="preserve">
+    <value>تفاصيل المورد</value>
+  </data>
+  <data name="DeleteClient" xml:space="preserve">
+    <value>حذف عميل</value>
+  </data>
+  <data name="DeleteVendor" xml:space="preserve">
+    <value>حذف مورد</value>
+  </data>
+  <data name="ClientInformation" xml:space="preserve">
+    <value>بيانات العميل</value>
+  </data>
+  <data name="VendorInformation" xml:space="preserve">
+    <value>بيانات المورد</value>
+  </data>
+  <data name="BankingInformation" xml:space="preserve">
+    <value>البيانات البنكية</value>
+  </data>
+  <data name="DeleteClientConfirmation" xml:space="preserve">
+    <value>هل أنت متأكد من حذف هذا العميل؟</value>
+  </data>
+  <data name="DeleteVendorConfirmation" xml:space="preserve">
+    <value>هل أنت متأكد من حذف هذا المورد؟</value>
+  </data>
+</root>

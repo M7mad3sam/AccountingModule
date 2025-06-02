@@ -1,41 +1,42 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.Services.CashFlowReport
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Cash Flow Statement Report";
+    ViewData["Title"] = Localizer["CashFlowStatementReport"];
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Cash Flow Statement</h3>
+        <h3 class="card-title">@Localizer["CashFlowStatement"]</h3>
         <div class="card-tools">
             <a asp-action="ExportToPdf" asp-route-reportType="cashflow" 
                asp-route-fromDate="@Model.FromDate.ToString("yyyy-MM-dd")" 
                asp-route-toDate="@Model.ToDate.ToString("yyyy-MM-dd")" 
                asp-route-costCenterId="@(Model.CostCenter?.Id)" class="btn btn-sm btn-outline-danger">
-                <i class="fas fa-file-pdf"></i> Export to PDF
+                <i class="fas fa-file-pdf"></i> @Localizer["ExportToPDF"]
             </a>
         </div>
     </div>
     <div class="card-body">
         <div class="text-center mb-4">
-            <h4>Cash Flow Statement</h4>
-            <p>For the period from @Model.FromDate.ToString("MMMM dd, yyyy") to @Model.ToDate.ToString("MMMM dd, yyyy")</p>
+            <h4>@Localizer["CashFlowStatement"]</h4>
+            <p>@Localizer["ForThePeriodFrom"] @Model.FromDate.ToString("MMMM dd, yyyy") @Localizer["To"] @Model.ToDate.ToString("MMMM dd, yyyy")</p>
             @if (Model.CostCenter != null)
             {
-                <p>Cost Center: @Model.CostCenter.NameEn</p>
+                <p>@Localizer["CostCenter"]: @Model.CostCenter.NameEn</p>
             }
         </div>
 
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Operating Activities</h5>
+                <h5 class="mb-0">@Localizer["OperatingActivities"]</h5>
             </div>
             <div class="card-body p-0">
                 <table class="table table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>Description</th>
-                            <th class="text-right">Amount</th>
+                            <th>@Localizer["Description"]</th>
+                            <th class="text-right">@Localizer["Amount"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,7 +48,7 @@
                             </tr>
                         }
                         <tr class="font-weight-bold bg-light">
-                            <td>Net Cash from Operating Activities</td>
+                            <td>@Localizer["NetCashFromOperatingActivities"]</td>
                             <td class="text-right">@Model.NetOperatingCashFlow.ToString("#,##0.0000")</td>
                         </tr>
                     </tbody>
@@ -57,14 +58,14 @@
 
         <div class="card mt-3">
             <div class="card-header bg-info text-white">
-                <h5 class="mb-0">Investing Activities</h5>
+                <h5 class="mb-0">@Localizer["InvestingActivities"]</h5>
             </div>
             <div class="card-body p-0">
                 <table class="table table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>Description</th>
-                            <th class="text-right">Amount</th>
+                            <th>@Localizer["Description"]</th>
+                            <th class="text-right">@Localizer["Amount"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -76,7 +77,7 @@
                             </tr>
                         }
                         <tr class="font-weight-bold bg-light">
-                            <td>Net Cash from Investing Activities</td>
+                            <td>@Localizer["NetCashFromInvestingActivities"]</td>
                             <td class="text-right">@Model.NetInvestingCashFlow.ToString("#,##0.0000")</td>
                         </tr>
                     </tbody>
@@ -86,14 +87,14 @@
 
         <div class="card mt-3">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Financing Activities</h5>
+                <h5 class="mb-0">@Localizer["FinancingActivities"]</h5>
             </div>
             <div class="card-body p-0">
                 <table class="table table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>Description</th>
-                            <th class="text-right">Amount</th>
+                            <th>@Localizer["Description"]</th>
+                            <th class="text-right">@Localizer["Amount"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -105,7 +106,7 @@
                             </tr>
                         }
                         <tr class="font-weight-bold bg-light">
-                            <td>Net Cash from Financing Activities</td>
+                            <td>@Localizer["NetCashFromFinancingActivities"]</td>
                             <td class="text-right">@Model.NetFinancingCashFlow.ToString("#,##0.0000")</td>
                         </tr>
                     </tbody>
@@ -118,7 +119,7 @@
                 <table class="table table-striped mb-0">
                     <tbody>
                         <tr class="font-weight-bold bg-secondary text-white">
-                            <td>Net Increase (Decrease) in Cash</td>
+                            <td>@Localizer["NetIncreaseDecreaseInCash"]</td>
                             <td class="text-right">@Model.NetCashFlow.ToString("#,##0.0000")</td>
                         </tr>
                     </tbody>

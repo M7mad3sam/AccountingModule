@@ -1,28 +1,29 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.TrialBalanceFilterViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Trial Balance";
+    ViewData["Title"] = Localizer["TrialBalance"];
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Trial Balance Filter</h3>
+        <h3 class="card-title">@Localizer["TrialBalanceFilter"]</h3>
     </div>
     <div class="card-body">
         <form asp-action="TrialBalance" method="post">
             <div class="row">
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label asp-for="AsOfDate">As of Date</label>
+                        <label asp-for="AsOfDate">@Localizer["AsOfDate"]</label>
                         <input asp-for="AsOfDate" class="form-control" type="date" />
                         <span asp-validation-for="AsOfDate" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label asp-for="CostCenterId">Cost Center</label>
+                        <label asp-for="CostCenterId">@Localizer["CostCenter"]</label>
                         <select asp-for="CostCenterId" class="form-control select2">
-                            <option value="">-- All Cost Centers --</option>
+                            <option value="">-- @Localizer["AllCostCenters"] --</option>
                             @foreach (var costCenter in Model.CostCenters)
                             {
                                 <option value="@costCenter.Id">@costCenter.Code - @costCenter.NameEn</option>
@@ -32,15 +33,15 @@
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label asp-for="Level">Account Level</label>
+                        <label asp-for="Level">@Localizer["AccountLevel"]</label>
                         <select asp-for="Level" asp-items="Model.Levels" class="form-control">
-                            <option value="0">-- All Levels --</option>
+                            <option value="0">-- @Localizer["AllLevels"] --</option>
                         </select>
                     </div>
                 </div>
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-primary">Generate Report</button>
+                <button type="submit" class="btn btn-primary">@Localizer["GenerateReport"]</button>
             </div>
         </form>
     </div>

@@ -1,6 +1,7 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.VendorViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Delete Vendor";
+    ViewData["Title"] = Localizer["DeleteVendor"];
 }
 <div class="content-header">
     <div class="container-fluid">
@@ -10,9 +11,9 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Vendors" asp-action="Index">Vendors</a></li>
-                    <li class="breadcrumb-item active">Delete</li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Vendors" asp-action="Index">@Localizer["Vendors"]</a></li>
+                    <li class="breadcrumb-item active">@Localizer["Delete"]</li>
                 </ol>
             </div>
         </div>
@@ -22,7 +23,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header bg-danger">
-                <h3 class="card-title">Are you sure you want to delete this vendor?</h3>
+                <h3 class="card-title">@Localizer["DeleteVendorConfirmation"]</h3>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -50,11 +51,11 @@
                             <dd class="col-sm-8">
                                 @if (Model.IsActive)
                                 {
-                                    <span class="badge badge-success">Active</span>
+                                    <span class="badge badge-success">@Localizer["Active"]</span>
                                 }
                                 else
                                 {
-                                    <span class="badge badge-danger">Inactive</span>
+                                    <span class="badge badge-danger">@Localizer["Inactive"]</span>
                                 }
                             </dd>
                         </dl>
@@ -65,8 +66,8 @@
                 <form asp-action="Delete">
                     <input type="hidden" asp-for="Id" />
                     <div class="btn-group">
-                        <input type="submit" value="Delete" class="btn btn-danger" />
-                        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        <input type="submit" value="@Localizer["Delete"]" class="btn btn-danger" />
+                        <a asp-action="Index" class="btn btn-secondary">@Localizer["Cancel"]</a>
                     </div>
                 </form>
             </div>

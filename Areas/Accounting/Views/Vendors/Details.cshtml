@@ -1,6 +1,7 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.VendorViewModel
+@inject IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Vendor Details";
+    ViewData["Title"] = Localizer["VendorDetails"];
 }
 <div class="content-header">
     <div class="container-fluid">
@@ -10,9 +11,9 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Vendors" asp-action="Index">Vendors</a></li>
-                    <li class="breadcrumb-item active">Details</li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Accounting" asp-controller="Vendors" asp-action="Index">@Localizer["Vendors"]</a></li>
+                    <li class="breadcrumb-item active">@Localizer["Details"]</li>
                 </ol>
             </div>
         </div>
@@ -22,7 +23,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Vendor Information</h3>
+                <h3 class="card-title">@Localizer["VendorInformation"]</h3>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -58,22 +59,22 @@
                             <dd class="col-sm-8">
                                 @if (Model.SubjectToWithholdingTax)
                                 {
-                                    <span class="badge badge-info">Yes</span>
+                                    <span class="badge badge-info">@Localizer["Yes"]</span>
                                 }
                                 else
                                 {
-                                    <span class="badge badge-secondary">No</span>
+                                    <span class="badge badge-secondary">@Localizer["No"]</span>
                                 }
                             </dd>
                             <dt class="col-sm-4">@Html.DisplayNameFor(model => model.IsActive)</dt>
                             <dd class="col-sm-8">
                                 @if (Model.IsActive)
                                 {
-                                    <span class="badge badge-success">Active</span>
+                                    <span class="badge badge-success">@Localizer["Active"]</span>
                                 }
                                 else
                                 {
-                                    <span class="badge badge-danger">Inactive</span>
+                                    <span class="badge badge-danger">@Localizer["Inactive"]</span>
                                 }
                             </dd>
                         </dl>
@@ -81,7 +82,7 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-12">
-                        <h4>Banking Information</h4>
+                        <h4>@Localizer["BankingInformation"]</h4>
                         <dl class="row">
                             <dt class="col-sm-2">@Html.DisplayNameFor(model => model.BankName)</dt>
                             <dd class="col-sm-4">@Html.DisplayFor(model => model.BankName)</dd>
@@ -103,8 +104,8 @@
             </div>
             <div class="card-footer">
                 <div class="btn-group">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
-                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Edit"]</a>
+                    <a asp-action="Index" class="btn btn-secondary">@Localizer["BackToList"]</a>
                 </div>
             </div>
         </div>

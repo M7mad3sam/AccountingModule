@@ -1,15 +1,16 @@
 @model IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.Models.Account>
+@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = "Chart of Accounts";
+    ViewData["Title"] = Localizer["ChartOfAccounts"];
 }
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Chart of Accounts</h3>
+        <h3 class="card-title">@Localizer["ChartOfAccounts"]</h3>
         <div class="card-tools">
             <a asp-area="Accounting" asp-controller="ChartOfAccounts" asp-action="Create" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Create New Account
+                <i class="fas fa-plus"></i> @Localizer["CreateNewAccount"]
             </a>
         </div>
     </div>
@@ -18,13 +19,13 @@
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Code</th>
-                        <th>Name (English)</th>
-                        <th>Name (Arabic)</th>
-                        <th>Type</th>
-                        <th>Level</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>@Localizer["Code"]</th>
+                        <th>@Localizer["NameEnglish"]</th>
+                        <th>@Localizer["NameArabic"]</th>
+                        <th>@Localizer["Type"]</th>
+                        <th>@Localizer["Level"]</th>
+                        <th>@Localizer["Status"]</th>
+                        <th>@Localizer["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,11 +40,11 @@
                             <td>
                                 @if (account.IsActive)
                                 {
-                                    <span class="badge badge-success">Active</span>
+                                    <span class="badge badge-success">@Localizer["Active"]</span>
                                 }
                                 else
                                 {
-                                    <span class="badge badge-danger">Inactive</span>
+                                    <span class="badge badge-danger">@Localizer["Inactive"]</span>
                                 }
                             </td>
                             <td>
