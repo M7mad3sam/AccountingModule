@@ -3,6 +3,7 @@ using System;
 using AspNetCoreMvcTemplate.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspNetCoreMvcTemplate.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250603200103_UpdateCostCenter")]
+    partial class UpdateCostCenter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -218,6 +221,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 

@@ -111,22 +111,7 @@
                                     <p>@Localizer["Home"]</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a asp-area="" asp-controller="Home" asp-action="Privacy" class="nav-link">
-                                    <i class="nav-icon fas fa-lock"></i>
-                                    <p>@Localizer["Privacy"]</p>
-                                </a>
-                            </li>
-                            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
-                            {
-                                <li class="nav-item">
-                                    <a asp-controller="Users" asp-action="Index" class="nav-link">
-                                        <i class="nav-icon fas fa-users-cog"></i>
-                                        <p>@Localizer["UserManagement"]</p>
-                                    </a>
-                                </li>
-                            }
-
+                            
                             @* Core Accounting Engine Module Navigation *@
                             @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Accountant") || User.IsInRole("Manager") || User.IsInRole("Auditor")))
                             {
@@ -143,7 +128,7 @@
                                         {
                                             <li class="nav-item has-treeview">
                                                 <a href="#" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <i class="nav-icon fas fa-book"></i>
                                                     <p>
                                                         @Localizer["ChartOfAccounts"]
                                                         <i class="right fas fa-angle-left"></i>
@@ -152,15 +137,38 @@
                                                 <ul class="nav nav-treeview">
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="ChartOfAccounts" asp-action="Index" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-eye"></i>
                                                             <p>@Localizer["ViewAccounts"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="ChartOfAccounts" asp-action="Create" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-plus-circle"></i>
                                                             <p>@Localizer["CreateAccount"]</p>
                                                         </a>
+                                                    </li>
+                                                    <li class="nav-item has-treeview">
+                                                        <a href="#" class="nav-link">
+                                                            <i class="nav-icon fas fa-cube"></i>
+                                                            <p>
+                                                                @Localizer["CostCenters"]
+                                                                <i class="right fas fa-angle-left"></i>
+                                                            </p>
+                                                        </a>
+                                                        <ul class="nav nav-treeview">
+                                                            <li class="nav-item">
+                                                                <a asp-area="Accounting" asp-controller="CostCenters" asp-action="Index" class="nav-link">
+                                                                    <i class="nav-icon fas fa-eye"></i>
+                                                                    <p>@Localizer["ViewCostCenters"]</p>
+                                                                </a>
+                                                            </li>
+                                                            <li class="nav-item">
+                                                                <a asp-area="Accounting" asp-controller="CostCenters" asp-action="Create" class="nav-link">
+                                                                    <i class="nav-icon fas fa-plus-circle"></i>
+                                                                    <p>@Localizer["CreateCostCenter"]</p>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
                                                     </li>
                                                 </ul>
                                             </li>
@@ -170,7 +178,7 @@
                                         {
                                             <li class="nav-item has-treeview">
                                                 <a href="#" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <i class="nav-icon fas fa-file-invoice"></i>
                                                     <p>
                                                         @Localizer["JournalEntries"]
                                                         <i class="right fas fa-angle-left"></i>
@@ -179,13 +187,13 @@
                                                 <ul class="nav nav-treeview">
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Index" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-eye"></i>
                                                             <p>@Localizer["ViewEntries"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="JournalEntries" asp-action="Create" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-plus-circle"></i>
                                                             <p>@Localizer["CreateEntry"]</p>
                                                         </a>
                                                     </li>
@@ -197,7 +205,7 @@
                                         {
                                             <li class="nav-item has-treeview">
                                                 <a href="#" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <i class="nav-icon fas fa-chart-bar"></i>
                                                     <p>
                                                         @Localizer["FinancialReports"]
                                                         <i class="right fas fa-angle-left"></i>
@@ -206,25 +214,25 @@
                                                 <ul class="nav nav-treeview">
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Reports" asp-action="TrialBalance" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-balance-scale"></i>
                                                             <p>@Localizer["TrialBalance"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Reports" asp-action="BalanceSheet" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-file-invoice-dollar"></i>
                                                             <p>@Localizer["BalanceSheet"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Reports" asp-action="IncomeStatement" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-money-bill-wave"></i>
                                                             <p>@Localizer["IncomeStatement"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Reports" asp-action="CashFlow" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-exchange-alt"></i>
                                                             <p>@Localizer["CashFlow"]</p>
                                                         </a>
                                                     </li>
@@ -236,7 +244,7 @@
                                         {
                                             <li class="nav-item">
                                                 <a asp-area="Accounting" asp-controller="PeriodManagement" asp-action="FiscalYears" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <i class="nav-icon fas fa-calendar-alt"></i>
                                                     <p>@Localizer["PeriodManagement"]</p>
                                                 </a>
                                             </li>
@@ -246,7 +254,7 @@
                                         {
                                             <li class="nav-item has-treeview">
                                                 <a href="#" class="nav-link">
-                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <i class="nav-icon fas fa-users"></i>
                                                     <p>
                                                         @Localizer["ClientsVendors"]
                                                         <i class="right fas fa-angle-left"></i>
@@ -255,13 +263,13 @@
                                                 <ul class="nav nav-treeview">
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Clients" asp-action="Index" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-user-tie"></i>
                                                             <p>@Localizer["Clients"]</p>
                                                         </a>
                                                     </li>
                                                     <li class="nav-item">
                                                         <a asp-area="Accounting" asp-controller="Vendors" asp-action="Index" class="nav-link">
-                                                            <i class="far fa-dot-circle nav-icon"></i>
+                                                            <i class="nav-icon fas fa-truck-loading"></i>
                                                             <p>@Localizer["Vendors"]</p>
                                                         </a>
                                                     </li>
@@ -271,6 +279,23 @@
                                     </ul>
                                 </li>
                             }
+
+                            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a asp-controller="Users" asp-action="Index" class="nav-link">
+                                        <i class="nav-icon fas fa-users-cog"></i>
+                                        <p>@Localizer["UserManagement"]</p>
+                                    </a>
+                                </li>
+                            }
+
+                            <li class="nav-item">
+                                <a asp-area="" asp-controller="Home" asp-action="Privacy" class="nav-link">
+                                    <i class="nav-icon fas fa-lock"></i>
+                                    <p>@Localizer["Privacy"]</p>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                     <!-- /.sidebar-menu -->
