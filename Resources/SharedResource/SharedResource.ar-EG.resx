@@ -292,4 +292,123 @@
   <data name="DeleteVendorConfirmation" xml:space="preserve">
     <value>هل أنت متأكد من حذف هذا المورد؟</value>
   </data>
+<!-- Cost Center Resources -->
+  <data name="CostCenters" xml:space="preserve">
+    <value>مراكز التكلفة</value>
+  </data>
+  <data name="CostCenter" xml:space="preserve">
+    <value>مركز التكلفة</value>
+  </data>
+  <data name="CreateCostCenter" xml:space="preserve">
+    <value>إنشاء مركز تكلفة</value>
+  </data>
+  <data name="EditCostCenter" xml:space="preserve">
+    <value>تعديل مركز التكلفة</value>
+  </data>
+  <data name="CostCenterDetails" xml:space="preserve">
+    <value>تفاصيل مركز التكلفة</value>
+  </data>
+  <data name="DeleteCostCenter" xml:space="preserve">
+    <value>حذف مركز التكلفة</value>
+  </data>
+  <data name="AssignAccounts" xml:space="preserve">
+    <value>تعيين الحسابات</value>
+  </data>
+  <data name="AssignAccountsTo" xml:space="preserve">
+    <value>تعيين الحسابات إلى</value>
+  </data>
+  <data name="AvailableAccounts" xml:space="preserve">
+    <value>الحسابات المتاحة</value>
+  </data>
+  <data name="AssignedAccounts" xml:space="preserve">
+    <value>الحسابات المعينة</value>
+  </data>
+  <data name="NoParent" xml:space="preserve">
+    <value>لا يوجد أصل</value>
+  </data>
+  <data name="Parent" xml:space="preserve">
+    <value>الأصل</value>
+  </data>
+  <data name="Children" xml:space="preserve">
+    <value>الفروع</value>
+  </data>
+  <data name="NoCostCenterChildren" xml:space="preserve">
+    <value>لا توجد فروع لمركز التكلفة</value>
+  </data>
+  <data name="NoAccountsAssigned" xml:space="preserve">
+    <value>لا توجد حسابات معينة</value>
+  </data>
+  <data name="NoJournalEntriesFound" xml:space="preserve">
+    <value>لا توجد قيود محاسبية</value>
+  </data>
+  <data name="SearchByCodeOrName" xml:space="preserve">
+    <value>البحث بالرمز أو الاسم</value>
+  </data>
+  <data name="CodeFormat" xml:space="preserve">
+    <value>الصيغة: 01-010-003 (الشركة-القسم-المشروع)</value>
+  </data>
+  <data name="CodeAlreadyExists" xml:space="preserve">
+    <value>هذا الرمز موجود بالفعل</value>
+  </data>
+  <data name="CodeCannotBeChangedAfterPostings" xml:space="preserve">
+    <value>لا يمكن تغيير الرمز بعد وجود قيود محاسبية</value>
+  </data>
+  <data name="CostCenterCannotBeItsOwnParent" xml:space="preserve">
+    <value>لا يمكن أن يكون مركز التكلفة أصلاً لنفسه</value>
+  </data>
+  <data name="DeleteWarning" xml:space="preserve">
+    <value>تحذير!</value>
+  </data>
+  <data name="DeleteCostCenterConfirmation" xml:space="preserve">
+    <value>هل أنت متأكد من رغبتك في حذف مركز التكلفة هذا؟ لا يمكن التراجع عن هذا الإجراء.</value>
+  </data>
+  <data name="DeleteNotAllowed" xml:space="preserve">
+    <value>الحذف غير مسموح</value>
+  </data>
+  <data name="CostCenterCannotBeDeleted" xml:space="preserve">
+    <value>لا يمكن حذف مركز التكلفة هذا للأسباب التالية:</value>
+  </data>
+  <data name="HasJournalEntries" xml:space="preserve">
+    <value>يحتوي على قيود محاسبية</value>
+  </data>
+  <data name="HasAccountAssociations" xml:space="preserve">
+    <value>يحتوي على ارتباطات حسابات</value>
+  </data>
+  <data name="HasChildCostCenters" xml:space="preserve">
+    <value>يحتوي على مراكز تكلفة فرعية</value>
+  </data>
+  <data name="ConsiderDeactivatingInstead" xml:space="preserve">
+    <value>فكر في تعطيل مركز التكلفة بدلاً من ذلك</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>تعطيل</value>
+  </data>
+  <data name="AccountsAssignedSuccessfully" xml:space="preserve">
+    <value>تم تعيين الحسابات بنجاح</value>
+  </data>
+  <data name="ErrorAssigningAccounts" xml:space="preserve">
+    <value>خطأ في تعيين الحسابات</value>
+  </data>
+  <data name="AccountsRemovedSuccessfully" xml:space="preserve">
+    <value>تمت إزالة الحسابات بنجاح</value>
+  </data>
+  <data name="ErrorRemovingAccounts" xml:space="preserve">
+    <value>خطأ في إزالة الحسابات</value>
+  </data>
+  <data name="BackToDetails" xml:space="preserve">
+    <value>العودة إلى التفاصيل</value>
+  </data>
+  <!-- Cost Center Types -->
+  <data name="Company" xml:space="preserve">
+    <value>شركة</value>
+  </data>
+  <data name="Branch" xml:space="preserve">
+    <value>فرع</value>
+  </data>
+  <data name="Department" xml:space="preserve">
+    <value>قسم</value>
+  </data>
+  <data name="Project" xml:space="preserve">
+    <value>مشروع</value>
+  </data>
 </root>

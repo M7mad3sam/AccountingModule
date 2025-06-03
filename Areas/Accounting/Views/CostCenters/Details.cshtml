@@ -1,0 +1,254 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.Models.CostCenter
+@using Microsoft.Extensions.Localization
+@using AspNetCoreMvcTemplate.Resources
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["CostCenterDetails"];
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">@Localizer["CostCenterDetails"]</h3>
+        <div class="card-tools">
+            <div class="btn-group">
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Accountant"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> @Localizer["Edit"]
+                    </a>
+                }
+                @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                {
+                    <a asp-action="AssignAccounts" asp-route-id="@Model.Id" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-link"></i> @Localizer["AssignAccounts"]
+                    </a>
+                }
+                <a asp-action="Index" class="btn btn-info btn-sm">
+                    <i class="fas fa-arrow-left"></i> @Localizer["BackToList"]
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">@Localizer["Code"]</dt>
+                    <dd class="col-sm-8">@Model.Code</dd>
+
+                    <dt class="col-sm-4">@Localizer["NameEn"]</dt>
+                    <dd class="col-sm-8">@Model.NameEn</dd>
+
+                    <dt class="col-sm-4">@Localizer["NameAr"]</dt>
+                    <dd class="col-sm-8" dir="rtl">@Model.NameAr</dd>
+
+                    <dt class="col-sm-4">@Localizer["Type"]</dt>
+                    <dd class="col-sm-8">@Localizer[Model.Type.ToString()]</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row">
+                    <dt class="col-sm-4">@Localizer["Parent"]</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Parent != null)
+                        {
+                            <a asp-action="Details" asp-route-id="@Model.Parent.Id">
+                                @(System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft ? Model.Parent.NameAr : Model.Parent.NameEn)
+                            </a>
+                        }
+                        else
+                        {
+                            <span>@Localizer["NoParent"]</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">@Localizer["Status"]</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge badge-success">@Localizer["Active"]</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-danger">@Localizer["Inactive"]</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">@Localizer["CreatedAt"]</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("g")</dd>
+
+                    <dt class="col-sm-4">@Localizer["UpdatedAt"]</dt>
+                    <dd class="col-sm-8">@(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("g") : "-")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <dl class="row">
+                    <dt class="col-sm-2">@Localizer["Description"]</dt>
+                    <dd class="col-sm-10">@(string.IsNullOrEmpty(Model.Description) ? "-" : Model.Description)</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Tabs for related data -->
+        <div class="mt-4">
+            <ul class="nav nav-tabs" id="costCenterTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="children-tab" data-toggle="tab" href="#children" role="tab">
+                        @Localizer["Children"]
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="accounts-tab" data-toggle="tab" href="#accounts" role="tab">
+                        @Localizer["AssignedAccounts"]
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="journal-entries-tab" data-toggle="tab" href="#journal-entries" role="tab">
+                        @Localizer["JournalEntries"]
+                    </a>
+                </li>
+            </ul>
+            <div class="tab-content" id="costCenterTabsContent">
+                <!-- Children Tab -->
+                <div class="tab-pane fade show active" id="children" role="tabpanel">
+                    <div class="mt-3">
+                        @if (Model.Children != null && Model.Children.Any())
+                        {
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["Code"]</th>
+                                        <th>@Localizer["Name"]</th>
+                                        <th>@Localizer["Type"]</th>
+                                        <th>@Localizer["Status"]</th>
+                                        <th>@Localizer["Actions"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var child in Model.Children)
+                                    {
+                                        <tr>
+                                            <td>@child.Code</td>
+                                            <td>@(System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft ? child.NameAr : child.NameEn)</td>
+                                            <td>@Localizer[child.Type.ToString()]</td>
+                                            <td>
+                                                @if (child.IsActive)
+                                                {
+                                                    <span class="badge badge-success">@Localizer["Active"]</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-danger">@Localizer["Inactive"]</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@child.Id" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                @Localizer["NoCostCenterChildren"]
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <!-- Accounts Tab -->
+                <div class="tab-pane fade" id="accounts" role="tabpanel">
+                    <div class="mt-3">
+                        @if (Model.AccountCostCenters != null && Model.AccountCostCenters.Any())
+                        {
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["AccountCode"]</th>
+                                        <th>@Localizer["AccountName"]</th>
+                                        <th>@Localizer["AccountType"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var acc in Model.AccountCostCenters)
+                                    {
+                                        <tr>
+                                            <td>@acc.Account.Code</td>
+                                            <td>@(System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft ? acc.Account.NameAr : acc.Account.NameEn)</td>
+                                            <td>@Localizer[acc.Account.Type.ToString()]</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                @Localizer["NoAccountsAssigned"]
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <!-- Journal Entries Tab -->
+                <div class="tab-pane fade" id="journal-entries" role="tabpanel">
+                    <div class="mt-3">
+                        @if (Model.JournalEntryLines != null && Model.JournalEntryLines.Any())
+                        {
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>@Localizer["Date"]</th>
+                                        <th>@Localizer["Reference"]</th>
+                                        <th>@Localizer["Account"]</th>
+                                        <th>@Localizer["Description"]</th>
+                                        <th>@Localizer["Debit"]</th>
+                                        <th>@Localizer["Credit"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var line in Model.JournalEntryLines)
+                                    {
+                                        <tr>
+                                            <td>@line.JournalEntry.Date.ToString("d")</td>
+                                            <td>@line.JournalEntry.Reference</td>
+                                            <td>@line.Account.Code - @(System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft ? line.Account.NameAr : line.Account.NameEn)</td>
+                                            <td>@line.Description</td>
+                                            <td class="text-right">@(line.DebitAmount > 0 ? line.DebitAmount.ToString("N2") : "")</td>
+                                            <td class="text-right">@(line.CreditAmount > 0 ? line.CreditAmount.ToString("N2") : "")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                @Localizer["NoJournalEntriesFound"]
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#costCenterTabs a').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+        });
+    </script>
+}

@@ -1,0 +1,113 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.Models.CostCenter
+@using Microsoft.Extensions.Localization
+@using AspNetCoreMvcTemplate.Resources
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["EditCostCenter"];
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">@Localizer["EditCostCenter"]</h3>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Code" class="control-label">@Localizer["Code"]</label>
+                        <input asp-for="Code" class="form-control" disabled="@ViewBag.HasJournalEntries" />
+                        <span asp-validation-for="Code" class="text-danger"></span>
+                        @if (ViewBag.HasJournalEntries)
+                        {
+                            <small class="form-text text-warning">@Localizer["CodeCannotBeChangedAfterPostings"]</small>
+                        }
+                        else
+                        {
+                            <small class="form-text text-muted">@Localizer["CodeFormat"]</small>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="Type" class="control-label">@Localizer["Type"]</label>
+                        <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<AspNetCoreMvcTemplate.Areas.Accounting.Models.CostCenterType>()">
+                            <option value="">@Localizer["SelectType"]</option>
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="NameEn" class="control-label">@Localizer["NameEn"]</label>
+                        <input asp-for="NameEn" class="form-control" />
+                        <span asp-validation-for="NameEn" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="NameAr" class="control-label">@Localizer["NameAr"]</label>
+                        <input asp-for="NameAr" class="form-control" dir="rtl" />
+                        <span asp-validation-for="NameAr" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="ParentId" class="control-label">@Localizer["Parent"]</label>
+                        <select asp-for="ParentId" class="form-control select2" asp-items="ViewBag.ParentId">
+                            <option value="">@Localizer["NoParent"]</option>
+                        </select>
+                        <span asp-validation-for="ParentId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="IsActive" class="control-label">@Localizer["Status"]</label>
+                        <div class="custom-control custom-switch">
+                            <input asp-for="IsActive" type="checkbox" class="custom-control-input" />
+                            <label class="custom-control-label" for="IsActive">@Localizer["Active"]</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label asp-for="Description" class="control-label">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> @Localizer["Save"]
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> @Localizer["BackToList"]
+                </a>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                    <i class="fas fa-info-circle"></i> @Localizer["Details"]
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(function () {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+        });
+    </script>
+}

@@ -1,0 +1,139 @@
+@model IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.Models.CostCenter>
+@using Microsoft.Extensions.Localization
+@using AspNetCoreMvcTemplate.Resources
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["CostCenters"];
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">@Localizer["CostCenters"]</h3>
+        <div class="card-tools">
+            @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                <a asp-action="Create" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> @Localizer["CreateNew"]
+                </a>
+            }
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <form asp-action="Index" method="get" class="form-inline">
+                    <div class="form-group mr-2">
+                        <label class="mr-2">@Localizer["Status"]:</label>
+                        <select name="isActive" class="form-control" onchange="this.form.submit()">
+                            @foreach (var item in ViewBag.ActiveFilter)
+                            {
+                                <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="@Localizer["SearchByCodeOrName"]">
+                    <div class="input-group-append">
+                        <button class="btn btn-default" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="costCentersTable">
+                <thead>
+                    <tr>
+                        <th>@Localizer["Code"]</th>
+                        <th>@Localizer["NameEn"]</th>
+                        <th>@Localizer["NameAr"]</th>
+                        <th>@Localizer["Type"]</th>
+                        <th>@Localizer["Parent"]</th>
+                        <th>@Localizer["Status"]</th>
+                        <th>@Localizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Code</td>
+                            <td>@item.NameEn</td>
+                            <td>@item.NameAr</td>
+                            <td>@Localizer[item.Type.ToString()]</td>
+                            <td>@(item.Parent != null ? (System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft ? item.Parent.NameAr : item.Parent.NameEn) : "-")</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-success">@Localizer["Active"]</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger">@Localizer["Inactive"]</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Accountant"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    }
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    }
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+                                    {
+                                        <a asp-action="AssignAccounts" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-link"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Initialize DataTable
+            var table = $('#costCentersTable').DataTable({
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+                "language": {
+                    "url": "@(System.Threading.Thread.CurrentThread.CurrentUICulture.Name.StartsWith("ar") 
+                        ? "/lib/datatables/i18n/Arabic.json" 
+                        : "/lib/datatables/i18n/English.json")"
+                }
+            });
+
+            // Custom search box
+            $('#searchInput').on('keyup', function () {
+                table.search(this.value).draw();
+            });
+        });
+    </script>
+}

@@ -292,4 +292,123 @@
   <data name="DeleteVendorConfirmation" xml:space="preserve">
     <value>Are you sure you want to delete this vendor?</value>
   </data>
+<!-- Cost Center Resources -->
+  <data name="CostCenters" xml:space="preserve">
+    <value>Cost Centers</value>
+  </data>
+  <data name="CostCenter" xml:space="preserve">
+    <value>Cost Center</value>
+  </data>
+  <data name="CreateCostCenter" xml:space="preserve">
+    <value>Create Cost Center</value>
+  </data>
+  <data name="EditCostCenter" xml:space="preserve">
+    <value>Edit Cost Center</value>
+  </data>
+  <data name="CostCenterDetails" xml:space="preserve">
+    <value>Cost Center Details</value>
+  </data>
+  <data name="DeleteCostCenter" xml:space="preserve">
+    <value>Delete Cost Center</value>
+  </data>
+  <data name="AssignAccounts" xml:space="preserve">
+    <value>Assign Accounts</value>
+  </data>
+  <data name="AssignAccountsTo" xml:space="preserve">
+    <value>Assign Accounts to</value>
+  </data>
+  <data name="AvailableAccounts" xml:space="preserve">
+    <value>Available Accounts</value>
+  </data>
+  <data name="AssignedAccounts" xml:space="preserve">
+    <value>Assigned Accounts</value>
+  </data>
+  <data name="NoParent" xml:space="preserve">
+    <value>No Parent</value>
+  </data>
+  <data name="Parent" xml:space="preserve">
+    <value>Parent</value>
+  </data>
+  <data name="Children" xml:space="preserve">
+    <value>Children</value>
+  </data>
+  <data name="NoCostCenterChildren" xml:space="preserve">
+    <value>No cost center children found</value>
+  </data>
+  <data name="NoAccountsAssigned" xml:space="preserve">
+    <value>No accounts assigned</value>
+  </data>
+  <data name="NoJournalEntriesFound" xml:space="preserve">
+    <value>No journal entries found</value>
+  </data>
+  <data name="SearchByCodeOrName" xml:space="preserve">
+    <value>Search by code or name</value>
+  </data>
+  <data name="CodeFormat" xml:space="preserve">
+    <value>Format: 01-010-003 (Company-Dept-Project)</value>
+  </data>
+  <data name="CodeAlreadyExists" xml:space="preserve">
+    <value>This code already exists</value>
+  </data>
+  <data name="CodeCannotBeChangedAfterPostings" xml:space="preserve">
+    <value>Code cannot be changed after journal entries exist</value>
+  </data>
+  <data name="CostCenterCannotBeItsOwnParent" xml:space="preserve">
+    <value>Cost center cannot be its own parent</value>
+  </data>
+  <data name="DeleteWarning" xml:space="preserve">
+    <value>Warning!</value>
+  </data>
+  <data name="DeleteCostCenterConfirmation" xml:space="preserve">
+    <value>Are you sure you want to delete this cost center? This action cannot be undone.</value>
+  </data>
+  <data name="DeleteNotAllowed" xml:space="preserve">
+    <value>Delete Not Allowed</value>
+  </data>
+  <data name="CostCenterCannotBeDeleted" xml:space="preserve">
+    <value>This cost center cannot be deleted for the following reasons:</value>
+  </data>
+  <data name="HasJournalEntries" xml:space="preserve">
+    <value>Has journal entries</value>
+  </data>
+  <data name="HasAccountAssociations" xml:space="preserve">
+    <value>Has account associations</value>
+  </data>
+  <data name="HasChildCostCenters" xml:space="preserve">
+    <value>Has child cost centers</value>
+  </data>
+  <data name="ConsiderDeactivatingInstead" xml:space="preserve">
+    <value>Consider deactivating the cost center instead</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="AccountsAssignedSuccessfully" xml:space="preserve">
+    <value>Accounts assigned successfully</value>
+  </data>
+  <data name="ErrorAssigningAccounts" xml:space="preserve">
+    <value>Error assigning accounts</value>
+  </data>
+  <data name="AccountsRemovedSuccessfully" xml:space="preserve">
+    <value>Accounts removed successfully</value>
+  </data>
+  <data name="ErrorRemovingAccounts" xml:space="preserve">
+    <value>Error removing accounts</value>
+  </data>
+  <data name="BackToDetails" xml:space="preserve">
+    <value>Back to Details</value>
+  </data>
+  <!-- Cost Center Types -->
+  <data name="Company" xml:space="preserve">
+    <value>Company</value>
+  </data>
+  <data name="Branch" xml:space="preserve">
+    <value>Branch</value>
+  </data>
+  <data name="Department" xml:space="preserve">
+    <value>Department</value>
+  </data>
+  <data name="Project" xml:space="preserve">
+    <value>Project</value>
+  </data>
 </root>

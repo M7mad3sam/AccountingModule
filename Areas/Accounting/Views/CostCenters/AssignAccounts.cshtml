@@ -1,0 +1,286 @@
+@model AspNetCoreMvcTemplate.Areas.Accounting.Models.CostCenter
+@using Microsoft.Extensions.Localization
+@using AspNetCoreMvcTemplate.Resources
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    ViewData["Title"] = Localizer["AssignAccounts"];
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">@Localizer["AssignAccountsTo"] @(System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft ? Model.NameAr : Model.NameEn) (@Model.Code)</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">@Localizer["AvailableAccounts"]</h3>
+                        <div class="card-tools">
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="searchAvailable" class="form-control" placeholder="@Localizer["Search"]">
+                                <div class="input-group-append">
+                                    <div class="btn btn-default">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="availableAccounts" style="height: 400px; overflow-y: auto;">
+                            <!-- Available accounts will be loaded here via AJAX -->
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" id="assignSelected" class="btn btn-primary btn-sm">
+                            <i class="fas fa-arrow-right"></i> @Localizer["Assign"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-center justify-content-center">
+                <div class="btn-group-vertical">
+                    <button type="button" id="assignAll" class="btn btn-outline-primary mb-2">
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                    <button type="button" id="removeAll" class="btn btn-outline-danger mb-2">
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">@Localizer["AssignedAccounts"]</h3>
+                        <div class="card-tools">
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="searchAssigned" class="form-control" placeholder="@Localizer["Search"]">
+                                <div class="input-group-append">
+                                    <div class="btn btn-default">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="assignedAccounts" style="height: 400px; overflow-y: auto;">
+                            <!-- Assigned accounts will be loaded here via AJAX -->
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" id="removeSelected" class="btn btn-danger btn-sm">
+                            <i class="fas fa-arrow-left"></i> @Localizer["Remove"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3">
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> @Localizer["BackToDetails"]
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            const costCenterId = '@Model.Id';
+            let availableAccounts = [];
+            let assignedAccounts = [];
+
+            // Load available and assigned accounts
+            loadAccounts();
+
+            // Search functionality
+            $('#searchAvailable').on('keyup', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                filterAccounts('#availableAccounts .list-group-item', searchTerm);
+            });
+
+            $('#searchAssigned').on('keyup', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                filterAccounts('#assignedAccounts .list-group-item', searchTerm);
+            });
+
+            // Assign selected accounts
+            $('#assignSelected').on('click', function() {
+                const selectedIds = [];
+                $('#availableAccounts .list-group-item.active').each(function() {
+                    selectedIds.push($(this).data('id'));
+                });
+                
+                if (selectedIds.length > 0) {
+                    assignAccounts(selectedIds);
+                }
+            });
+
+            // Remove selected accounts
+            $('#removeSelected').on('click', function() {
+                const selectedIds = [];
+                $('#assignedAccounts .list-group-item.active').each(function() {
+                    selectedIds.push($(this).data('id'));
+                });
+                
+                if (selectedIds.length > 0) {
+                    removeAccounts(selectedIds);
+                }
+            });
+
+            // Assign all accounts
+            $('#assignAll').on('click', function() {
+                const allIds = [];
+                $('#availableAccounts .list-group-item').each(function() {
+                    allIds.push($(this).data('id'));
+                });
+                
+                if (allIds.length > 0) {
+                    assignAccounts(allIds);
+                }
+            });
+
+            // Remove all accounts
+            $('#removeAll').on('click', function() {
+                const allIds = [];
+                $('#assignedAccounts .list-group-item').each(function() {
+                    allIds.push($(this).data('id'));
+                });
+                
+                if (allIds.length > 0) {
+                    removeAccounts(allIds);
+                }
+            });
+
+            // Helper functions
+            function loadAccounts() {
+                // In a real implementation, this would be an AJAX call to the server
+                // For this example, we'll simulate the data
+                
+                // Simulate available accounts
+                $('#availableAccounts').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
+                
+                // Simulate API call to get available accounts
+                setTimeout(() => {
+                    // This would be replaced with actual AJAX call
+                    const mockAvailableAccounts = [
+                        { id: '1', code: '1010', name: 'Cash', type: 'Asset' },
+                        { id: '2', code: '1020', name: 'Bank Account', type: 'Asset' },
+                        { id: '3', code: '2010', name: 'Accounts Payable', type: 'Liability' },
+                        { id: '4', code: '3010', name: 'Capital', type: 'Equity' },
+                        { id: '5', code: '4010', name: 'Sales Revenue', type: 'Revenue' }
+                    ];
+                    
+                    availableAccounts = mockAvailableAccounts;
+                    renderAccountsList('#availableAccounts', availableAccounts, true);
+                }, 500);
+                
+                // Simulate assigned accounts
+                $('#assignedAccounts').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
+                
+                // Simulate API call to get assigned accounts
+                setTimeout(() => {
+                    // This would be replaced with actual AJAX call
+                    const mockAssignedAccounts = [
+                        { id: '6', code: '5010', name: 'Salaries Expense', type: 'Expense' },
+                        { id: '7', code: '5020', name: 'Rent Expense', type: 'Expense' }
+                    ];
+                    
+                    assignedAccounts = mockAssignedAccounts;
+                    renderAccountsList('#assignedAccounts', assignedAccounts, false);
+                }, 500);
+            }
+
+            function renderAccountsList(selector, accounts, isAvailable) {
+                const $container = $(selector);
+                
+                if (accounts.length === 0) {
+                    $container.html(`<div class="text-center text-muted">${isAvailable ? '@Localizer["NoAccountsAvailable"]' : '@Localizer["NoAccountsAssigned"]'}</div>`);
+                    return;
+                }
+                
+                let html = '';
+                accounts.forEach(account => {
+                    html += `
+                        <a href="#" class="list-group-item list-group-item-action" data-id="${account.id}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">${account.code} - ${account.name}</h5>
+                                <small>${account.type}</small>
+                            </div>
+                        </a>
+                    `;
+                });
+                
+                $container.html(html);
+                
+                // Add click handler for selection
+                $(`${selector} .list-group-item`).on('click', function(e) {
+                    e.preventDefault();
+                    $(this).toggleClass('active');
+                });
+            }
+
+            function filterAccounts(selector, searchTerm) {
+                $(selector).each(function() {
+                    const text = $(this).text().toLowerCase();
+                    $(this).toggle(text.indexOf(searchTerm) > -1);
+                });
+            }
+
+            function assignAccounts(accountIds) {
+                // In a real implementation, this would be an AJAX call to the server
+                // For this example, we'll simulate the response
+                
+                // Show loading
+                $('#availableAccounts, #assignedAccounts').addClass('disabled');
+                
+                // Simulate API call
+                setTimeout(() => {
+                    // This would be replaced with actual AJAX call
+                    // Move accounts from available to assigned
+                    const accountsToMove = availableAccounts.filter(a => accountIds.includes(a.id));
+                    availableAccounts = availableAccounts.filter(a => !accountIds.includes(a.id));
+                    assignedAccounts = [...assignedAccounts, ...accountsToMove];
+                    
+                    // Re-render lists
+                    renderAccountsList('#availableAccounts', availableAccounts, true);
+                    renderAccountsList('#assignedAccounts', assignedAccounts, false);
+                    
+                    // Show success message
+                    toastr.success('@Localizer["AccountsAssignedSuccessfully"]');
+                    
+                    $('#availableAccounts, #assignedAccounts').removeClass('disabled');
+                }, 500);
+            }
+
+            function removeAccounts(accountIds) {
+                // In a real implementation, this would be an AJAX call to the server
+                // For this example, we'll simulate the response
+                
+                // Show loading
+                $('#availableAccounts, #assignedAccounts').addClass('disabled');
+                
+                // Simulate API call
+                setTimeout(() => {
+                    // This would be replaced with actual AJAX call
+                    // Move accounts from assigned to available
+                    const accountsToMove = assignedAccounts.filter(a => accountIds.includes(a.id));
+                    assignedAccounts = assignedAccounts.filter(a => !accountIds.includes(a.id));
+                    availableAccounts = [...availableAccounts, ...accountsToMove];
+                    
+                    // Re-render lists
+                    renderAccountsList('#availableAccounts', availableAccounts, true);
+                    renderAccountsList('#assignedAccounts', assignedAccounts, false);
+                    
+                    // Show success message
+                    toastr.success('@Localizer["AccountsRemovedSuccessfully"]');
+                    
+                    $('#availableAccounts, #assignedAccounts').removeClass('disabled');
+                }, 500);
+            }
+        });
+    </script>
+}
