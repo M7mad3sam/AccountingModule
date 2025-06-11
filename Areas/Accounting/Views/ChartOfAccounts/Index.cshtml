@@ -15,6 +15,40 @@
         </div>
     </div>
     <div class="card-body">
+        <!-- Modal for linking cost centers -->
+        <div class="modal fade" id="linkCostCenterModal" tabindex="-1" role="dialog" aria-labelledby="linkCostCenterModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="linkCostCenterModalLabel">@Localizer["LinkCostCenter"]</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="linkCostCenterForm" asp-action="LinkCostCenter" asp-controller="ChartOfAccounts" asp-area="Accounting">
+                            <input type="hidden" id="accountId" name="accountId" />
+                            <div class="form-group">
+                                <label for="costCenterId">@Localizer["SelectCostCenter"]</label>
+                                <select id="costCenterId" name="costCenterId" class="form-control select2" style="width: 100%;">
+                                    <!-- Cost centers will be loaded dynamically or populated server-side if needed -->
+                                    <option value="">@Localizer["SelectCostCenter"]</option>
+                                    @{
+                                        var costCenters = ViewBag.AvailableCostCenters as IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.Models.CostCenter> ?? new List<AspNetCoreMvcTemplate.Areas.Accounting.Models.CostCenter>();
+                                        foreach (var cc in costCenters)
+                                        {
+                                            <option value="@cc.Id">@cc.Code - @cc.NameEn</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">@Localizer["Link"]</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">@Localizer["Cancel"]</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
                 <thead>
@@ -58,9 +92,9 @@
                                     <a asp-action="Delete" asp-route-id="@account.Id" class="btn btn-danger btn-sm">
                                         <i class="fas fa-trash"></i>
                                     </a>
-                                    <a asp-action="CostCenters" asp-route-id="@account.Id" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-sitemap"></i>
-                                    </a>
+                                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#linkCostCenterModal" data-account-id="@account.Id">
+                                        <i class="fas fa-link"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -82,6 +116,33 @@
                 "info": true,
                 "autoWidth": false,
                 "responsive": true,
+            });
+
+            // Handle modal for linking cost centers
+            $('#linkCostCenterModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var accountId = button.data('account-id');
+                var modal = $(this);
+                modal.find('#accountId').val(accountId);
+                // Optionally, load cost centers dynamically via AJAX here if needed
+            });
+
+            $('#linkCostCenterForm').submit(function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (response) {
+                        $('#linkCostCenterModal').modal('hide');
+                        location.reload(); // Reload the page to reflect changes
+                    },
+                    error: function (xhr) {
+                        var errorMessage = xhr.responseText || 'Error linking cost center';
+                        alert(errorMessage);
+                    }
+                });
             });
         });
     </script>

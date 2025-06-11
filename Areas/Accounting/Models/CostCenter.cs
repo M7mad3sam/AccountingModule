@@ -38,6 +38,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public ICollection<AccountCostCenter> AccountCostCenters { get; set; }
         [ValidateNever]
         public ICollection<JournalEntryLine> JournalEntryLines { get; set; }
+        
+        public int Level { get; set; } = 0; // 0 represents root level
     }
 
     public enum CostCenterType

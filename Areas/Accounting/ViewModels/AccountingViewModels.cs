@@ -57,4 +57,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [ValidateNever]
         public IEnumerable<SelectListItem> Levels { get; set; }
     }
+
+    public class AssignAccountsVm
+    {
+        public Guid CostCenterId { get; set; }
+        public List<SelectListItem> AvailableAccounts { get; set; }
+        public List<SelectListItem> AssignedAccounts { get; set; }
+        public List<Guid> SelectedIds { get; set; }
+    }
 }

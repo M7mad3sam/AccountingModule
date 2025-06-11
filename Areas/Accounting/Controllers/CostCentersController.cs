@@ -217,10 +217,57 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 return NotFound();
             }
 
-            // TODO: Implement account assignment functionality
-            // This would require additional service methods to get accounts and their associations
+            var accounts = await _costCenterService.GetAccountsAsync();
+            var linkedAccountIds = (await _costCenterService.GetCostCenterAccountsAsync(id))
+                .Select(acc => acc.AccountId)
+                .ToList();
 
-            return View(costCenter);
+            var allAccounts = accounts
+                .Take(500)
+                .Select(a => new SelectListItem
+                {
+                    Value = a.Id.ToString(),
+                    Text = $"{a.Code} - {a.NameEn}"
+                })
+                .ToList();
+
+            var viewModel = new AssignAccountsVm
+            {
+                CostCenterId = id,
+                AvailableAccounts = allAccounts.Where(a => !linkedAccountIds.Contains(Guid.Parse(a.Value))).ToList(),
+                AssignedAccounts = allAccounts.Where(a => linkedAccountIds.Contains(Guid.Parse(a.Value))).ToList(),
+                SelectedIds = linkedAccountIds
+            };
+
+            return View("AssignAccounts", viewModel);
+        }
+
+        // POST: Accounting/CostCenters/AssignAccounts/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> AssignAccounts(Guid id, List<Guid> selectedIds)
+        {
+            var costCenter = await _costCenterService.GetCostCenterByIdAsync(id);
+            if (costCenter == null)
+            {
+                return NotFound();
+            }
+
+            if (selectedIds == null)
+            {
+                selectedIds = new List<Guid>();
+            }
+
+            try
+            {
+                await _costCenterService.AssignAccountsToCostCenterAsync(id, selectedIds);
+                return Json(new { success = true, message = _localizer["Accounts assigned successfully"] });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = _localizer["Error assigning accounts"] + ": " + ex.Message });
+            }
         }
 
         // Helper methods

@@ -88,6 +88,40 @@
                 </div>
             </div>
         }
+
+        @{
+            var linkedCostCenters = ViewBag.LinkedCostCenters as IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.Models.AccountCostCenter>;
+            if (linkedCostCenters != null && linkedCostCenters.Any())
+            {
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Linked Cost Centers</h4>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var acc in linkedCostCenters)
+                                {
+                                    if (acc.CostCenter != null)
+                                    {
+                                        <tr>
+                                            <td>@acc.CostCenter.Code</td>
+                                            <td>@acc.CostCenter.NameEn</td>
+                                            <td>@(acc.CostCenter.IsActive ? "Active" : "Inactive")</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        }
     </div>
     <div class="card-footer">
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">

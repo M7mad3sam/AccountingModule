@@ -33,6 +33,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         public async Task<IActionResult> Index()
         {
             var accounts = await _chartOfAccountsService.GetAccountHierarchyAsync();
+            var costCenters = await _costCenterService.GetCostCentersAsync(isActive: true);
+            ViewBag.AvailableCostCenters = costCenters;
             return View(accounts);
         }
 
@@ -41,6 +43,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             var account = await _chartOfAccountsService.GetAccountByIdAsync(id);
             if (account == null)
                 return NotFound();
+
+            var linkedCostCenters = await _chartOfAccountsService.GetAccountCostCentersAsync(id);
+            ViewBag.LinkedCostCenters = linkedCostCenters;
 
             return View(account);
         }
@@ -198,10 +203,38 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LinkCostCenter(Guid accountId, Guid costCenterId)
+        {
+            // Validate that both account and cost center exist
+            var account = await _chartOfAccountsService.GetAccountByIdAsync(accountId);
+            if (account == null)
+            {
+                return NotFound(_localizer["Account not found"]);
+            }
+
+            var costCenter = await _costCenterService.GetCostCenterByIdAsync(costCenterId);
+            if (costCenter == null)
+            {
+                return NotFound(_localizer["Cost center not found"]);
+            }
+
+            // Check if the link already exists
+            var existingLinks = await _chartOfAccountsService.GetAccountCostCentersAsync(accountId);
+            if (existingLinks.Any(acc => acc.CostCenterId == costCenterId))
+            {
+                return BadRequest(_localizer["Already linked"]);
+            }
+
+            // Persist the new link
+            await _chartOfAccountsService.AddAccountCostCenterAsync(accountId, costCenterId);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddCostCenter(Guid accountId, Guid costCenterId)
         {
-            await _chartOfAccountsService.AddAccountCostCenterAsync(accountId, costCenterId);
-            return RedirectToAction(nameof(CostCenters), new { id = accountId });
+            return await LinkCostCenter(accountId, costCenterId);
         }
 
         [HttpPost]
