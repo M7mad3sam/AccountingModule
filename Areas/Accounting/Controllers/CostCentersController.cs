@@ -217,28 +217,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 return NotFound();
             }
 
-            var accounts = await _costCenterService.GetAccountsAsync();
-            var linkedAccountIds = (await _costCenterService.GetCostCenterAccountsAsync(id))
-                .Select(acc => acc.AccountId)
-                .ToList();
-
-            var allAccounts = accounts
-                .Take(500)
-                .Select(a => new SelectListItem
-                {
-                    Value = a.Id.ToString(),
-                    Text = $"{a.Code} - {a.NameEn}"
-                })
-                .ToList();
-
-            var viewModel = new AssignAccountsVm
-            {
-                CostCenterId = id,
-                AvailableAccounts = allAccounts.Where(a => !linkedAccountIds.Contains(Guid.Parse(a.Value))).ToList(),
-                AssignedAccounts = allAccounts.Where(a => linkedAccountIds.Contains(Guid.Parse(a.Value))).ToList(),
-                SelectedIds = linkedAccountIds
-            };
-
+            var viewModel = await _costCenterService.GetAssignAccountsViewModelAsync(id, 500);
             return View("AssignAccounts", viewModel);
         }
 
@@ -280,21 +259,23 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         private async Task PopulateParentDropdown(Guid? selectedId = null, Guid? excludeId = null)
         {
             var costCenters = await _costCenterService.GetAllCostCentersAsync();
-            
+            var filteredCostCenters = costCenters;
+
             // Exclude the current cost center from the parent dropdown to prevent cycles
             if (excludeId.HasValue)
             {
-                costCenters = costCenters.Where(cc => cc.Id != excludeId.Value);
+                filteredCostCenters = costCenters.Where(cc => cc.Id != excludeId.Value).ToList();
             }
 
             var isRtl = System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft;
-            
+            var selectListItems = filteredCostCenters.Select(cc => new
+            {
+                Id = cc.Id,
+                Name = isRtl ? cc.NameAr : cc.NameEn
+            }).ToList();
+
             ViewBag.ParentId = new SelectList(
-                costCenters.Select(cc => new
-                {
-                    Id = cc.Id,
-                    Name = isRtl ? cc.NameAr : cc.NameEn
-                }),
+                selectListItems,
                 "Id",
                 "Name",
                 selectedId

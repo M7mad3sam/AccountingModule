@@ -36,7 +36,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Required]
         [Display(Name = "Posting Date")]
         [DataType(DataType.Date)]
-        public DateTime PostingDate { get; set; } = DateTime.Today;
+        public DateOnly PostingDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
         
         [Display(Name = "Fiscal Period")]
         public Guid FiscalPeriodId { get; set; }

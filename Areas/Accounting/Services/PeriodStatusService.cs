@@ -42,5 +42,24 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             // Return the IsClosed status
             return fiscalPeriod.IsClosed;
         }
+
+        /// <summary>
+        /// Checks if a fiscal period is closed for a given period ID
+        /// </summary>
+        /// <param name="periodId">The ID of the period to check</param>
+        /// <returns>True if the period is closed, false otherwise</returns>
+        public async Task<bool> IsPeriodClosedAsync(Guid periodId)
+        {
+            var fiscalPeriod = await _fiscalPeriodRepository.GetByIdAsync(periodId);
+            
+            // If period not found, consider it closed
+            if (fiscalPeriod == null)
+            {
+                return true;
+            }
+            
+            // Return the IsClosed status
+            return fiscalPeriod.IsClosed;
+        }
     }
 }

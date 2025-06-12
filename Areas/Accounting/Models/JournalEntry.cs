@@ -13,16 +13,24 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         [StringLength(20)]
         public string Number { get; set; }
         
+        /// <summary>
+        /// Timestamp when the entry was first saved (local time).
+        /// </summary>
         [Required]
-        public DateTime Date { get; set; }
-        
-        [Required]
-        [DataType(DataType.Date)]
         public DateTime EntryDate { get; set; }
         
+        /// <summary>
+        /// Ledger-effective date; used for period posting & reports.
+        /// </summary>
         [Required]
         [DataType(DataType.Date)]
         public DateTime PostingDate { get; set; }
+        
+        /// <summary>
+        /// Calendar date of the underlying business event (e.g., invoice date).
+        /// </summary>
+        [DataType(DataType.Date)]
+        public DateTime TransactionDate { get; set; }
         
         [StringLength(500)]
         public string? Description { get; set; }
@@ -75,11 +83,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public string CreatedById { get; set; }
         public ApplicationUser CreatedBy { get; set; }
         
+        /// <summary>
+        /// Record-creation audit stamp.
+        /// </summary>
         [Required]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedUtc { get; set; }
         
         // Renamed to match service usage
-        public DateTime CreatedDate { get => CreatedAt; set => CreatedAt = value; }
+        public DateTime CreatedDate { get => CreatedUtc; set => CreatedUtc = value; }
         
         public string ModifiedById { get; set; }
         public ApplicationUser ModifiedBy { get; set; }
@@ -89,10 +100,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public string? ApprovedById { get; set; }
         public ApplicationUser ApprovedBy { get; set; }
         
-        public DateTime? ApprovedAt { get; set; }
+        /// <summary>
+        /// UTC timestamp when Manager approved the entry.
+        /// </summary>
+        public DateTime? ApprovedUtc { get; set; }
         
         // Renamed to match service usage
-        public DateTime? ApprovedDate { get => ApprovedAt; set => ApprovedAt = value; }
+        public DateTime? ApprovedDate { get => ApprovedUtc; set => ApprovedUtc = value; }
         
         [StringLength(500)]
         public string? ApprovalNotes { get; set; }

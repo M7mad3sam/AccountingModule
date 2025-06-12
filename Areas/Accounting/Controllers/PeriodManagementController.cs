@@ -185,7 +185,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 return NotFound();
             }
 
-            var fiscalPeriods = await _periodManagementService.GetFiscalPeriodsAsync(fiscalYearId);
+            var fiscalPeriods = await _periodManagementService.GetFiscalPeriodsAsync(null, fiscalYearId);
             
             var model = new FiscalPeriodsViewModel
             {

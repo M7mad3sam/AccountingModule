@@ -219,7 +219,7 @@
                                     @foreach (var line in Model.JournalEntryLines)
                                     {
                                         <tr>
-                                            <td>@line.JournalEntry.Date.ToString("d")</td>
+                                            <td>@line.JournalEntry.PostingDate.ToString("d")</td>
                                             <td>@line.JournalEntry.Reference</td>
                                             <td>@line.Account.Code - @(System.Threading.Thread.CurrentThread.CurrentUICulture.TextInfo.IsRightToLeft ? line.Account.NameAr : line.Account.NameEn)</td>
                                             <td>@line.Description</td>

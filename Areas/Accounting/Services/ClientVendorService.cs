@@ -2,39 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
-using AspNetCoreMvcTemplate.Data.Repository;
-using System.Linq;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
+using AspNetCoreMvcTemplate.Data.Repository;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
     public interface IClientVendorService
     {
         // Client methods
-        Task<IEnumerable<Client>> GetClientsAsync(string searchTerm = null, ClientType? clientType = null, bool? isActive = null);
         Task<Client> GetClientByIdAsync(Guid id);
-        Task<Client> GetClientByCodeAsync(string code);
-        Task AddClientAsync(Client client);
+        Task<IEnumerable<Client>> GetClientsAsync(bool? isActive = null);
+        Task<IEnumerable<Client>> GetClientsAsync(string searchTerm = null, ClientType? clientType = null, bool? isActive = null);
+        Task<Client> CreateClientAsync(Client client);
         Task UpdateClientAsync(Client client);
         Task DeleteClientAsync(Guid id);
-        Task<IEnumerable<ClientType>> GetClientTypesAsync();
-        
-        // Missing method that's called in ClientsController
-        Task CreateClientAsync(Client client);
-        
+        Task<bool> IsClientCodeUniqueAsync(string code, Guid? id = null);
+        Task<bool> CanDeleteClientAsync(Guid id);
+        Task<IEnumerable<SelectListItem>> GetClientSelectListAsync(bool? isActive = null);
+
         // Vendor methods
-        Task<IEnumerable<Vendor>> GetVendorsAsync(string searchTerm = null, string vendorType = null, bool? isActive = null, bool? subjectToWithholdingTax = null);
         Task<Vendor> GetVendorByIdAsync(Guid id);
-        Task<Vendor> GetVendorByCodeAsync(string code);
-        Task AddVendorAsync(Vendor vendor);
+        Task<IEnumerable<Vendor>> GetVendorsAsync(bool? isActive = null);
+        Task<IEnumerable<Vendor>> GetVendorsAsync(string searchTerm = null, string vendorType = null, bool? isActive = null, bool? subjectToWithholdingTax = null);
+        Task<Vendor> CreateVendorAsync(Vendor vendor);
         Task UpdateVendorAsync(Vendor vendor);
         Task DeleteVendorAsync(Guid id);
+        Task<bool> IsVendorCodeUniqueAsync(string code, Guid? id = null);
+        Task<bool> CanDeleteVendorAsync(Guid id);
+        Task<IEnumerable<SelectListItem>> GetVendorSelectListAsync(bool? isActive = null);
         Task<IEnumerable<string>> GetVendorTypesAsync();
-        
-        // Missing method for vendor creation that might be needed for consistency
-        Task CreateVendorAsync(Vendor vendor);
-        
-        // Missing method for account retrieval that might be needed
-        Task<IEnumerable<Account>> GetVendorAccountsAsync();
     }
 
     public class ClientVendorService : IClientVendorService
@@ -42,235 +41,194 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         private readonly IRepository<Client> _clientRepository;
         private readonly IRepository<Vendor> _vendorRepository;
         private readonly IRepository<JournalEntry> _journalEntryRepository;
-        private readonly IRepository<Account> _accountRepository;
-        private readonly IAuditService _auditService;
 
         public ClientVendorService(
             IRepository<Client> clientRepository,
             IRepository<Vendor> vendorRepository,
-            IRepository<JournalEntry> journalEntryRepository,
-            IRepository<Account> accountRepository,
-            IAuditService auditService)
+            IRepository<JournalEntry> journalEntryRepository)
         {
             _clientRepository = clientRepository;
             _vendorRepository = vendorRepository;
             _journalEntryRepository = journalEntryRepository;
-            _accountRepository = accountRepository;
-            _auditService = auditService;
         }
 
-        #region Client Methods
-
-        public async Task<IEnumerable<Client>> GetClientsAsync(string searchTerm = null, ClientType? clientType = null, bool? isActive = null)
-        {
-            var specification = new Specification<Client>(c => true);
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                searchTerm = searchTerm.ToLower();
-                specification = specification.And(c => 
-                    c.Code.ToLower().Contains(searchTerm) || 
-                    c.NameEn.ToLower().Contains(searchTerm) || 
-                    c.NameAr.ToLower().Contains(searchTerm) ||
-                    (c.TaxRegistrationNumber != null && c.TaxRegistrationNumber.ToLower().Contains(searchTerm)));
-            }
-
-            if (clientType.HasValue)
-            {
-                specification = specification.And(c => c.ClientType == clientType.Value);
-            }
-
-            if (isActive.HasValue)
-            {
-                specification = specification.And(c => c.IsActive == isActive.Value);
-            }
-
-            return await _clientRepository.FindAllAsync(specification);
-        }
-
+        // Client methods
         public async Task<Client> GetClientByIdAsync(Guid id)
         {
             return await _clientRepository.GetByIdAsync(id);
         }
 
-        public async Task<Client> GetClientByCodeAsync(string code)
+        public async Task<IEnumerable<Client>> GetClientsAsync(bool? isActive = null)
         {
-            var clients = await _clientRepository.FindAllAsync(c => c.Code == code);
-            return clients.FirstOrDefault();
-        }
-
-        // Implementation of the missing CreateClientAsync method
-        public async Task CreateClientAsync(Client client)
-        {
-            // This method should delegate to AddClientAsync for consistency
-            await AddClientAsync(client);
-        }
-
-        public async Task AddClientAsync(Client client)
-        {
-            // Check if code is unique
-            var existingClient = await GetClientByCodeAsync(client.Code);
-            if (existingClient != null)
+            if (isActive.HasValue)
             {
-                throw new InvalidOperationException($"A client with code '{client.Code}' already exists");
+                return await _clientRepository.FindAllAsync(c => c.IsActive == isActive.Value);
+            }
+            return await _clientRepository.GetAllAsync();
+        }
+
+        public async Task<IEnumerable<Client>> GetClientsAsync(string searchTerm = null, ClientType? clientType = null, bool? isActive = null)
+        {
+            var query = _clientRepository.GetAllAsync().Result.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(c => c.Code.Contains(searchTerm) || c.NameEn.Contains(searchTerm) || c.NameAr.Contains(searchTerm));
             }
 
+            if (clientType.HasValue)
+            {
+                query = query.Where(c => c.ClientType == clientType.Value);
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(c => c.IsActive == isActive.Value);
+            }
+
+            return await Task.FromResult(query.ToList());
+        }
+
+        public async Task<Client> CreateClientAsync(Client client)
+        {
             await _clientRepository.AddAsync(client);
             await _clientRepository.SaveAsync();
-            await _auditService.LogActivityAsync("Client", "Create", $"Created client: {client.NameEn}");
+            return client;
         }
 
         public async Task UpdateClientAsync(Client client)
         {
-            // Check if code is unique (except for this client)
-            var existingClient = await GetClientByCodeAsync(client.Code);
-            if (existingClient != null && existingClient.Id != client.Id)
-            {
-                throw new InvalidOperationException($"A client with code '{client.Code}' already exists");
-            }
-
-            await _clientRepository.UpdateAsync(client);
+            _clientRepository.Update(client);
             await _clientRepository.SaveAsync();
-            await _auditService.LogActivityAsync("Client", "Update", $"Updated client: {client.NameEn}");
         }
 
         public async Task DeleteClientAsync(Guid id)
         {
             var client = await _clientRepository.GetByIdAsync(id);
-            if (client == null)
+            if (client != null)
             {
-                throw new ArgumentException("Client not found");
+                _clientRepository.Delete(client);
+                await _clientRepository.SaveAsync();
             }
-            // Check if there are journal entries referencing this client
-            var journalEntries = await _journalEntryRepository.FindAllAsync(j => j.ClientId == id);
-            if (journalEntries.Any())
-            {
-                throw new InvalidOperationException("Cannot delete a client with associated journal entries");
-            }
-            await _clientRepository.DeleteAsync(id);
-            await _clientRepository.SaveAsync();
-            await _auditService.LogActivityAsync("Client", "Delete", $"Deleted client: {client.NameEn}");
         }
 
-        public async Task<IEnumerable<ClientType>> GetClientTypesAsync()
+        public async Task<bool> IsClientCodeUniqueAsync(string code, Guid? id = null)
         {
-            return Enum.GetValues(typeof(ClientType)).Cast<ClientType>();
+            var spec = new ClientByCodeSpecification(code);
+            var existingClient = await _clientRepository.FindAsync(spec.Criteria);
+            
+            return existingClient == null || (id.HasValue && existingClient.Id == id.Value);
         }
 
-        #endregion
-
-        #region Vendor Methods
-
-        public async Task<IEnumerable<Vendor>> GetVendorsAsync(string searchTerm = null, string vendorType = null, bool? isActive = null, bool? subjectToWithholdingTax = null)
+        public async Task<bool> CanDeleteClientAsync(Guid id)
         {
-            var specification = new Specification<Vendor>(v => true);
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                searchTerm = searchTerm.ToLower();
-                specification = specification.And(v => 
-                    v.Code.ToLower().Contains(searchTerm) || 
-                    v.NameEn.ToLower().Contains(searchTerm) || 
-                    v.NameAr.ToLower().Contains(searchTerm) ||
-                    (v.TaxRegistrationNumber != null && v.TaxRegistrationNumber.ToLower().Contains(searchTerm)));
-            }
-            if (!string.IsNullOrWhiteSpace(vendorType))
-            {
-                specification = specification.And(v => v.Type.ToString() == vendorType);
-            }
-            if (isActive.HasValue)
-            {
-                specification = specification.And(v => v.IsActive == isActive.Value);
-            }
-            if (subjectToWithholdingTax.HasValue)
-            {
-                specification = specification.And(v => v.SubjectToWithholdingTax == subjectToWithholdingTax.Value);
-            }
-            return await _vendorRepository.FindAllAsync(specification);
+            return !await _journalEntryRepository.ExistsAsync(je => je.ClientId == id);
         }
 
+        public async Task<IEnumerable<SelectListItem>> GetClientSelectListAsync(bool? isActive = null)
+        {
+            var clients = await GetClientsAsync(isActive);
+            return clients.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code} - {c.NameEn}"
+            }).ToList();
+        }
+
+        // Vendor methods
         public async Task<Vendor> GetVendorByIdAsync(Guid id)
         {
             return await _vendorRepository.GetByIdAsync(id);
         }
 
-        public async Task<Vendor> GetVendorByCodeAsync(string code)
+        public async Task<IEnumerable<Vendor>> GetVendorsAsync(bool? isActive = null)
         {
-            var vendors = await _vendorRepository.FindAllAsync(v => v.Code == code);
-            return vendors.FirstOrDefault();
-        }
-
-        // Implementation of the missing CreateVendorAsync method
-        public async Task CreateVendorAsync(Vendor vendor)
-        {
-            // This method should delegate to AddVendorAsync for consistency
-            await AddVendorAsync(vendor);
-        }
-
-        public async Task AddVendorAsync(Vendor vendor)
-        {
-            // Check if code is unique
-            var existingVendor = await GetVendorByCodeAsync(vendor.Code);
-            if (existingVendor != null)
+            if (isActive.HasValue)
             {
-                throw new InvalidOperationException($"A vendor with code '{vendor.Code}' already exists");
+                return await _vendorRepository.FindAllAsync(v => v.IsActive == isActive.Value);
             }
+            return await _vendorRepository.GetAllAsync();
+        }
+
+        public async Task<IEnumerable<Vendor>> GetVendorsAsync(string searchTerm = null, string vendorType = null, bool? isActive = null, bool? subjectToWithholdingTax = null)
+        {
+            var query = _vendorRepository.GetAllAsync().Result.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(v => v.Code.Contains(searchTerm) || v.NameEn.Contains(searchTerm) || v.NameAr.Contains(searchTerm));
+            }
+
+            if (!string.IsNullOrEmpty(vendorType))
+            {
+                if (Enum.TryParse<VendorType>(vendorType, out var typeEnum))
+                {
+                    query = query.Where(v => v.Type == typeEnum);
+                }
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(v => v.IsActive == isActive.Value);
+            }
+
+            if (subjectToWithholdingTax.HasValue)
+            {
+                query = query.Where(v => v.SubjectToWithholdingTax == subjectToWithholdingTax.Value);
+            }
+
+            return await Task.FromResult(query.ToList());
+        }
+
+        public async Task<Vendor> CreateVendorAsync(Vendor vendor)
+        {
             await _vendorRepository.AddAsync(vendor);
-            await _clientRepository.SaveAsync();
-            await _auditService.LogActivityAsync("Vendor", "Create", $"Created vendor: {vendor.NameEn}");
+            await _vendorRepository.SaveAsync();
+            return vendor;
         }
 
         public async Task UpdateVendorAsync(Vendor vendor)
         {
-            // Check if code is unique (except for this vendor)
-            var existingVendor = await GetVendorByCodeAsync(vendor.Code);
-            if (existingVendor != null && existingVendor.Id != vendor.Id)
-            {
-                throw new InvalidOperationException($"A vendor with code '{vendor.Code}' already exists");
-            }
-            await _vendorRepository.UpdateAsync(vendor);
-            await _clientRepository.SaveAsync();
-            await _auditService.LogActivityAsync("Vendor", "Update", $"Updated vendor: {vendor.NameEn}");
+            _vendorRepository.Update(vendor);
+            await _vendorRepository.SaveAsync();
         }
 
         public async Task DeleteVendorAsync(Guid id)
         {
             var vendor = await _vendorRepository.GetByIdAsync(id);
-            if (vendor == null)
+            if (vendor != null)
             {
-                throw new ArgumentException("Vendor not found");
+                _vendorRepository.Delete(vendor);
+                await _vendorRepository.SaveAsync();
             }
-            // Check if there are journal entries referencing this vendor
-            var journalEntries = await _journalEntryRepository.FindAllAsync(j => j.VendorId == id);
-            if (journalEntries.Any())
+        }
+
+        public async Task<bool> IsVendorCodeUniqueAsync(string code, Guid? id = null)
+        {
+            var spec = new VendorByCodeSpecification(code);
+            var existingVendor = await _vendorRepository.FindAsync(spec.Criteria);
+            
+            return existingVendor == null || (id.HasValue && existingVendor.Id == id.Value);
+        }
+
+        public async Task<bool> CanDeleteVendorAsync(Guid id)
+        {
+            return !await _journalEntryRepository.ExistsAsync(je => je.VendorId == id);
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetVendorSelectListAsync(bool? isActive = null)
+        {
+            var vendors = await GetVendorsAsync(isActive);
+            return vendors.Select(v => new SelectListItem
             {
-                throw new InvalidOperationException("Cannot delete a vendor with associated journal entries");
-            }
-            await _vendorRepository.DeleteAsync(id);
-            await _clientRepository.SaveAsync();
-            await _auditService.LogActivityAsync("Vendor", "Delete", $"Deleted vendor: {vendor.NameEn}");
+                Value = v.Id.ToString(),
+                Text = $"{v.Code} - {v.NameEn}"
+            }).ToList();
         }
 
         public async Task<IEnumerable<string>> GetVendorTypesAsync()
         {
-            var vendors = await _vendorRepository.GetAllAsync();
-            return vendors
-                .Where(v => !string.IsNullOrEmpty(v.Type.ToString()))
-                .Select(v => v.Type.ToString())
-                .Distinct()
-                .OrderBy(t => t);
+            return new List<string> { "Supplier", "Contractor", "ServiceProvider" };
         }
-
-        // Implementation of the missing GetVendorAccountsAsync method
-        public async Task<IEnumerable<Account>> GetVendorAccountsAsync()
-        {
-            // Get accounts that are typically associated with vendors (e.g., Accounts Payable)
-            var specification = new Specification<Account>(a => 
-                a.Type == AccountType.Liability && 
-                a.IsActive == true);
-                
-            return await _accountRepository.FindAllAsync(specification);
-        }
-
-        #endregion
     }
 }

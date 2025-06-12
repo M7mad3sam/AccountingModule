@@ -6,6 +6,8 @@ using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 using AspNetCoreMvcTemplate.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using AspNetCoreMvcTemplate.Areas.Accounting.ViewModels;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
@@ -23,6 +25,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task AddAccountCostCenterAsync(Guid accountId, Guid costCenterId);
         Task RemoveAccountCostCenterAsync(Guid accountId, Guid costCenterId);
         Task<IEnumerable<Account>> GetAccountsAsync(bool? isActive = null);
+        Task<IEnumerable<SelectListItem>> GetAccountSelectListAsync(bool? isActive = null);
+        Task<IEnumerable<SelectListItem>> GetParentAccountSelectListAsync(Guid? excludeId = null);
+        Task<AccountCostCentersViewModel> GetAccountCostCentersViewModelAsync(Guid accountId, string accountName);
+        Task<(bool Success, string ErrorCode)> LinkCostCenterAsync(Guid accountId, Guid costCenterId);
     }
 
     public class ChartOfAccountsService : IChartOfAccountsService
@@ -30,15 +36,18 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         private readonly IRepository<Account> _accountRepository;
         private readonly IRepository<AccountCostCenter> _accountCostCenterRepository;
         private readonly IRepository<JournalEntryLine> _journalEntryLineRepository;
+        private readonly ICostCenterService _costCenterService;
 
         public ChartOfAccountsService(
             IRepository<Account> accountRepository,
             IRepository<AccountCostCenter> accountCostCenterRepository,
-            IRepository<JournalEntryLine> journalEntryLineRepository)
+            IRepository<JournalEntryLine> journalEntryLineRepository,
+            ICostCenterService costCenterService)
         {
             _accountRepository = accountRepository;
             _accountCostCenterRepository = accountCostCenterRepository;
             _journalEntryLineRepository = journalEntryLineRepository;
+            _costCenterService = costCenterService;
         }
 
         public async Task<Account> GetAccountByIdAsync(Guid id)
@@ -170,6 +179,71 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
                 return await _accountRepository.FindAllAsync(a => a.IsActive == isActive.Value);
             }
             return await _accountRepository.GetAllAsync();
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetAccountSelectListAsync(bool? isActive = null)
+        {
+            var accounts = await GetAccountsAsync(isActive);
+            return accounts.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = $"{a.Code} - {a.NameEn}"
+            }).ToList();
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetParentAccountSelectListAsync(Guid? excludeId = null)
+        {
+            var accounts = await GetAllAccountsAsync();
+            var filteredAccounts = excludeId.HasValue 
+                ? accounts.Where(a => a.Id != excludeId.Value) 
+                : accounts;
+                
+            return filteredAccounts
+                .OrderBy(a => a.Code)
+                .Select(a => new SelectListItem
+                {
+                    Value = a.Id.ToString(),
+                    Text = $"{a.Code} - {a.NameEn}"
+                }).ToList();
+        }
+
+        public async Task<AccountCostCentersViewModel> GetAccountCostCentersViewModelAsync(Guid accountId, string accountName)
+        {
+            var accountCostCenters = await GetAccountCostCentersAsync(accountId);
+            var allCostCenters = await _costCenterService.GetAllCostCentersAsync();
+            
+            return new AccountCostCentersViewModel
+            {
+                AccountId = accountId,
+                AccountName = accountName,
+                AccountCostCenters = accountCostCenters,
+                AvailableCostCenters = allCostCenters.Where(cc => 
+                    !accountCostCenters.Any(acc => acc.CostCenterId == cc.Id)).ToList()
+            };
+        }
+
+        public async Task<(bool Success, string ErrorCode)> LinkCostCenterAsync(Guid accountId, Guid costCenterId)
+        {
+            var account = await GetAccountByIdAsync(accountId);
+            if (account == null)
+            {
+                return (false, "NotFoundAccount");
+            }
+
+            var costCenter = await _costCenterService.GetCostCenterByIdAsync(costCenterId);
+            if (costCenter == null)
+            {
+                return (false, "NotFoundCostCenter");
+            }
+
+            var existingLinks = await GetAccountCostCentersAsync(accountId);
+            if (existingLinks.Any(acc => acc.CostCenterId == costCenterId))
+            {
+                return (false, "AlreadyLinked");
+            }
+
+            await AddAccountCostCenterAsync(accountId, costCenterId);
+            return (true, string.Empty);
         }
     }
 }

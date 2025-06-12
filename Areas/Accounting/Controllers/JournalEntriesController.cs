@@ -62,8 +62,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             var journalEntries = await _generalLedgerService.GetJournalEntriesAsync(
                 searchTerm, status, fromDate, toDate, clientId, vendorId, isRecurring, isSystemGenerated);
             
-            var clients = await _clientVendorService.GetClientsAsync(isActive: true);
-            var vendors = await _clientVendorService.GetVendorsAsync(isActive: true);
+            var clients = await _clientVendorService.GetClientSelectListAsync(isActive: true);
+            var vendors = await _clientVendorService.GetVendorSelectListAsync(isActive: true);
             
             var viewModel = new JournalEntryListViewModel
             {
@@ -76,8 +76,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 VendorId = vendorId,
                 IsRecurring = isRecurring,
                 IsSystemGenerated = isSystemGenerated,
-                AvailableClients = clients.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.NameEn }),
-                AvailableVendors = vendors.Select(v => new SelectListItem { Value = v.Id.ToString(), Text = v.NameEn }),
+                AvailableClients = clients,
+                AvailableVendors = vendors,
                 AvailableStatuses = Enum.GetValues(typeof(JournalEntryStatus))
                     .Cast<JournalEntryStatus>()
                     .Select(s => new SelectListItem { Value = ((int)s).ToString(), Text = s.ToString() })
@@ -92,7 +92,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             var viewModel = await PrepareJournalEntryViewModel(new JournalEntryViewModel
             {
                 EntryDate = DateTime.Today,
-                PostingDate = DateTime.Today,
+                PostingDate = DateOnly.FromDateTime(DateTime.Today),
                 Status = JournalEntryStatus.Draft,
                 Currency = "EGP",
                 ExchangeRate = 1,
@@ -120,7 +120,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 }
                 
                 // Check if posting date is in a closed period
-                var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(viewModel.PostingDate);
+                var postingDate = viewModel.PostingDate.ToDateTime(TimeOnly.MinValue);
+                var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(postingDate);
                 if (isPeriodClosed)
                 {
                     ModelState.AddModelError("PostingDate", _localizer["Cannot post to a closed period."]);
@@ -140,7 +141,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 {
                     Number = viewModel.EntryNumber,
                     EntryDate = viewModel.EntryDate,
-                    PostingDate = viewModel.PostingDate,
+                    PostingDate = viewModel.PostingDate.ToDateTime(TimeOnly.MinValue),
                     Reference = viewModel.Reference,
                     Description = viewModel.Description,
                     Status = viewModel.Status,
@@ -215,7 +216,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 Id = journalEntry.Id,
                 EntryNumber = journalEntry.Number,
                 EntryDate = journalEntry.EntryDate,
-                PostingDate = journalEntry.PostingDate,
+                PostingDate = DateOnly.FromDateTime(journalEntry.PostingDate),
                 Reference = journalEntry.Reference,
                 Description = journalEntry.Description,
                 Status = journalEntry.Status,
@@ -283,7 +284,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 }
                 
                 // Check if posting date is in a closed period
-                var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(viewModel.PostingDate);
+                var editPostingDate = viewModel.PostingDate.ToDateTime(TimeOnly.MinValue);
+                var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(editPostingDate);
                 if (isPeriodClosed)
                 {
                     ModelState.AddModelError("PostingDate", _localizer["Cannot post to a closed period."]);
@@ -306,7 +308,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 
                 // Update journal entry
                 journalEntry.EntryDate = viewModel.EntryDate;
-                journalEntry.PostingDate = viewModel.PostingDate;
+                journalEntry.PostingDate = viewModel.PostingDate.ToDateTime(TimeOnly.MinValue);
                 journalEntry.Reference = viewModel.Reference;
                 journalEntry.Description = viewModel.Description;
                 journalEntry.Status = viewModel.Status;
@@ -371,7 +373,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             {
                 Id = journalEntry.Id,
                 EntryDate = journalEntry.EntryDate,
-                PostingDate = journalEntry.PostingDate,
+                PostingDate = DateOnly.FromDateTime(journalEntry.PostingDate),
                 Reference = journalEntry.Reference,
                 Description = journalEntry.Description,
                 Status = journalEntry.Status,
@@ -557,7 +559,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             }
             
             // Check if posting date is in a closed period
-            var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(journalEntry.PostingDate);
+            var postDate = journalEntry.PostingDate;
+            var isPeriodClosed = await _periodManagementService.IsPeriodClosedAsync(postDate);
             if (isPeriodClosed)
             {
                 TempData["ErrorMessage"] = _localizer["Cannot post to a closed period."].ToString();
@@ -574,60 +577,25 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         private async Task<JournalEntryViewModel> PrepareJournalEntryViewModel(JournalEntryViewModel viewModel)
         {
             // Get accounts
-            var accounts = await _chartOfAccountsService.GetAccountsAsync(isActive: true);
-            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
-            {
-                Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.NameEn}"
-            });
+            viewModel.AvailableAccounts = await _chartOfAccountsService.GetAccountSelectListAsync(isActive: true);
             
             // Get cost centers
-            var costCenters = await _costCenterService.GetCostCentersAsync(isActive: true);
-            viewModel.AvailableCostCenters = costCenters.Select(c => new SelectListItem
-            {
-                Value = c.Id.ToString(),
-                Text = $"{c.Code} - {c.NameEn}"
-            });
+            viewModel.AvailableCostCenters = await _costCenterService.GetCostCenterSelectListAsync(isActive: true);
             
             // Get clients
-            var clients = await _clientVendorService.GetClientsAsync(isActive: true);
-            viewModel.AvailableClients = clients.Select(c => new SelectListItem
-            {
-                Value = c.Id.ToString(),
-                Text = $"{c.Code} - {c.NameEn}"
-            });
+            viewModel.AvailableClients = await _clientVendorService.GetClientSelectListAsync(isActive: true);
             
             // Get vendors
-            var vendors = await _clientVendorService.GetVendorsAsync(isActive: true);
-            viewModel.AvailableVendors = vendors.Select(v => new SelectListItem
-            {
-                Value = v.Id.ToString(),
-                Text = $"{v.Code} - {v.NameEn}"
-            });
+            viewModel.AvailableVendors = await _clientVendorService.GetVendorSelectListAsync(isActive: true);
             
             // Get tax rates
-            var taxRates = await _taxService.GetTaxRatesAsync(isActive: true);
-            viewModel.AvailableTaxRates = taxRates.Select(t => new SelectListItem
-            {
-                Value = t.Id.ToString(),
-                Text = $"{t.Code} - {t.NameEn} ({t.Rate}%)"
-            });
+            viewModel.AvailableTaxRates = await _taxService.GetTaxRateSelectListAsync(isActive: true);
             
             // Get withholding taxes
-            var withholdingTaxes = await _taxService.GetWithholdingTaxesAsync(isActive: true);
-            viewModel.AvailableWithholdingTaxes = withholdingTaxes.Select(t => new SelectListItem
-            {
-                Value = t.Id.ToString(),
-                Text = $"{t.Code} - {t.NameEn} ({t.Rate}%)"
-            });
+            viewModel.AvailableWithholdingTaxes = await _taxService.GetWithholdingTaxSelectListAsync(isActive: true);
             
             // Get fiscal periods
-            var fiscalPeriods = await _periodManagementService.GetOpenFiscalPeriodsAsync();
-            viewModel.AvailableFiscalPeriods = fiscalPeriods.Select(p => new SelectListItem
-            {
-                Value = p.Id.ToString(),
-                Text = $"{p.Name} ({p.StartDate:d} - {p.EndDate:d})"
-            });
+            viewModel.AvailableFiscalPeriods = await _periodManagementService.GetOpenFiscalPeriodSelectListAsync();
             
             return viewModel;
         }

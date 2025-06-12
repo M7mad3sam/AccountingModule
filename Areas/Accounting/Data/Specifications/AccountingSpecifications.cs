@@ -65,13 +65,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications
     {
         public JournalEntriesByDateRangeSpecification(DateTime? fromDate, DateTime? toDate, JournalEntryStatus? status, int pageIndex, int pageSize)
             : base(je => 
-                (!fromDate.HasValue || je.Date >= fromDate) &&
-                (!toDate.HasValue || je.Date <= toDate) &&
+                (!fromDate.HasValue || je.PostingDate >= fromDate.Value) &&
+                (!toDate.HasValue || je.PostingDate <= toDate.Value) &&
                 (!status.HasValue || je.Status == status))
         {
             AddInclude(je => je.FiscalPeriod);
             AddInclude(je => je.CreatedBy);
-            ApplyOrderByDescending(je => je.Date);
+            ApplyOrderByDescending(je => je.PostingDate);
             ApplyPaging((pageIndex - 1) * pageSize, pageSize);
         }
     }

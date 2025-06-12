@@ -4,7 +4,10 @@ using System.Threading.Tasks;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 using AspNetCoreMvcTemplate.Data.Repository;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using AspNetCoreMvcTemplate.Areas.Accounting.ViewModels;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
@@ -18,28 +21,31 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         Task DeleteCostCenterAsync(Guid id);
         Task<bool> IsCostCenterCodeUniqueAsync(string code, Guid? id = null);
         Task<bool> CanDeleteCostCenterAsync(Guid id);
-        Task<IEnumerable<CostCenter>> GetCostCentersAsync(bool? isActive = null);
-        Task<IEnumerable<Account>> GetAccountsAsync();
         Task<IEnumerable<AccountCostCenter>> GetCostCenterAccountsAsync(Guid costCenterId);
+        Task AddCostCenterAccountAsync(Guid costCenterId, Guid accountId);
+        Task RemoveCostCenterAccountAsync(Guid costCenterId, Guid accountId);
+        Task<IEnumerable<CostCenter>> GetCostCentersAsync(bool? isActive = null);
+        Task<IEnumerable<SelectListItem>> GetCostCenterSelectListAsync(bool? isActive = null);
+        Task<AssignAccountsVm> GetAssignAccountsViewModelAsync(Guid costCenterId, int maxAccounts = 500);
         Task AssignAccountsToCostCenterAsync(Guid costCenterId, List<Guid> accountIds);
     }
 
     public class CostCenterService : ICostCenterService
     {
         private readonly IRepository<CostCenter> _costCenterRepository;
-        private readonly IRepository<JournalEntryLine> _journalEntryLineRepository;
         private readonly IRepository<AccountCostCenter> _accountCostCenterRepository;
+        private readonly IRepository<JournalEntryLine> _journalEntryLineRepository;
         private readonly IRepository<Account> _accountRepository;
 
         public CostCenterService(
             IRepository<CostCenter> costCenterRepository,
-            IRepository<JournalEntryLine> journalEntryLineRepository,
             IRepository<AccountCostCenter> accountCostCenterRepository,
+            IRepository<JournalEntryLine> journalEntryLineRepository,
             IRepository<Account> accountRepository)
         {
             _costCenterRepository = costCenterRepository;
-            _journalEntryLineRepository = journalEntryLineRepository;
             _accountCostCenterRepository = accountCostCenterRepository;
+            _journalEntryLineRepository = journalEntryLineRepository;
             _accountRepository = accountRepository;
         }
 
@@ -61,32 +67,17 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<CostCenter> CreateCostCenterAsync(CostCenter costCenter)
         {
-            // Check for cycles in hierarchy
-            if (costCenter.ParentId.HasValue && await WouldCreateCycleAsync(costCenter.Id, costCenter.ParentId.Value))
-            {
-                throw new InvalidOperationException("Assigning this parent would create a cycle in the cost center hierarchy");
-            }
-
-            // Calculate and set level based on parent's level, and check if parent is active
             if (costCenter.ParentId.HasValue)
             {
                 var parent = await _costCenterRepository.GetByIdAsync(costCenter.ParentId.Value);
                 if (parent != null)
                 {
-                    if (!parent.IsActive)
-                    {
-                        throw new InvalidOperationException("Cannot assign an inactive parent to a cost center");
-                    }
                     costCenter.Level = parent.Level + 1;
-                    if (costCenter.Level > 5)
-                    {
-                        throw new InvalidOperationException("Cost center hierarchy depth cannot exceed 5 levels");
-                    }
                 }
             }
             else
             {
-                costCenter.Level = 0; // Root level
+                costCenter.Level = 1;
             }
 
             await _costCenterRepository.AddAsync(costCenter);
@@ -96,62 +87,17 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task UpdateCostCenterAsync(CostCenter costCenter)
         {
-            var existingCostCenter = await _costCenterRepository.GetByIdAsync(costCenter.Id);
-            if (existingCostCenter == null)
-            {
-                throw new ArgumentException("Cost center not found");
-            }
-
-            // Check if cost center has journal entry lines and code is being changed
-            if (existingCostCenter.Code != costCenter.Code)
-            {
-                var hasJournalEntryLines = await _journalEntryLineRepository.ExistsAsync(jel => jel.CostCenterId == costCenter.Id);
-                if (hasJournalEntryLines)
-                {
-                    throw new InvalidOperationException("Cannot change cost center code when journal entry lines exist");
-                }
-            }
-
-            // Check for cycles in hierarchy
-            if (costCenter.ParentId.HasValue && await WouldCreateCycleAsync(costCenter.Id, costCenter.ParentId.Value))
-            {
-                throw new InvalidOperationException("Assigning this parent would create a cycle in the cost center hierarchy");
-            }
-
-            // Calculate and set level based on parent's level, and check if parent is active
             if (costCenter.ParentId.HasValue)
             {
                 var parent = await _costCenterRepository.GetByIdAsync(costCenter.ParentId.Value);
                 if (parent != null)
                 {
-                    if (!parent.IsActive)
-                    {
-                        throw new InvalidOperationException("Cannot assign an inactive parent to a cost center");
-                    }
                     costCenter.Level = parent.Level + 1;
-                    if (costCenter.Level > 5)
-                    {
-                        throw new InvalidOperationException("Cost center hierarchy depth cannot exceed 5 levels");
-                    }
                 }
             }
             else
             {
-                costCenter.Level = 0; // Root level
-            }
-
-            // Check if deactivation is attempted and there are open-period postings
-            if (existingCostCenter.IsActive && !costCenter.IsActive)
-            {
-                var hasOpenPeriodPostings = await _journalEntryLineRepository.ExistsAsync(jel => 
-                    jel.CostCenterId == costCenter.Id && 
-                    jel.JournalEntry != null && 
-                    jel.JournalEntry.FiscalPeriod != null && 
-                    !jel.JournalEntry.FiscalPeriod.IsClosed);
-                if (hasOpenPeriodPostings)
-                {
-                    throw new InvalidOperationException("Cannot deactivate cost center with open-period postings");
-                }
+                costCenter.Level = 1;
             }
 
             _costCenterRepository.Update(costCenter);
@@ -183,14 +129,46 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             if (hasJournalEntryLines)
                 return false;
 
-            // Check if cost center has account associations
-            var hasAccountAssociations = await _accountCostCenterRepository.ExistsAsync(acc => acc.CostCenterId == id);
-            if (hasAccountAssociations)
-                return false;
-
             // Check if cost center has children
+            var spec = new CostCenterHierarchySpecification();
             var costCenter = await _costCenterRepository.FindAsync(cc => cc.Id == id, cc => cc.Children);
+            
             return costCenter?.Children == null || !costCenter.Children.Any();
+        }
+
+        public async Task<IEnumerable<AccountCostCenter>> GetCostCenterAccountsAsync(Guid costCenterId)
+        {
+            return await _accountCostCenterRepository.FindAllAsync(acc => acc.CostCenterId == costCenterId, acc => acc.Account);
+        }
+
+        public async Task AddCostCenterAccountAsync(Guid costCenterId, Guid accountId)
+        {
+            var exists = await _accountCostCenterRepository.ExistsAsync(acc => 
+                acc.CostCenterId == costCenterId && acc.AccountId == accountId);
+                
+            if (!exists)
+            {
+                var accountCostCenter = new AccountCostCenter
+                {
+                    CostCenterId = costCenterId,
+                    AccountId = accountId
+                };
+                
+                await _accountCostCenterRepository.AddAsync(accountCostCenter);
+                await _accountCostCenterRepository.SaveAsync();
+            }
+        }
+
+        public async Task RemoveCostCenterAccountAsync(Guid costCenterId, Guid accountId)
+        {
+            var accountCostCenter = await _accountCostCenterRepository.FindAsync(acc => 
+                acc.CostCenterId == costCenterId && acc.AccountId == accountId);
+                
+            if (accountCostCenter != null)
+            {
+                _accountCostCenterRepository.Delete(accountCostCenter);
+                await _accountCostCenterRepository.SaveAsync();
+            }
         }
 
         public async Task<IEnumerable<CostCenter>> GetCostCentersAsync(bool? isActive = null)
@@ -202,81 +180,63 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             return await _costCenterRepository.GetAllAsync();
         }
 
-        public async Task<IEnumerable<Account>> GetAccountsAsync()
+        public async Task<IEnumerable<SelectListItem>> GetCostCenterSelectListAsync(bool? isActive = null)
         {
-            return await _accountRepository.GetAllAsync();
+            var costCenters = await GetCostCentersAsync(isActive);
+            return costCenters.Select(cc => new SelectListItem
+            {
+                Value = cc.Id.ToString(),
+                Text = $"{cc.Code} - {cc.NameEn}"
+            }).ToList();
         }
 
-        public async Task<IEnumerable<AccountCostCenter>> GetCostCenterAccountsAsync(Guid costCenterId)
+        public async Task<AssignAccountsVm> GetAssignAccountsViewModelAsync(Guid costCenterId, int maxAccounts = 500)
         {
-            return await _accountCostCenterRepository.FindAllAsync(acc => acc.CostCenterId == costCenterId);
+            var accounts = await _accountRepository.GetAllAsync();
+            var linkedAccountIds = (await GetCostCenterAccountsAsync(costCenterId))
+                .Select(acc => acc.AccountId)
+                .ToList();
+
+            var allAccounts = accounts
+                .Take(maxAccounts)
+                .Select(a => new SelectListItem
+                {
+                    Value = a.Id.ToString(),
+                    Text = $"{a.Code} - {a.NameEn}"
+                })
+                .ToList();
+
+            return new AssignAccountsVm
+            {
+                CostCenterId = costCenterId,
+                AvailableAccounts = allAccounts.Where(a => !linkedAccountIds.Contains(Guid.Parse(a.Value))).ToList(),
+                AssignedAccounts = allAccounts.Where(a => linkedAccountIds.Contains(Guid.Parse(a.Value))).ToList(),
+                SelectedIds = linkedAccountIds
+            };
         }
 
         public async Task AssignAccountsToCostCenterAsync(Guid costCenterId, List<Guid> accountIds)
         {
-            var transaction = await _accountCostCenterRepository.BeginTransactionAsync();
-            try
-            {
-                // Remove existing links
-                var existingLinks = await _accountCostCenterRepository.FindAllAsync(acc => acc.CostCenterId == costCenterId);
-                _accountCostCenterRepository.DeleteRange(existingLinks);
+            var currentAccounts = await GetCostCenterAccountsAsync(costCenterId);
+            var currentAccountIds = currentAccounts.Select(acc => acc.AccountId).ToList();
 
-                // Add new links
-                var newLinks = accountIds.Select(accountId => new AccountCostCenter
+            // Remove accounts that are no longer selected
+            foreach (var currentAccount in currentAccounts)
+            {
+                if (!accountIds.Contains(currentAccount.AccountId))
                 {
-                    AccountId = accountId,
-                    CostCenterId = costCenterId
-                }).ToList();
-
-                await _accountCostCenterRepository.AddRangeAsync(newLinks);
-                await _accountCostCenterRepository.SaveAsync();
-
-                await _accountCostCenterRepository.CommitTransactionAsync();
-            }
-            catch (Exception)
-            {
-                _accountCostCenterRepository.RollbackTransaction();
-                throw;
-            }
-        }
-
-        private async Task<bool> WouldCreateCycleAsync(Guid costCenterId, Guid newParentId)
-        {
-            // If the cost center is being assigned as its own parent, it's a direct cycle
-            if (costCenterId == newParentId)
-            {
-                return true;
-            }
-
-            // Check if the new parent is a descendant of the cost center
-            var visited = new HashSet<Guid>();
-            var currentId = newParentId;
-
-            while (currentId != Guid.Empty)
-            {
-                if (visited.Contains(currentId))
-                {
-                    return true; // Cycle detected in the hierarchy
+                    await RemoveCostCenterAccountAsync(costCenterId, currentAccount.AccountId);
                 }
-
-                visited.Add(currentId);
-
-                // If we reach the cost center ID while traversing descendants, there's a cycle
-                if (currentId == costCenterId)
-                {
-                    return true;
-                }
-
-                var currentCostCenter = await _costCenterRepository.FindAsync(cc => cc.ParentId == currentId, cc => cc.Children);
-                if (currentCostCenter == null || !currentCostCenter.Children.Any())
-                {
-                    break;
-                }
-
-                currentId = currentCostCenter.Children.First().Id; // Traverse down the hierarchy
             }
 
-            return false;
+            // Add new accounts
+            foreach (var accountId in accountIds)
+            {
+                if (!currentAccountIds.Contains(accountId))
+                {
+                    await AddCostCenterAccountAsync(costCenterId, accountId);
+                }
+            }
         }
     }
 }

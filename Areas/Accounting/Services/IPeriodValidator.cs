@@ -3,8 +3,5 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
-    public interface IPeriodValidator
-    {
-        Task<bool> IsPeriodClosedAsync(DateTime date);
-    }
+    // This file is intentionally left empty as the interface is now defined in PeriodManagementService.cs
 }

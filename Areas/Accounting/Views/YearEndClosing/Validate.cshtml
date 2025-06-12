@@ -75,10 +75,10 @@
                             <h5><i class="icon fas fa-ban"></i> Not Ready for Year-End Closing</h5>
                             <p>The following issues must be resolved before you can proceed with the year-end closing process:</p>
                             <ul>
-                                @foreach (var message in Model.ValidationResult.Messages)
-                                {
-                                    <li>@message</li>
-                                }
+                @foreach (var message in Model.ValidationResult.ValidationMessages)
+                {
+                    <li>@message</li>
+                }
                             </ul>
                         </div>
                         

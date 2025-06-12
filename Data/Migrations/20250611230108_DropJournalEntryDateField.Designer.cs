@@ -3,6 +3,7 @@ using System;
 using AspNetCoreMvcTemplate.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspNetCoreMvcTemplate.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250611230108_DropJournalEntryDateField")]
+    partial class DropJournalEntryDateField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -463,7 +466,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                     b.Property<DateTime?>("PostedDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("PostingDate")
+                    b.Property<DateOnly>("PostingDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RecurrencePattern")
@@ -489,7 +492,7 @@ namespace AspNetCoreMvcTemplate.Data.Migrations
                     b.Property<decimal>("TotalDebit")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("TransactionDate")
+                    b.Property<DateOnly>("TransactionDate")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("VendorId")

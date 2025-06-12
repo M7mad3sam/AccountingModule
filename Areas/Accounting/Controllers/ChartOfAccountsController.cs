@@ -186,18 +186,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             if (account == null)
                 return NotFound();
 
-            var accountCostCenters = await _chartOfAccountsService.GetAccountCostCentersAsync(id);
-            var allCostCenters = await _costCenterService.GetAllCostCentersAsync();
-            
-            var viewModel = new AccountCostCentersViewModel
-            {
-                AccountId = id,
-                AccountName = account.NameEn,
-                AccountCostCenters = accountCostCenters,
-                AvailableCostCenters = allCostCenters.Where(cc => 
-                    !accountCostCenters.Any(acc => acc.CostCenterId == cc.Id)).ToList()
-            };
-            
+            var viewModel = await _chartOfAccountsService.GetAccountCostCentersViewModelAsync(id, account.NameEn);
             return View(viewModel);
         }
 
@@ -205,28 +194,18 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LinkCostCenter(Guid accountId, Guid costCenterId)
         {
-            // Validate that both account and cost center exist
-            var account = await _chartOfAccountsService.GetAccountByIdAsync(accountId);
-            if (account == null)
+            var result = await _chartOfAccountsService.LinkCostCenterAsync(accountId, costCenterId);
+            if (!result.Success)
             {
-                return NotFound(_localizer["Account not found"]);
+                return result.ErrorCode switch
+                {
+                    "NotFoundAccount" => NotFound(_localizer["Account not found"]),
+                    "NotFoundCostCenter" => NotFound(_localizer["Cost center not found"]),
+                    "AlreadyLinked" => BadRequest(_localizer["Already linked"]),
+                    _ => BadRequest(_localizer["Error linking cost center"])
+                };
             }
 
-            var costCenter = await _costCenterService.GetCostCenterByIdAsync(costCenterId);
-            if (costCenter == null)
-            {
-                return NotFound(_localizer["Cost center not found"]);
-            }
-
-            // Check if the link already exists
-            var existingLinks = await _chartOfAccountsService.GetAccountCostCentersAsync(accountId);
-            if (existingLinks.Any(acc => acc.CostCenterId == costCenterId))
-            {
-                return BadRequest(_localizer["Already linked"]);
-            }
-
-            // Persist the new link
-            await _chartOfAccountsService.AddAccountCostCenterAsync(accountId, costCenterId);
             return RedirectToAction(nameof(Index));
         }
 
@@ -258,18 +237,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
 
         private async Task<IEnumerable<SelectListItem>> GetParentAccountSelectListAsync(Guid? excludeId = null)
         {
-            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
-            var filteredAccounts = excludeId.HasValue 
-                ? accounts.Where(a => a.Id != excludeId.Value) 
-                : accounts;
-                
-            return filteredAccounts
-                .OrderBy(a => a.Code)
-                .Select(a => new SelectListItem
-                {
-                    Value = a.Id.ToString(),
-                    Text = $"{a.Code} - {a.NameEn}"
-                });
+            return await _chartOfAccountsService.GetParentAccountSelectListAsync(excludeId);
         }
     }
 }

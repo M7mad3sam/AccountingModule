@@ -19,17 +19,20 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         private readonly IFinancialReportingService _reportingService;
         private readonly ICostCenterService _costCenterService;
         private readonly IPeriodManagementService _periodManagementService;
+        private readonly ITrialBalanceService _trialBalanceService;
         private readonly IStringLocalizer<ReportsController> _localizer;
 
         public ReportsController(
             IFinancialReportingService reportingService,
             ICostCenterService costCenterService,
             IPeriodManagementService periodManagementService,
+            ITrialBalanceService trialBalanceService,
             IStringLocalizer<ReportsController> localizer)
         {
             _reportingService = reportingService;
             _costCenterService = costCenterService;
             _periodManagementService = periodManagementService;
+            _trialBalanceService = trialBalanceService;
             _localizer = localizer;
         }
 
@@ -47,11 +50,16 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> TrialBalance(TrialBalanceFilterViewModel filter)
+        public async Task<IActionResult> TrialBalance(TrialBalanceFilterViewModel filter, DateTime? fromDate, DateTime? toDate)
         {
             if (ModelState.IsValid)
             {
-                var report = await _reportingService.GenerateTrialBalanceAsync(filter.AsOfDate, filter.CostCenterId, filter.Level);
+                var from = fromDate.HasValue ? DateOnly.FromDateTime(fromDate.Value) : DateOnly.FromDateTime(DateTime.Today.AddYears(-1));
+                var to = toDate.HasValue ? DateOnly.FromDateTime(toDate.Value) : DateOnly.FromDateTime(DateTime.Today);
+                var report = await _trialBalanceService.GetTrialBalanceAsync(from, to, filter.CostCenterId);
+                ViewBag.FromDate = fromDate ?? DateTime.Today.AddYears(-1);
+                ViewBag.ToDate = toDate ?? DateTime.Today;
+                ViewBag.CostCenterId = filter.CostCenterId;
                 return View("TrialBalanceReport", report);
             }
             
@@ -62,21 +70,27 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportTrialBalanceToExcel(DateTime asOfDate, Guid? costCenterId, int level)
+        public async Task<IActionResult> ExportTrialBalanceToExcel(DateTime fromDate, DateTime toDate, Guid? costCenterId)
         {
-            var excelBytes = await _reportingService.ExportTrialBalanceToExcelAsync(
-                await _reportingService.GenerateTrialBalanceAsync(asOfDate, costCenterId, level));
-            
-            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "TrialBalance.xlsx");
+            var from = DateOnly.FromDateTime(fromDate);
+            var to = DateOnly.FromDateTime(toDate);
+            var reportRows = await _trialBalanceService.GetTrialBalanceAsync(from, to, costCenterId);
+            // TODO: Implement proper export functionality once FinancialReportingService is updated to accept TrialBalanceRow list
+            // var excelBytes = await _reportingService.ExportTrialBalanceToExcelAsync(reportRows);
+            // return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "TrialBalance.xlsx");
+            return Content("Export to Excel functionality is not yet implemented.");
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExportTrialBalanceToPdf(DateTime asOfDate, Guid? costCenterId, int level)
+        public async Task<IActionResult> ExportTrialBalanceToPdf(DateTime fromDate, DateTime toDate, Guid? costCenterId)
         {
-            var pdfBytes = await _reportingService.ExportTrialBalanceToPdfAsync(
-                await _reportingService.GenerateTrialBalanceAsync(asOfDate, costCenterId, level));
-            
-            return File(pdfBytes, "application/pdf", "TrialBalance.pdf");
+            var from = DateOnly.FromDateTime(fromDate);
+            var to = DateOnly.FromDateTime(toDate);
+            var reportRows = await _trialBalanceService.GetTrialBalanceAsync(from, to, costCenterId);
+            // TODO: Implement proper export functionality once FinancialReportingService is updated to accept TrialBalanceRow list
+            // var pdfBytes = await _reportingService.ExportTrialBalanceToPdfAsync(reportRows);
+            // return File(pdfBytes, "application/pdf", "TrialBalance.pdf");
+            return Content("Export to PDF functionality is not yet implemented.");
         }
     }
 }

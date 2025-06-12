@@ -58,7 +58,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
             // Get all approved journal entries up to the specified date
             var journalEntries = await _journalEntryRepository.FindAllAsync(
-                je => je.Status == JournalEntryStatus.Approved && je.Date <= asOfDate);
+                je => je.Status == JournalEntryStatus.Approved && je.PostingDate <= asOfDate);
 
             var journalEntryIds = journalEntries.Select(je => je.Id).ToList();
 
@@ -143,7 +143,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
             // Get all approved journal entries up to the specified date
             var journalEntries = await _journalEntryRepository.FindAllAsync(
-                je => je.Status == JournalEntryStatus.Approved && je.Date <= asOfDate);
+                je => je.Status == JournalEntryStatus.Approved && je.PostingDate <= asOfDate);
 
             var journalEntryIds = journalEntries.Select(je => je.Id).ToList();
 
@@ -257,8 +257,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             // Get all approved journal entries within the date range
             var journalEntries = await _journalEntryRepository.FindAllAsync(
                 je => je.Status == JournalEntryStatus.Approved && 
-                      je.Date >= fromDate && 
-                      je.Date <= toDate);
+                      je.PostingDate >= fromDate &&
+                      je.PostingDate <= toDate);
 
             var journalEntryIds = journalEntries.Select(je => je.Id).ToList();
 
@@ -351,8 +351,8 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             // Get all approved journal entries within the date range
             var journalEntries = await _journalEntryRepository.FindAllAsync(
                 je => je.Status == JournalEntryStatus.Approved && 
-                      je.Date >= fromDate && 
-                      je.Date <= toDate);
+                      je.PostingDate >= fromDate &&
+                      je.PostingDate <= toDate);
 
             var journalEntryIds = journalEntries.Select(je => je.Id).ToList();
 

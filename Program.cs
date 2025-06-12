@@ -32,6 +32,7 @@ builder.Services.AddControllersWithViews()
 
 // Add Accounting Module services
 builder.Services.AddAccountingModule();
+builder.Services.AddScoped<AspNetCoreMvcTemplate.Areas.Accounting.Services.ITrialBalanceService, AspNetCoreMvcTemplate.Areas.Accounting.Services.TrialBalanceService>();
 
 var app = builder.Build();
 

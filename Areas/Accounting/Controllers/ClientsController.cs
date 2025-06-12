@@ -71,12 +71,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 }).ToList();
             
             // Populate available accounts
-            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
-                viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
-                {
-                    Value = a.Id.ToString(),
-                    Text = $"{a.Code} - {a.NameEn}"
-                }).ToList();
+            viewModel.AvailableAccounts = await _chartOfAccountsService.GetAccountSelectListAsync();
             
             return View(viewModel);
         }
@@ -121,12 +116,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 }).ToList();
             
             // Repopulate accounts
-            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
-            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
-            {
-                Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.NameEn}"
-            }).ToList();
+            viewModel.AvailableAccounts = await _chartOfAccountsService.GetAccountSelectListAsync();
             
             return View(viewModel);
         }
@@ -172,13 +162,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 }).ToList();
             
             // Populate available accounts
-            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
-            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
-            {
-                Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.NameEn}",
-                Selected = a.Id == client.AccountId
-            }).ToList();
+            viewModel.AvailableAccounts = await _chartOfAccountsService.GetAccountSelectListAsync();
             
             return View(viewModel);
         }
@@ -233,12 +217,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 }).ToList();
             
             // Repopulate accounts
-            var accounts = await _chartOfAccountsService.GetAllAccountsAsync();
-            viewModel.AvailableAccounts = accounts.Select(a => new SelectListItem
-            {
-                Value = a.Id.ToString(),
-                Text = $"{a.Code} - {a.NameEn}"
-            }).ToList();
+            viewModel.AvailableAccounts = await _chartOfAccountsService.GetAccountSelectListAsync();
             
             return View(viewModel);
         }

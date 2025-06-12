@@ -1,47 +1,32 @@
 @model AspNetCoreMvcTemplate.Areas.Accounting.ViewModels.TrialBalanceFilterViewModel
-@inject IStringLocalizer<SharedResource> Localizer
 
 @{
-    ViewData["Title"] = Localizer["TrialBalance"];
+    ViewData["Title"] = "Trial Balance Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">@Localizer["TrialBalanceFilter"]</h3>
-    </div>
-    <div class="card-body">
+<h1>Trial Balance Report</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-12">
         <form asp-action="TrialBalance" method="post">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="AsOfDate">@Localizer["AsOfDate"]</label>
-                        <input asp-for="AsOfDate" class="form-control" type="date" />
-                        <span asp-validation-for="AsOfDate" class="text-danger"></span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="CostCenterId">@Localizer["CostCenter"]</label>
-                        <select asp-for="CostCenterId" class="form-control select2">
-                            <option value="">-- @Localizer["AllCostCenters"] --</option>
-                            @foreach (var costCenter in Model.CostCenters)
-                            {
-                                <option value="@costCenter.Id">@costCenter.Code - @costCenter.NameEn</option>
-                            }
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="Level">@Localizer["AccountLevel"]</label>
-                        <select asp-for="Level" asp-items="Model.Levels" class="form-control">
-                            <option value="0">-- @Localizer["AllLevels"] --</option>
-                        </select>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="fromDate">From Date:</label>
+                <input type="date" id="fromDate" name="fromDate" class="form-control" />
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-primary">@Localizer["GenerateReport"]</button>
+                <label for="toDate">To Date:</label>
+                <input type="date" id="toDate" name="toDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="form-group">
+                <label asp-for="CostCenterId" class="control-label"></label>
+                <select asp-for="CostCenterId" class="form-control" asp-items="@(new SelectList(Model.CostCenters, "Id", "NameEn"))">
+                    <option value="">All Cost Centers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Generate Report" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -49,8 +34,8 @@
 
 @section Scripts {
     <script>
-        $(function () {
-            $('.select2').select2();
+        $(document).ready(function () {
+            // Any additional script if needed for date picker or form validation
         });
     </script>
 }

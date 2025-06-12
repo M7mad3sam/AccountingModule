@@ -1,71 +1,77 @@
-@model AspNetCoreMvcTemplate.Areas.Accounting.Services.TrialBalanceReport
-@inject IStringLocalizer<SharedResource> Localizer
+@model IEnumerable<AspNetCoreMvcTemplate.Areas.Accounting.Services.TrialBalanceRow>
 
 @{
-    ViewData["Title"] = Localizer["TrialBalanceReport"];
+    ViewData["Title"] = "Trial Balance Report Results";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">@Localizer["TrialBalanceReport"]</h3>
-    </div>
-    <div class="card-body">
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <h4>@Localizer["AsOf"]: @Model.AsOfDate.ToString("d")</h4>
-                @if (Model.CostCenter != null)
-                {
-                    <h5>@Localizer["CostCenter"]: @Model.CostCenter.NameEn</h5>
-                }
-                @if (Model.Level > 0)
-                {
-                    <h5>@Localizer["AccountLevel"]: @Model.Level</h5>
-                }
-            </div>
-            <div class="col-md-6 text-right">
-                <a asp-action="ExportTrialBalanceToExcel" asp-route-asOfDate="@Model.AsOfDate" asp-route-costCenterId="@Model.CostCenter?.Id" asp-route-level="@Model.Level" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i> @Localizer["ExportToExcel"]
-                </a>
-                <a asp-action="ExportTrialBalanceToPdf" asp-route-asOfDate="@Model.AsOfDate" asp-route-costCenterId="@Model.CostCenter?.Id" asp-route-level="@Model.Level" class="btn btn-danger">
-                    <i class="fas fa-file-pdf"></i> @Localizer["ExportToPDF"]
-                </a>
-            </div>
-        </div>
+<h1>Trial Balance Report</h1>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>@Localizer["AccountCode"]</th>
-                        <th>@Localizer["AccountName"]</th>
-                        <th>@Localizer["Level"]</th>
-                        <th class="text-right">@Localizer["Debit"]</th>
-                        <th class="text-right">@Localizer["Credit"]</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.Items)
-                    {
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Trial Balance from @ViewBag.FromDate.ToString("yyyy-MM-dd") to @ViewBag.ToDate.ToString("yyyy-MM-dd")</h3>
+                <div class="card-tools">
+                    <a href="@Url.Action("ExportTrialBalanceToExcel", new { fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, costCenterId = ViewBag.CostCenterId })" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </a>
+                    <a href="@Url.Action("ExportTrialBalanceToPdf", new { fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, costCenterId = ViewBag.CostCenterId })" class="btn btn-sm btn-danger">
+                        <i class="fas fa-file-pdf"></i> Export to PDF
+                    </a>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
                         <tr>
-                            <td>@item.AccountCode</td>
-                            <td>@item.AccountName</td>
-                            <td>@item.Level</td>
-                            <td class="text-right">@item.DebitBalance.ToString("N4")</td>
-                            <td class="text-right">@item.CreditBalance.ToString("N4")</td>
+                            <th>Account Code</th>
+                            <th>Account Name</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
+                            <th>Net</th>
                         </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="3">@Localizer["Total"]</th>
-                        <th class="text-right">@Model.TotalDebit.ToString("N4")</th>
-                        <th class="text-right">@Model.TotalCredit.ToString("N4")</th>
-                    </tr>
-                </tfoot>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.AccountCode)</td>
+                                <td>@Html.DisplayFor(modelItem => item.AccountName)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Debit)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Credit)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Net)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <!-- Pagination can be implemented here if needed -->
+            </div>
         </div>
-    </div>
-    <div class="card-footer">
-        <a asp-action="TrialBalance" class="btn btn-primary">@Localizer["BackToFilter"]</a>
     </div>
 </div>
+<div class="row">
+    <div class="col-md-12">
+        <a asp-action="TrialBalance" class="btn btn-secondary">Back to Filters</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable for pagination if needed
+            // $('.table').DataTable({
+            //     "paging": true,
+            //     "lengthChange": false,
+            //     "searching": true,
+            //     "ordering": true,
+            //     "info": true,
+            //     "autoWidth": false,
+            //     "responsive": true,
+            // });
+        });
+    </script>
+}

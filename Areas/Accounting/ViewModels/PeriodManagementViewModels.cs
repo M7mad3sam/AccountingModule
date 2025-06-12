@@ -44,4 +44,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public bool ConfirmClosing { get; set; }
         public YearEndClosingValidationResult ValidationResult { get; set; }
     }
+
+public class YearEndClosingValidationResult
+{
+    public bool IsValid { get; set; }
+    public IList<string> ValidationMessages { get; set; } = new List<string>();
+}
 }
