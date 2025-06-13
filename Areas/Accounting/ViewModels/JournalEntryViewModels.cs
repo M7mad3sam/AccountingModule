@@ -88,13 +88,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public IEnumerable<SelectListItem> AvailableFiscalPeriods { get; set; } = new List<SelectListItem>();
         
         [Display(Name = "Debit Total")]
-        public decimal DebitTotal { get; set; }
-        
+        public decimal DebitTotal => Lines.Sum(l => l.DebitAmount);
+
         [Display(Name = "Credit Total")]
-        public decimal CreditTotal { get; set; }
-        
+        public decimal CreditTotal => Lines.Sum(l => l.CreditAmount);
+
         [Display(Name = "Is Balanced")]
-        public bool IsBalanced { get; set; }
+        public bool IsBalanced => Math.Abs(DebitTotal - CreditTotal) < 0.01m;
 
         public decimal ExchangeRate { get; internal set; }
         public string? AttachmentUrl { get; internal set; }

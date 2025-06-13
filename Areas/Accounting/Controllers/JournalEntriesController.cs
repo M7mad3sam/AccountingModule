@@ -389,9 +389,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 SourceDocument = journalEntry.SourceDocument,
                 AttachmentUrl = journalEntry.AttachmentUrl,
                 Notes = journalEntry.Notes,
-                DebitTotal = journalEntry.DebitTotal,
-                CreditTotal = journalEntry.CreditTotal,
-                IsBalanced = Math.Abs(journalEntry.DebitTotal - journalEntry.CreditTotal) < 0.01m,
                 Lines = journalEntry.Lines.Select(l => new JournalEntryLineViewModel
                 {
                     Id = l.Id,
