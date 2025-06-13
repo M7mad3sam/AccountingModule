@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using AspNetCoreMvcTemplate.Data.Repository;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
@@ -144,7 +145,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<JournalEntry> GetJournalEntryByIdAsync(Guid id)
         {
-            return await _journalEntryRepository.GetByIdAsync(id, entry => entry.Lines);
+            return await _journalEntryRepository.GetByIdAsync(id, query => query.Include(je => je.Lines).ThenInclude(jel => jel.Account));
         }
 
         public async Task<JournalEntry> GetJournalEntryByReferenceAsync(string reference)

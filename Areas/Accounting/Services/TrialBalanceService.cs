@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using AspNetCoreMvcTemplate.Data.Repository;
 using AspNetCoreMvcTemplate.Areas.Accounting.Data.Specifications;
+using Microsoft.EntityFrameworkCore;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 {
@@ -33,7 +34,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             //var spec = new JournalLinesByDateSpec(fromDate, toDate, costCenterId);
             
             var journalLines = await _journalEntryLineRepository.FindAllAsync(jl => jl.JournalEntry.PostingDate >= fromDate && jl.JournalEntry.PostingDate <= toDate
-                && (!costCenterId.HasValue || jl.CostCenterId == costCenterId.Value), jl => jl.JournalEntry, jl => jl.Account);
+                && (!costCenterId.HasValue || jl.CostCenterId == costCenterId.Value), query => query.Include(jl => jl.JournalEntry).Include(jl => jl.Account));
             var accounts = await _accountRepository.GetAllAsync();
 
             var trialBalance = journalLines

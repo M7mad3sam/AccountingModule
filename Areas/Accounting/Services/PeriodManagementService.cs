@@ -59,7 +59,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<FiscalYear> GetFiscalYearByIdAsync(Guid id)
         {
-            return await _fiscalYearRepository.GetByIdAsync(id, fy => fy.FiscalPeriods);
+            return await _fiscalYearRepository.GetByIdAsync(id, null, fy => fy.FiscalPeriods);
         }
 
         public async Task<IEnumerable<FiscalYear>> GetAllFiscalYearsAsync()
@@ -101,7 +101,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<bool> CanDeleteFiscalYearAsync(Guid id)
         {
-            var fiscalYear = await _fiscalYearRepository.GetByIdAsync(id, fy => fy.FiscalPeriods);
+            var fiscalYear = await _fiscalYearRepository.GetByIdAsync(id, null, fy => fy.FiscalPeriods);
             if (fiscalYear == null)
                 return false;
 
@@ -110,7 +110,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<FiscalPeriod> GetFiscalPeriodByIdAsync(Guid id)
         {
-            return await _fiscalPeriodRepository.GetByIdAsync(id, fp => fp.FiscalYear);
+            return await _fiscalPeriodRepository.GetByIdAsync(id, null, fp => fp.FiscalYear);
         }
 
         public async Task<IEnumerable<FiscalPeriod>> GetAllFiscalPeriodsAsync()
@@ -182,7 +182,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         public async Task<bool> IsPeriodClosedAsync(DateTime date)
         {
             var spec = new CurrentFiscalPeriodSpecification(date);
-            var period = await _fiscalPeriodRepository.FindAsync(spec.Criteria, fp => fp.FiscalYear);
+            var period = await _fiscalPeriodRepository.FindAsync(spec.Criteria, null, fp => fp.FiscalYear);
             
             if (period == null)
                 return true; // No period defined, consider closed
@@ -192,7 +192,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<bool> IsPeriodClosedAsync(Guid periodId)
         {
-            var period = await _fiscalPeriodRepository.GetByIdAsync(periodId, fp => fp.FiscalYear);
+            var period = await _fiscalPeriodRepository.GetByIdAsync(periodId, null, fp => fp.FiscalYear);
             if (period == null)
                 return true; // Period not found, consider closed
             
@@ -227,7 +227,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<YearEndClosingValidationResult> ValidateYearEndClosingAsync(Guid fiscalYearId)
         {
-            var fiscalYear = await _fiscalYearRepository.GetByIdAsync(fiscalYearId, fy => fy.FiscalPeriods);
+            var fiscalYear = await _fiscalYearRepository.GetByIdAsync(fiscalYearId, null, fy => fy.FiscalPeriods);
             if (fiscalYear == null)
             {
                 return new YearEndClosingValidationResult
@@ -260,7 +260,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task PerformYearEndClosingAsync(Guid fiscalYearId)
         {
-            var fiscalYear = await _fiscalYearRepository.GetByIdAsync(fiscalYearId, fy => fy.FiscalPeriods);
+            var fiscalYear = await _fiscalYearRepository.GetByIdAsync(fiscalYearId, null, fy => fy.FiscalPeriods);
             if (fiscalYear == null)
             {
                 throw new ArgumentException("Fiscal year not found.", nameof(fiscalYearId));

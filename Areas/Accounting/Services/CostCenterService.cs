@@ -51,7 +51,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
         public async Task<CostCenter> GetCostCenterByIdAsync(Guid id)
         {
-            return await _costCenterRepository.GetByIdAsync(id, cc => cc.Parent);
+            return await _costCenterRepository.GetByIdAsync(id, query => query.Include(cc => cc.Parent));
         }
 
         public async Task<IEnumerable<CostCenter>> GetAllCostCentersAsync()
@@ -62,7 +62,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
         public async Task<IEnumerable<CostCenter>> GetCostCenterHierarchyAsync()
         {
             var spec = new CostCenterHierarchySpecification();
-            return await _costCenterRepository.FindAllAsync(spec.Criteria, cc => cc.Children);
+            return await _costCenterRepository.FindAllAsync(spec.Criteria, query => query.Include(cc => cc.Children));
         }
 
         public async Task<CostCenter> CreateCostCenterAsync(CostCenter costCenter)
@@ -131,14 +131,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
 
             // Check if cost center has children
             var spec = new CostCenterHierarchySpecification();
-            var costCenter = await _costCenterRepository.FindAsync(cc => cc.Id == id, cc => cc.Children);
+            var costCenter = await _costCenterRepository.FindAsync(cc => cc.Id == id, query => query.Include(cc => cc.Children));
             
             return costCenter?.Children == null || !costCenter.Children.Any();
         }
 
         public async Task<IEnumerable<AccountCostCenter>> GetCostCenterAccountsAsync(Guid costCenterId)
         {
-            return await _accountCostCenterRepository.FindAllAsync(acc => acc.CostCenterId == costCenterId, acc => acc.Account);
+            return await _accountCostCenterRepository.FindAllAsync(acc => acc.CostCenterId == costCenterId, query => query.Include(acc => acc.Account));
         }
 
         public async Task AddCostCenterAccountAsync(Guid costCenterId, Guid accountId)

@@ -6,10 +6,10 @@ namespace AspNetCoreMvcTemplate.Data.Repository
     public interface IRepository<T> where T : class
     {
         // Get methods
-        Task<T?> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includeProperties);
-        Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties);
-        Task<T?> FindAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
-        Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
+        Task<T?> GetByIdAsync(Guid id, Func<IQueryable<T>, IQueryable<T>>? includeBuilder = null, params Expression<Func<T, object>>[] includeProperties);
+        Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>>? includeBuilder = null, params Expression<Func<T, object>>[] includeProperties);
+        Task<T?> FindAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? includeBuilder = null, params Expression<Func<T, object>>[] includeProperties);
+        Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? includeBuilder = null, params Expression<Func<T, object>>[] includeProperties);
         
         // Paging methods
         Task<(IEnumerable<T> Items, int TotalCount, int TotalPages)> GetPagedAsync(
@@ -54,31 +54,41 @@ namespace AspNetCoreMvcTemplate.Data.Repository
             _dbSet = context.Set<T>();
         }
 
-        public async Task<T?> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includeProperties)
+        public async Task<T?> GetByIdAsync(Guid id, Func<IQueryable<T>, IQueryable<T>>? includeBuilder = null, params Expression<Func<T, object>>[] includeProperties)
         {
             var query = _dbSet.AsQueryable();
             
             foreach (var include in includeProperties)
             {
                 query = query.Include(include);
+            }
+            
+            if (includeBuilder != null)
+            {
+                query = includeBuilder(query);
             }
             
             return await query.FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includeProperties)
+        public async Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>>? includeBuilder = null, params Expression<Func<T, object>>[] includeProperties)
         {
             var query = _dbSet.AsQueryable();
             
             foreach (var include in includeProperties)
             {
                 query = query.Include(include);
+            }
+            
+            if (includeBuilder != null)
+            {
+                query = includeBuilder(query);
             }
             
             return await query.ToListAsync();
         }
 
-        public async Task<T?> FindAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+        public async Task<T?> FindAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? includeBuilder = null, params Expression<Func<T, object>>[] includeProperties)
         {
             var query = _dbSet.AsQueryable();
             
@@ -87,16 +97,26 @@ namespace AspNetCoreMvcTemplate.Data.Repository
                 query = query.Include(include);
             }
             
+            if (includeBuilder != null)
+            {
+                query = includeBuilder(query);
+            }
+            
             return await query.FirstOrDefaultAsync(predicate);
         }
 
-        public async Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+        public async Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? includeBuilder = null, params Expression<Func<T, object>>[] includeProperties)
         {
             var query = _dbSet.AsQueryable();
             
             foreach (var include in includeProperties)
             {
                 query = query.Include(include);
+            }
+            
+            if (includeBuilder != null)
+            {
+                query = includeBuilder(query);
             }
             
             return await query.Where(predicate).ToListAsync();
