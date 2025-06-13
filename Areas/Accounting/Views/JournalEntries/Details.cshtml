@@ -42,6 +42,27 @@
         </div>
         
         <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label">Debit Total</label>
+                    <input type="text" value="@Model.DebitTotal.ToString("N2")" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label">Credit Total</label>
+                    <input type="text" value="@Model.CreditTotal.ToString("N2")" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label">Balanced</label>
+                    <input type="text" value="@(Model.IsBalanced ? "✅ Yes" : "❌ No")" class="form-control" readonly />
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
             <div class="col-md-12">
                 <div class="form-group">
                     <label class="control-label">Description</label>
@@ -105,7 +126,8 @@
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th>Account</th>
+                                <th>Account Code</th>
+                                <th>Account Name</th>
                                 <th>Cost Center</th>
                                 <th>Description</th>
                                 <th>Debit</th>
@@ -117,8 +139,9 @@
                             @foreach (var line in Model.Lines)
                             {
                                 <tr>
-                                <td>@line.AccountCode - @line.AccountName</td>
-                                <td>@(line.CostCenterName ?? "N/A")</td>
+                                    <td>@line.AccountCode</td>
+                                    <td>@line.AccountName</td>
+                                    <td>@(line.CostCenterName ?? "N/A")</td>
                                     <td>@(line.Description ?? "N/A")</td>
                                     <td>@line.DebitAmount.ToString("N2")</td>
                                     <td>@line.CreditAmount.ToString("N2")</td>
@@ -137,9 +160,9 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colspan="3" class="text-right">Total:</th>
-                                <th>@Model.Lines.Sum(l => l.DebitAmount).ToString("N2")</th>
-                                <th>@Model.Lines.Sum(l => l.CreditAmount).ToString("N2")</th>
+                                <th colspan="4" class="text-right">Total:</th>
+                                <th>@Model.DebitTotal.ToString("N2")</th>
+                                <th>@Model.CreditTotal.ToString("N2")</th>
                                 <th></th>
                             </tr>
                         </tfoot>

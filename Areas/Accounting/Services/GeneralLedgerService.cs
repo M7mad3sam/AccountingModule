@@ -184,6 +184,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             journalEntry.ApprovedById = userId;
             journalEntry.ModifiedDate = DateTime.Now;
 
+            // Compute totals
+            journalEntry.DebitTotal = journalEntry.Lines.Sum(l => l.Debit);
+            journalEntry.CreditTotal = journalEntry.Lines.Sum(l => l.Credit);
+
             await _journalEntryRepository.AddAsync(journalEntry);
             await _journalEntryRepository.SaveAsync();
             await _auditService.LogActivityAsync("JournalEntry", "Create", $"Created journal entry: {journalEntry.Reference}");
@@ -235,6 +239,10 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             journalEntry.ModifiedById = userId;
             journalEntry.ModifiedDate = DateTime.Now;
+
+            // Compute totals
+            journalEntry.DebitTotal = journalEntry.Lines.Sum(l => l.Debit);
+            journalEntry.CreditTotal = journalEntry.Lines.Sum(l => l.Credit);
 
             await _journalEntryRepository.UpdateAsync(journalEntry);
             await _journalEntryRepository.SaveAsync();

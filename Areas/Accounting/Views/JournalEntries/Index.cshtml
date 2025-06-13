@@ -24,7 +24,9 @@
                         <th>@Localizer["Description"]</th>
                         <th>@Localizer["Reference"]</th>
                         <th>@Localizer["Status"]</th>
-                        <th>@Localizer["Total"]</th>
+                            <th>@Localizer["DebitTotal"]</th>
+                            <th>@Localizer["CreditTotal"]</th>
+                            <th>@Localizer["Balanced"]</th>
                         <th>@Localizer["Actions"]</th>
                     </tr>
                 </thead>
@@ -53,7 +55,18 @@
                                         break;
                                 }
                             </td>
-                            <td>@entry.TotalDebit.ToString("N2")</td>
+                            <td>@entry.DebitTotal.ToString("N2")</td>
+                            <td>@entry.CreditTotal.ToString("N2")</td>
+                            <td>
+                                @if (entry.IsBalanced)
+                                {
+                                    <span class="text-success">✅</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger">❌</span>
+                                }
+                            </td>
                             <td>
                                 <div class="btn-group">
                                     <a asp-action="Details" asp-route-id="@entry.Id" class="btn btn-info btn-sm">

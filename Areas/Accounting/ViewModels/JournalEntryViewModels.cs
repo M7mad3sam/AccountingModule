@@ -87,14 +87,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         public IEnumerable<SelectListItem> AvailableWithholdingTaxes { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> AvailableFiscalPeriods { get; set; } = new List<SelectListItem>();
         
-        [Display(Name = "Total Debit")]
-        public decimal TotalDebit => Lines.Sum(l => l.DebitAmount);
+        [Display(Name = "Debit Total")]
+        public decimal DebitTotal { get; set; }
         
-        [Display(Name = "Total Credit")]
-        public decimal TotalCredit => Lines.Sum(l => l.CreditAmount);
+        [Display(Name = "Credit Total")]
+        public decimal CreditTotal { get; set; }
         
         [Display(Name = "Is Balanced")]
-        public bool IsBalanced => Math.Abs(TotalDebit - TotalCredit) < 0.01m;
+        public bool IsBalanced { get; set; }
 
         public decimal ExchangeRate { get; internal set; }
         public string? AttachmentUrl { get; internal set; }

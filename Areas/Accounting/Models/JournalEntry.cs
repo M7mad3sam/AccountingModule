@@ -45,10 +45,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         public JournalEntryStatus Status { get; set; }
         
         [Required]
-        public decimal TotalDebit { get; set; }
+        public decimal DebitTotal { get; set; }
         
         [Required]
-        public decimal TotalCredit { get; set; }
+        public decimal CreditTotal { get; set; }
+        
+        public bool IsBalanced => DebitTotal == CreditTotal;
         
         public Guid? ClientId { get; set; }
         public Client Client { get; set; }
