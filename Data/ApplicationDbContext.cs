@@ -150,6 +150,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .IsRequired(false);
 
         modelBuilder.Entity<JournalEntry>()
+            .HasIndex(j => j.Reference)
+            .IsUnique();
+
+        modelBuilder.Entity<JournalEntry>()
             .HasOne(je => je.Vendor)
             .WithMany()
             .HasForeignKey(je => je.VendorId)

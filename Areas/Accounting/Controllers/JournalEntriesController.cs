@@ -142,7 +142,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                     Number = viewModel.EntryNumber,
                     EntryDate = viewModel.EntryDate,
                     PostingDate = viewModel.PostingDate.ToDateTime(TimeOnly.MinValue),
-                    Reference = viewModel.Reference,
                     Description = viewModel.Description,
                     Status = viewModel.Status,
                     ClientId = viewModel.ClientId,
@@ -309,7 +308,6 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
                 // Update journal entry
                 journalEntry.EntryDate = viewModel.EntryDate;
                 journalEntry.PostingDate = viewModel.PostingDate.ToDateTime(TimeOnly.MinValue);
-                journalEntry.Reference = viewModel.Reference;
                 journalEntry.Description = viewModel.Description;
                 journalEntry.Status = viewModel.Status;
                 journalEntry.ClientId = viewModel.ClientId;

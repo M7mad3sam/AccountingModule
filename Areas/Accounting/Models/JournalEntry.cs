@@ -35,6 +35,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Models
         [StringLength(500)]
         public string? Description { get; set; }
         
+        /// <summary>
+        /// Auto-generated internal document number.
+        /// </summary>
         [StringLength(50)]
         public string Reference { get; set; }
         

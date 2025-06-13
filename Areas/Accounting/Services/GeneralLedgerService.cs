@@ -158,6 +158,12 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             // Validate journal entry
             ValidateJournalEntry(journalEntry);
 
+            // Auto-generate reference if not provided
+            if (string.IsNullOrEmpty(journalEntry.Reference))
+            {
+                journalEntry.Reference = await GenerateReferenceAsync(journalEntry.PostingDate);
+            }
+
             // Check if reference is unique
             var existingJournalEntry = await GetJournalEntryByReferenceAsync(journalEntry.Reference);
             if (existingJournalEntry != null)
@@ -181,6 +187,30 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Services
             await _journalEntryRepository.AddAsync(journalEntry);
             await _journalEntryRepository.SaveAsync();
             await _auditService.LogActivityAsync("JournalEntry", "Create", $"Created journal entry: {journalEntry.Reference}");
+        }
+
+        private async Task<string> GenerateReferenceAsync(DateTime postingDate)
+        {
+            // Determine fiscal year using July-to-June rule
+            int fiscalYear = postingDate.Month >= 7 ? postingDate.Year + 1 : postingDate.Year;
+            string prefix = $"{fiscalYear}-";
+
+            // Query max existing reference that starts with the fiscal year prefix
+            var existingReferences = await _journalEntryRepository.FindAllAsync(je => je.Reference.StartsWith(prefix));
+            int nextNumber = 1;
+            if (existingReferences.Any())
+            {
+                var maxReference = existingReferences
+                    .Where(je => je.Reference.StartsWith(prefix))
+                    .Select(je => je.Reference.Substring(prefix.Length))
+                    .Where(num => int.TryParse(num, out _))
+                    .Select(num => int.Parse(num))
+                    .Max();
+                nextNumber = maxReference + 1;
+            }
+
+            // Format the reference as YYYY-NNNN
+            return $"{prefix}{nextNumber:D4}";
         }
 
         public async Task UpdateJournalEntryAsync(JournalEntry journalEntry)

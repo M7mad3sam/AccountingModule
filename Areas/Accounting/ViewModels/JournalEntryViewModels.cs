@@ -16,10 +16,9 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
         [Display(Name = "Entry Number")]
         public string EntryNumber { get; set; }
         
-        [Required]
         [StringLength(50)]
         [Display(Name = "Reference")]
-        public string Reference { get; set; }
+        public string? Reference { get; set; }
         
         [StringLength(200)]
         [Display(Name = "Description")]
