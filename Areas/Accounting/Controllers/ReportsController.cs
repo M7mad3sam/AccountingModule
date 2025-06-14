@@ -9,6 +9,7 @@ using AspNetCoreMvcTemplate.Areas.Accounting.Models;
 using AspNetCoreMvcTemplate.Areas.Accounting.Services;
 using AspNetCoreMvcTemplate.Areas.Accounting.ViewModels;
 using System.Linq;
+using AspNetCoreMvcTemplate.DTOs;
 
 namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
 {
@@ -20,6 +21,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
         private readonly ICostCenterService _costCenterService;
         private readonly IPeriodManagementService _periodManagementService;
         private readonly ITrialBalanceService _trialBalanceService;
+        private readonly IFinancialStatementService _financialStatementService;
         private readonly IStringLocalizer<ReportsController> _localizer;
 
         public ReportsController(
@@ -27,12 +29,14 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             ICostCenterService costCenterService,
             IPeriodManagementService periodManagementService,
             ITrialBalanceService trialBalanceService,
+            IFinancialStatementService financialStatementService,
             IStringLocalizer<ReportsController> localizer)
         {
             _reportingService = reportingService;
             _costCenterService = costCenterService;
             _periodManagementService = periodManagementService;
             _trialBalanceService = trialBalanceService;
+            _financialStatementService = financialStatementService;
             _localizer = localizer;
         }
 
@@ -91,6 +95,78 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.Controllers
             // var pdfBytes = await _reportingService.ExportTrialBalanceToPdfAsync(reportRows);
             // return File(pdfBytes, "application/pdf", "TrialBalance.pdf");
             return Content("Export to PDF functionality is not yet implemented.");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BalanceSheet(Guid? periodId, Guid? costCenterId)
+        {
+            var periods = await _periodManagementService.GetAllFiscalPeriodsAsync();
+            if (!periodId.HasValue && periods.Any())
+                periodId = periods.OrderByDescending(p => p.EndDate).First().Id;
+
+            var viewModel = new TrialBalanceFilterViewModel
+            {
+                PeriodId = periodId,
+                CostCenterId = costCenterId,
+                CostCenters = await _costCenterService.GetAllCostCentersAsync(),
+                Periods = periods
+            };
+
+            if (periodId.HasValue)
+            {
+                var balanceSheet = await _financialStatementService.GetBalanceSheetAsync(periodId.Value, costCenterId);
+                ViewBag.BalanceSheet = balanceSheet;
+            }
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> IncomeStatement(Guid? periodId, Guid? costCenterId)
+        {
+            var periods = await _periodManagementService.GetAllFiscalPeriodsAsync();
+            if (!periodId.HasValue && periods.Any())
+                periodId = periods.OrderByDescending(p => p.EndDate).First().Id;
+
+            var viewModel = new TrialBalanceFilterViewModel
+            {
+                PeriodId = periodId,
+                CostCenterId = costCenterId,
+                CostCenters = await _costCenterService.GetAllCostCentersAsync(),
+                Periods = periods
+            };
+
+            if (periodId.HasValue)
+            {
+                var incomeStatement = await _financialStatementService.GetIncomeStatementAsync(periodId.Value, costCenterId);
+                ViewBag.IncomeStatement = incomeStatement;
+            }
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CashFlow(Guid? periodId, Guid? costCenterId)
+        {
+            var periods = await _periodManagementService.GetAllFiscalPeriodsAsync();
+            if (!periodId.HasValue && periods.Any())
+                periodId = periods.OrderByDescending(p => p.EndDate).First().Id;
+
+            var viewModel = new TrialBalanceFilterViewModel
+            {
+                PeriodId = periodId,
+                CostCenterId = costCenterId,
+                CostCenters = await _costCenterService.GetAllCostCentersAsync(),
+                Periods = periods
+            };
+
+            if (periodId.HasValue)
+            {
+                var cashFlow = await _financialStatementService.GetCashFlowAsync(periodId.Value, costCenterId);
+                ViewBag.CashFlow = cashFlow;
+            }
+
+            return View(viewModel);
         }
     }
 }

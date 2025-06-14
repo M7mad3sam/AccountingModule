@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = Localizer["IncomeStatement"];
+    var incomeStatement = ViewBag.IncomeStatement as AspNetCoreMvcTemplate.DTOs.IncomeStatementDTO;
 }
 
 <div class="card">
@@ -59,46 +60,117 @@
                     <tr class="bg-light">
                         <th colspan="3">@Localizer["Revenue"]</th>
                     </tr>
-                    @if (ViewBag.RevenueAccounts != null)
+                    @if (incomeStatement != null && incomeStatement.Revenue.RevenueAccounts.Any())
                     {
-                        foreach (var account in ViewBag.RevenueAccounts)
+                        foreach (var account in incomeStatement.Revenue.RevenueAccounts)
                         {
                             <tr>
                                 <td>@account.Code</td>
                                 <td>@account.NameEn</td>
-                                <td class="text-right">@account.Balance.ToString("N2")</td>
+                                <td class="text-right">@String.Format("{0:N2}", account.Balance)</td>
                             </tr>
                         }
                     }
                     <tr class="font-weight-bold">
                         <td colspan="2" class="text-right">@Localizer["TotalRevenue"]</td>
-                        <td class="text-right">@ViewBag.TotalRevenue.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", incomeStatement?.TotalRevenue ?? 0)</td>
                     </tr>
                     
                     <!-- Expenses Section -->
                     <tr class="bg-light">
                         <th colspan="3">@Localizer["Expenses"]</th>
                     </tr>
-                    @if (ViewBag.ExpenseAccounts != null)
+                    
+                    <!-- Cost of Sales -->
+                    <tr>
+                        <th colspan="3" class="pl-4">@Localizer["CostOfSales"]</th>
+                    </tr>
+                    @if (incomeStatement != null && incomeStatement.Expenses.CostOfSales.Any())
                     {
-                        foreach (var account in ViewBag.ExpenseAccounts)
+                        foreach (var account in incomeStatement.Expenses.CostOfSales)
                         {
                             <tr>
-                                <td>@account.Code</td>
+                                <td class="pl-5">@account.Code</td>
                                 <td>@account.NameEn</td>
-                                <td class="text-right">@account.Balance.ToString("N2")</td>
+                                <td class="text-right">@String.Format("{0:N2}", account.Balance)</td>
                             </tr>
                         }
                     }
                     <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">@Localizer["TotalCostOfSales"]</td>
+                        <td class="text-right">@String.Format("{0:N2}", incomeStatement?.Expenses.TotalCostOfSales ?? 0)</td>
+                    </tr>
+                    
+                    <!-- Operating Expenses -->
+                    <tr>
+                        <th colspan="3" class="pl-4">@Localizer["OperatingExpenses"]</th>
+                    </tr>
+                    @if (incomeStatement != null && incomeStatement.Expenses.OperatingExpenses.Any())
+                    {
+                        foreach (var account in incomeStatement.Expenses.OperatingExpenses)
+                        {
+                            <tr>
+                                <td class="pl-5">@account.Code</td>
+                                <td>@account.NameEn</td>
+                                <td class="text-right">@String.Format("{0:N2}", account.Balance)</td>
+                            </tr>
+                        }
+                    }
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">@Localizer["TotalOperatingExpenses"]</td>
+                        <td class="text-right">@String.Format("{0:N2}", incomeStatement?.Expenses.TotalOperatingExpenses ?? 0)</td>
+                    </tr>
+                    
+                    <!-- Other Income/Expense -->
+                    <tr>
+                        <th colspan="3" class="pl-4">@Localizer["OtherIncomeExpense"]</th>
+                    </tr>
+                    @if (incomeStatement != null && incomeStatement.Expenses.OtherIncomeExpense.Any())
+                    {
+                        foreach (var account in incomeStatement.Expenses.OtherIncomeExpense)
+                        {
+                            <tr>
+                                <td class="pl-5">@account.Code</td>
+                                <td>@account.NameEn</td>
+                                <td class="text-right">@String.Format("{0:N2}", account.Balance)</td>
+                            </tr>
+                        }
+                    }
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">@Localizer["TotalOtherIncomeExpense"]</td>
+                        <td class="text-right">@String.Format("{0:N2}", incomeStatement?.Expenses.TotalOtherIncomeExpense ?? 0)</td>
+                    </tr>
+                    
+                    <!-- Tax Expense -->
+                    <tr>
+                        <th colspan="3" class="pl-4">@Localizer["TaxExpense"]</th>
+                    </tr>
+                    @if (incomeStatement != null && incomeStatement.Expenses.TaxExpense.Any())
+                    {
+                        foreach (var account in incomeStatement.Expenses.TaxExpense)
+                        {
+                            <tr>
+                                <td class="pl-5">@account.Code</td>
+                                <td>@account.NameEn</td>
+                                <td class="text-right">@String.Format("{0:N2}", account.Balance)</td>
+                            </tr>
+                        }
+                    }
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">@Localizer["TotalTaxExpense"]</td>
+                        <td class="text-right">@String.Format("{0:N2}", incomeStatement?.Expenses.TotalTaxExpense ?? 0)</td>
+                    </tr>
+                    
+                    <!-- Total Expenses -->
+                    <tr class="font-weight-bold">
                         <td colspan="2" class="text-right">@Localizer["TotalExpenses"]</td>
-                        <td class="text-right">@ViewBag.TotalExpenses.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", incomeStatement?.TotalExpenses ?? 0)</td>
                     </tr>
                     
                     <!-- Net Income/Loss -->
                     <tr class="font-weight-bold bg-info">
                         <td colspan="2" class="text-right">@Localizer["NetIncomeLoss"]</td>
-                        <td class="text-right">@ViewBag.NetIncome.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", incomeStatement?.NetIncome ?? 0)</td>
                     </tr>
                 </tbody>
             </table>

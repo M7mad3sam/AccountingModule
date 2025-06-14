@@ -51,9 +51,13 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting.ViewModels
 
         public Guid? CostCenterId { get; set; }
 
+        public Guid? PeriodId { get; set; }
+
         public int Level { get; set; }
         [ValidateNever]
         public IEnumerable<CostCenter> CostCenters { get; set; }
+        [ValidateNever]
+        public IEnumerable<FiscalPeriod> Periods { get; set; }
         [ValidateNever]
         public IEnumerable<SelectListItem> Levels { get; set; }
     }

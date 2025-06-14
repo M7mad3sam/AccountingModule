@@ -8,6 +8,7 @@ using AspNetCoreMvcTemplate.Resources;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using AspNetCoreMvcTemplate.Areas.Accounting;
+using AspNetCoreMvcTemplate.Areas.Accounting.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +80,8 @@ using (var scope = app.Services.CreateScope())
 
         // Seed database
         await SeedData.Initialize(scope.ServiceProvider);
+        // Demo Call Once
+        await SeedData.EnsureDemoSeedAsync(scope.ServiceProvider);
     }
     catch (Exception ex)
     {

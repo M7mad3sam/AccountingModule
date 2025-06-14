@@ -1,0 +1,29 @@
+{
+  "BalanceSheet": {
+    "Assets": {
+      "FixedAssets": ["1000-1999"],
+      "CurrentAssets": ["2000-2999"],
+      "OtherAssets": ["3000-3099"]
+    },
+    "Liabilities": {
+      "LongTermLiabilities": ["4000-4999"],
+      "CurrentLiabilities": ["5000-5999"]
+    },
+    "Equity": ["6000-6999"]
+  },
+  "IncomeStatement": {
+    "Revenue": ["7000-7099"],
+    "CostOfSales": ["7100-7199"],
+    "OperatingExpenses": ["7200-7399"],
+    "OtherIncomeExpense": ["7400-7499"],
+    "TaxExpense": ["7500-7599"]
+  },
+  "CashFlow": {
+    "OperatingActivities": {
+      "Adjustments": ["7200-7399", "8800-8800"],
+      "ChangesInWorkingCapital": ["2000-2999", "5000-5999"]
+    },
+    "InvestingActivities": ["1000-1999"],
+    "FinancingActivities": ["6000-6999", "4000-4999"]
+  }
+}

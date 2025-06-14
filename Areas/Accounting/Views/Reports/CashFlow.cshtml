@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = Localizer["CashFlowStatement"];
+    var cashFlow = ViewBag.CashFlow as AspNetCoreMvcTemplate.DTOs.CashFlowDTO;
 }
 
 <div class="card">
@@ -64,7 +65,7 @@
                     <tr>
                         <td></td>
                         <td>@Localizer["NetIncome"]</td>
-                        <td class="text-right">@ViewBag.NetIncome.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.OperatingActivities.NetIncome ?? 0)</td>
                     </tr>
                     
                     <!-- Adjustments to reconcile net income -->
@@ -72,11 +73,20 @@
                         <th colspan="3" class="pl-4">@Localizer["AdjustmentsToReconcileNetIncome"]:</th>
                     </tr>
                     
-                    <!-- Depreciation and Amortization -->
-                    <tr>
-                        <td class="pl-5"></td>
-                        <td>@Localizer["DepreciationAndAmortization"]</td>
-                        <td class="text-right">@ViewBag.DepreciationAmortization.ToString("N2")</td>
+                    @if (cashFlow != null && cashFlow.OperatingActivities.Adjustments.Any())
+                    {
+                        foreach (var item in cashFlow.OperatingActivities.Adjustments)
+                        {
+                            <tr>
+                                <td class="pl-5"></td>
+                                <td>@item.Description</td>
+                                <td class="text-right">@String.Format("{0:N2}", item.Amount)</td>
+                            </tr>
+                        }
+                    }
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">@Localizer["TotalAdjustments"]</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.OperatingActivities.TotalAdjustments ?? 0)</td>
                     </tr>
                     
                     <!-- Changes in operating assets and liabilities -->
@@ -84,22 +94,26 @@
                         <th colspan="3" class="pl-4">@Localizer["ChangesInOperatingAssetsAndLiabilities"]:</th>
                     </tr>
                     
-                    @if (ViewBag.OperatingChanges != null)
+                    @if (cashFlow != null && cashFlow.OperatingActivities.ChangesInWorkingCapital.Any())
                     {
-                        foreach (var item in ViewBag.OperatingChanges)
+                        foreach (var item in cashFlow.OperatingActivities.ChangesInWorkingCapital)
                         {
                             <tr>
                                 <td class="pl-5"></td>
                                 <td>@item.Description</td>
-                                <td class="text-right">@item.Amount.ToString("N2")</td>
+                                <td class="text-right">@String.Format("{0:N2}", item.Amount)</td>
                             </tr>
                         }
                     }
+                    <tr class="font-weight-bold">
+                        <td colspan="2" class="text-right">@Localizer["TotalChangesInWorkingCapital"]</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.OperatingActivities.TotalChangesInWorkingCapital ?? 0)</td>
+                    </tr>
                     
                     <!-- Net Cash from Operating Activities -->
                     <tr class="font-weight-bold">
                         <td colspan="2" class="text-right">@Localizer["NetCashFromOperatingActivities"]</td>
-                        <td class="text-right">@ViewBag.NetCashFromOperating.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.NetCashFromOperating ?? 0)</td>
                     </tr>
                     
                     <!-- Investing Activities Section -->
@@ -107,14 +121,14 @@
                         <th colspan="3">@Localizer["CashFlowFromInvestingActivities"]</th>
                     </tr>
                     
-                    @if (ViewBag.InvestingActivities != null)
+                    @if (cashFlow != null && cashFlow.InvestingActivities.Items.Any())
                     {
-                        foreach (var item in ViewBag.InvestingActivities)
+                        foreach (var item in cashFlow.InvestingActivities.Items)
                         {
                             <tr>
                                 <td></td>
                                 <td>@item.Description</td>
-                                <td class="text-right">@item.Amount.ToString("N2")</td>
+                                <td class="text-right">@String.Format("{0:N2}", item.Amount)</td>
                             </tr>
                         }
                     }
@@ -122,7 +136,7 @@
                     <!-- Net Cash from Investing Activities -->
                     <tr class="font-weight-bold">
                         <td colspan="2" class="text-right">@Localizer["NetCashFromInvestingActivities"]</td>
-                        <td class="text-right">@ViewBag.NetCashFromInvesting.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.NetCashFromInvesting ?? 0)</td>
                     </tr>
                     
                     <!-- Financing Activities Section -->
@@ -130,14 +144,14 @@
                         <th colspan="3">@Localizer["CashFlowFromFinancingActivities"]</th>
                     </tr>
                     
-                    @if (ViewBag.FinancingActivities != null)
+                    @if (cashFlow != null && cashFlow.FinancingActivities.Items.Any())
                     {
-                        foreach (var item in ViewBag.FinancingActivities)
+                        foreach (var item in cashFlow.FinancingActivities.Items)
                         {
                             <tr>
                                 <td></td>
                                 <td>@item.Description</td>
-                                <td class="text-right">@item.Amount.ToString("N2")</td>
+                                <td class="text-right">@String.Format("{0:N2}", item.Amount)</td>
                             </tr>
                         }
                     }
@@ -145,26 +159,26 @@
                     <!-- Net Cash from Financing Activities -->
                     <tr class="font-weight-bold">
                         <td colspan="2" class="text-right">@Localizer["NetCashFromFinancingActivities"]</td>
-                        <td class="text-right">@ViewBag.NetCashFromFinancing.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.NetCashFromFinancing ?? 0)</td>
                     </tr>
                     
                     <!-- Net Increase/Decrease in Cash -->
                     <tr class="font-weight-bold bg-info">
                         <td colspan="2" class="text-right">@Localizer["NetIncreaseDecreaseInCash"]</td>
-                        <td class="text-right">@ViewBag.NetIncreaseInCash.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.NetIncreaseInCash ?? 0)</td>
                     </tr>
                     
                     <!-- Cash at Beginning of Period -->
                     <tr>
                         <td></td>
                         <td>@Localizer["CashAtBeginningOfPeriod"]</td>
-                        <td class="text-right">@ViewBag.CashAtBeginning.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.CashAtBeginning ?? 0)</td>
                     </tr>
                     
                     <!-- Cash at End of Period -->
                     <tr class="font-weight-bold bg-info">
                         <td colspan="2" class="text-right">@Localizer["CashAtEndOfPeriod"]</td>
-                        <td class="text-right">@ViewBag.CashAtEnd.ToString("N2")</td>
+                        <td class="text-right">@String.Format("{0:N2}", cashFlow?.CashAtEnd ?? 0)</td>
                     </tr>
                 </tbody>
             </table>

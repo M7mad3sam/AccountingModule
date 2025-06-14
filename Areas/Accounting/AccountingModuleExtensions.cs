@@ -39,6 +39,7 @@ namespace AspNetCoreMvcTemplate.Areas.Accounting
             services.AddScoped<IClientVendorService, ClientVendorService>();
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<IFinancialReportingService, FinancialReportingService>();
+            services.AddScoped<IFinancialStatementService, FinancialStatementService>();
             
             return services;
         }
